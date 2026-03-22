@@ -1,4 +1,4 @@
-package com.example.vocabanana.features.vocabulary.presentation
+package com.example.vocabanana.feature.vocabulary.presentation
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column

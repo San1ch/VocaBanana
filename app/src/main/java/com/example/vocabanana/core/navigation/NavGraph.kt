@@ -13,9 +13,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.vocabanana.core.navigation.composable.StateContainer
-import com.example.vocabanana.features.init.InitScreen
-import com.example.vocabanana.features.main.MainScreen
-import com.example.vocabanana.features.vocabulary.presentation.VocabularyScreen
+import com.example.vocabanana.feature.init.InitScreen
+import com.example.vocabanana.feature.main.MainScreen
+import com.example.vocabanana.feature.vocabulary.presentation.VocabularyScreen
 import kotlinx.coroutines.CoroutineScope
 
 

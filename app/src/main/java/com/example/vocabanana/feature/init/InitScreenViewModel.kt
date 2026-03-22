@@ -1,4 +1,4 @@
-package com.example.vocabanana.features.main
+package com.example.vocabanana.feature.init
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -9,12 +9,12 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class MainScreenViewModel @Inject constructor(
+class InitScreenViewModel @Inject constructor(
     private val settingsDataStore: SettingsDataStore
 ) : ViewModel() {
-    fun reloadInit() {
+    fun finishInit() {
         viewModelScope.launch(Dispatchers.IO) {
-            settingsDataStore.setInitActive(true)
+            settingsDataStore.setInitActive(false)
         }
     }
 }

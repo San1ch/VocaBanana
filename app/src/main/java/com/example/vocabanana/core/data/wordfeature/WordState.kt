@@ -1,4 +1,4 @@
-package com.example.vocabanana.wordfeature
+package com.example.vocabanana.core.data.wordfeature
 
 
 data class WordState(
