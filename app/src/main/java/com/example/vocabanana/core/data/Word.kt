@@ -1,4 +1,8 @@
 package com.example.vocabanana.core.data
 
-class Word {
+data class Word(
+    val id: Int,
+    val word: String
+){
+
 }
