@@ -11,6 +11,7 @@ private object AppScreens {
     const val INIT_SCREEN = "InitScreen"
     const val MAIN_SCREEN = "MainScreen"
     const val VOCABULARY_SCREEN = "VocabularyScreen"
+    const val TEXT_LIST_SCREEN = "TextListScreen"
 }
 
 /**
@@ -26,6 +27,7 @@ object AppDestinations {
     const val INIT_DESTINATION = AppScreens.INIT_SCREEN
     const val MAIN_DESTINATION = AppScreens.MAIN_SCREEN
     const val VOCABULARY_DESTINATION = AppScreens.VOCABULARY_SCREEN
+    const val TEXT_LIST_DESTINATION = AppScreens.TEXT_LIST_SCREEN
 }
 
 /**
@@ -33,8 +35,13 @@ object AppDestinations {
  */
 class AppNavigationActions(private val navController: NavHostController) {
 
-    fun navigateToInit(){
-        navController.navigate(AppDestinations.INIT_DESTINATION){
+
+    fun navigateBack() {
+        navController.popBackStack()
+    }
+
+    fun navigateToInit() {
+        navController.navigate(AppDestinations.INIT_DESTINATION) {
             popUpTo(navController.graph.findStartDestination().id) {
                 inclusive = false
                 saveState = true
@@ -43,8 +50,9 @@ class AppNavigationActions(private val navController: NavHostController) {
             restoreState = false
         }
     }
-    fun navigateToMain(){
-        navController.navigate(AppDestinations.MAIN_DESTINATION){
+
+    fun navigateToMain() {
+        navController.navigate(AppDestinations.MAIN_DESTINATION) {
             popUpTo(navController.graph.findStartDestination().id) {
                 inclusive = false
                 saveState = true
@@ -54,16 +62,17 @@ class AppNavigationActions(private val navController: NavHostController) {
         }
     }
 
-    fun navigateToVocabulary(){
-        navController.navigate(AppDestinations.VOCABULARY_DESTINATION){
+    fun navigateToVocabulary() {
+        navController.navigate(AppDestinations.VOCABULARY_DESTINATION) {
 
         }
     }
 
-    fun navigateBack(){
-        navController.popBackStack()
-    }
+    fun navigateToTexts() {
+        navController.navigate(AppDestinations.TEXT_LIST_DESTINATION) {
 
+        }
+    }
 
 
 

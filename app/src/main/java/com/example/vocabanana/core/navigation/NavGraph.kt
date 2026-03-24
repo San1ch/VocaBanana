@@ -15,6 +15,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.vocabanana.core.navigation.composable.StateContainer
 import com.example.vocabanana.feature.init.InitScreen
 import com.example.vocabanana.feature.main.MainScreen
+import com.example.vocabanana.feature.text.presentation.TextListScreen
 import com.example.vocabanana.feature.vocabulary.presentation.VocabularyScreen
 import kotlinx.coroutines.CoroutineScope
 
@@ -30,7 +31,7 @@ fun NavGraph(
     viewModel: NavGraphViewModel = hiltViewModel()
 ) {
     val startDestinationState by viewModel.startDestination.collectAsStateWithLifecycle()
-    
+
     StateContainer(state = startDestinationState) { destination ->
         NavHost(
             navController = navController,
@@ -39,7 +40,8 @@ fun NavGraph(
         ) {
             composable(AppDestinations.MAIN_DESTINATION) {
                 MainScreen(
-                    onVocabClick = { appNavigationActions.navigateToVocabulary() }
+                    onVocabClick = { appNavigationActions.navigateToVocabulary() },
+                    onTextsClick = { appNavigationActions.navigateToTexts() }
                 )
             }
             composable(AppDestinations.INIT_DESTINATION) {
@@ -49,6 +51,9 @@ fun NavGraph(
             }
             composable(AppDestinations.VOCABULARY_DESTINATION) {
                 VocabularyScreen()
+            }
+            composable(AppDestinations.TEXT_LIST_DESTINATION) {
+                TextListScreen()
             }
         }
     }

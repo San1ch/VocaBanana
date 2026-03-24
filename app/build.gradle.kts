@@ -37,25 +37,25 @@ android {
         kotlinCompilerExtensionVersion = "1.5.10"
     }
 
+    kotlinOptions {
+        jvmTarget = "11"
+    }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
-    }
-    kotlinOptions {
-        jvmTarget = "11"
     }
     buildFeatures {
         compose = true
         buildConfig = true
     }
 }
-
 dependencies {
     //Navigation
     implementation(libs.nav.compose)
 
     //DI
     implementation(libs.hilt)
+    implementation(libs.androidx.compose.animation.core)
     ksp(libs.hilt.compiler)
     implementation(libs.hilt.compose)
 
@@ -71,6 +71,10 @@ dependencies {
 
     //Icons
     implementation(libs.material.icons)
+
+    //Online
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.converter.gson)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

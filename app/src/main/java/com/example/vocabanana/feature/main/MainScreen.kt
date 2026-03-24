@@ -21,16 +21,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.vocabanana.BuildConfig
+import com.example.vocabanana.ui.custom.SpacerSmall
 import com.example.vocabanana.ui.theme.VocabBananaTheme
 
 @Composable
-fun MainScreen(viewModel: MainScreenViewModel = hiltViewModel(), onVocabClick: () -> Unit) {
+fun MainScreen(
+    viewModel: MainScreenViewModel = hiltViewModel(),
+    onVocabClick: () -> Unit,
+    onTextsClick: () -> Unit
+) {
     MainContent(
         onDebugClick = { viewModel.reloadInit() },
         onMenuClick = { },
         onSettingsClick = { },
         onMoreClick = { },
-        onVocabClick = onVocabClick
+        onVocabClick = onVocabClick,
+        onTextsClick = onTextsClick
     )
 }
 
@@ -41,7 +47,8 @@ fun MainContent(
     onMoreClick: () -> Unit,
     onSettingsClick: () -> Unit,
     onMenuClick: () -> Unit,
-    onVocabClick: () -> Unit
+    onVocabClick: () -> Unit,
+    onTextsClick: () -> Unit
 ) {
 
     Scaffold(
@@ -67,7 +74,7 @@ fun MainContent(
                     }
                 },
 
-            )
+                )
         },
     ) { paddingValues ->
         Box(
@@ -75,9 +82,13 @@ fun MainContent(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            Column(){
+            Column() {
                 Button(onClick = onVocabClick) {
                     Text("Vocabulary")
+                }
+                SpacerSmall()
+                Button(onClick = onTextsClick) {
+                    Text("Texts")
                 }
             }
         }
@@ -93,7 +104,8 @@ fun MainScreenPreview() {
             onMenuClick = { },
             onSettingsClick = { },
             onMoreClick = { },
-            onVocabClick = { }
+            onVocabClick = { },
+            onTextsClick = { }
         )
     }
 }
