@@ -1,7 +1,4 @@
-package com.example.vocabanana.core.data.word
-
-import com.example.vocabanana.core.data.word.WordConstants.MAX_WORD_LENGTH
-import com.example.vocabanana.core.data.word.WordConstants.WORD_REGEX
+package com.example.vocabanana.feature.word.data
 
 @ConsistentCopyVisibility
 data class WordForm private constructor(
@@ -14,10 +11,10 @@ data class WordForm private constructor(
 
             if (trimmed.isEmpty()) return ValidateResult.Error(WordFormValidateError.EMPTY)
             if (trimmed.any { it.isEmpty() }) return ValidateResult.Error(WordFormValidateError.EMPTY_ITEM)
-            if (trimmed.any { it.length > MAX_WORD_LENGTH }) return ValidateResult.Error(
+            if (trimmed.any { it.length > WordConstants.MAX_WORD_LENGTH }) return ValidateResult.Error(
                 WordFormValidateError.TOO_LONG
             )
-            if (trimmed.any { !WORD_REGEX.matches(it) }) return ValidateResult.Error(
+            if (trimmed.any { !WordConstants.WORD_REGEX.matches(it) }) return ValidateResult.Error(
                 WordFormValidateError.INVALID_CHARS
             )
             return ValidateResult.Success(

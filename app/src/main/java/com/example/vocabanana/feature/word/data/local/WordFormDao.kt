@@ -1,4 +1,4 @@
-package com.example.vocabanana.core.repository.wordrepository.room.form
+package com.example.vocabanana.feature.word.data.local
 
 import androidx.room.Dao
 import androidx.room.Insert

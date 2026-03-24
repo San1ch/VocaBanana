@@ -1,9 +1,11 @@
-package com.example.vocabanana.core.repository.wordrepository.room.form
+package com.example.vocabanana.feature.word.data.repository
 
-import com.example.vocabanana.core.repository.wordrepository.WordFormRepository
+import com.example.vocabanana.feature.word.data.local.WordFormDao
+import com.example.vocabanana.feature.word.data.local.WordFormsEntity
+import com.example.vocabanana.feature.word.domain.WordFormRepository
 import javax.inject.Inject
 
-class WordFormRepositoryRoomImpl @Inject constructor(private val dao: WordFormDao) :
+class WordFormRepositoryImpl @Inject constructor(private val dao: WordFormDao) :
     WordFormRepository {
     override fun getWordFormsByWordId(wordId: Int): List<WordFormsEntity> =
         dao.getWordFormsByWordId(wordId)

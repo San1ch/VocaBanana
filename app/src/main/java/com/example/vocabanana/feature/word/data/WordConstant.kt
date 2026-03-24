@@ -1,4 +1,4 @@
-package com.example.vocabanana.core.data.word
+package com.example.vocabanana.feature.word.data
 
 
 object WordConstants {

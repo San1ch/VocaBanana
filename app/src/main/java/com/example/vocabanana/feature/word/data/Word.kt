@@ -1,7 +1,7 @@
-package com.example.vocabanana.core.data.word
+package com.example.vocabanana.feature.word.data
 
-import com.example.vocabanana.core.data.word.WordConstants.MAX_WORD_LENGTH
-import com.example.vocabanana.core.data.word.WordConstants.WORD_REGEX
+import com.example.vocabanana.feature.word.data.WordConstants.MAX_WORD_LENGTH
+import com.example.vocabanana.feature.word.data.WordConstants.WORD_REGEX
 
 
 @ConsistentCopyVisibility

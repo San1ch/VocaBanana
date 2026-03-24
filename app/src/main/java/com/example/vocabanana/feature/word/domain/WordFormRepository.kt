@@ -1,6 +1,6 @@
-package com.example.vocabanana.core.repository.wordrepository
+package com.example.vocabanana.feature.word.domain
 
-import com.example.vocabanana.core.repository.wordrepository.room.form.WordFormsEntity
+import com.example.vocabanana.feature.word.data.local.WordFormsEntity
 
 interface WordFormRepository {
     fun getWordFormsByWordId(wordId: Int): List<WordFormsEntity>

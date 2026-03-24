@@ -1,9 +1,9 @@
-package com.example.vocabanana.core.repository.wordrepository.room
+package com.example.vocabanana.core.repository
 
 import android.content.Context
 import androidx.room.Room
-import com.example.vocabanana.core.repository.wordrepository.room.form.WordFormDao
-import com.example.vocabanana.core.repository.wordrepository.room.word.WordDao
+import com.example.vocabanana.feature.word.data.local.WordFormDao
+import com.example.vocabanana.feature.word.data.local.WordDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

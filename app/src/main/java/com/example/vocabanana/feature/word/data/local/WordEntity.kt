@@ -1,4 +1,4 @@
-package com.example.vocabanana.core.repository.wordrepository.room.word
+package com.example.vocabanana.feature.word.data.local
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity

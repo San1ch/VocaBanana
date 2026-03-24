@@ -1,6 +1,6 @@
-package com.example.vocabanana.core.repository.wordrepository
+package com.example.vocabanana.feature.word.domain
 
-import com.example.vocabanana.core.repository.wordrepository.room.word.WordEntity
+import com.example.vocabanana.feature.word.data.local.WordEntity
 import kotlinx.coroutines.flow.Flow
 
 interface WordRepository {

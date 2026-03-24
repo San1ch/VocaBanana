@@ -41,7 +41,7 @@ fun NavGraph(
             composable(AppDestinations.MAIN_DESTINATION) {
                 MainScreen(
                     onVocabClick = { appNavigationActions.navigateToVocabulary() },
-                    onTextsClick = { appNavigationActions.navigateToTexts() }
+                    onTextsClick = { appNavigationActions.navigateToTextList() }
                 )
             }
             composable(AppDestinations.INIT_DESTINATION) {

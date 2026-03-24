@@ -1,4 +1,4 @@
-package com.example.vocabanana.core.data.word
+package com.example.vocabanana.feature.word.data
 
 sealed class ValidateResult<out V, out T> {
     data class Success<V>(val value: V) : ValidateResult<V, Nothing>()

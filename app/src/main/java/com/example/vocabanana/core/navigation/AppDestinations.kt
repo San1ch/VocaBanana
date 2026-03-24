@@ -18,6 +18,7 @@ private object AppScreens {
  * Arguments used in [AppDestinations] routes
  */
 object AppDestinationsArgs {
+
 }
 
 /**
@@ -68,7 +69,7 @@ class AppNavigationActions(private val navController: NavHostController) {
         }
     }
 
-    fun navigateToTexts() {
+    fun navigateToTextList() {
         navController.navigate(AppDestinations.TEXT_LIST_DESTINATION) {
 
         }

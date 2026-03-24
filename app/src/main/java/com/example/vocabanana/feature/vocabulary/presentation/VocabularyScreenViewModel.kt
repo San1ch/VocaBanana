@@ -1,8 +1,8 @@
 package com.example.vocabanana.feature.vocabulary.presentation
 
 import androidx.lifecycle.ViewModel
-import com.example.vocabanana.core.repository.wordrepository.WordFormRepository
-import com.example.vocabanana.core.repository.wordrepository.WordRepository
+import com.example.vocabanana.feature.word.domain.WordFormRepository
+import com.example.vocabanana.feature.word.domain.WordRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 

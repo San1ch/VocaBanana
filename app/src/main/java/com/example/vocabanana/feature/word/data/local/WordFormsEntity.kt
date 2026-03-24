@@ -1,10 +1,9 @@
-package com.example.vocabanana.core.repository.wordrepository.room.form
+package com.example.vocabanana.feature.word.data.local
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
-import com.example.vocabanana.core.repository.wordrepository.room.word.WordEntity
 
 @Entity(
     tableName = "word_form",
