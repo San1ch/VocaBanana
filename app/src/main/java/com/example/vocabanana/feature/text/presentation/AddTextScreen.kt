@@ -2,11 +2,26 @@ package com.example.vocabanana.feature.text.presentation
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.AttachFile
-import androidx.compose.material3.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -20,9 +35,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.vocabanana.R
 
 @Composable
-fun TextInputScreen(
-    onBackClick: () -> Unit,
-    viewModel: TextInputScreenViewModel = hiltViewModel()
+fun AddTextScreen(
+    onBackClick: () -> Unit, viewModel: AddTextScreenViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
     var title by remember { mutableStateOf("") }
@@ -32,27 +46,26 @@ fun TextInputScreen(
         contract = ActivityResultContracts.GetContent()
     ) { uri ->
         uri?.let {
-            val text = context.contentResolver.openInputStream(it)
-                ?.bufferedReader()?.use { reader -> reader.readText() } ?: ""
+            val text = context.contentResolver.openInputStream(it)?.bufferedReader()
+                ?.use { reader -> reader.readText() } ?: ""
             content = text
         }
     }
 
-    TextInputContent(
+    AddTextContent(
         title = title,
         onTitleChange = { title = it },
         content = content,
         onContentChange = { content = it },
         onBackClick = onBackClick,
         onOpenFileClick = { filePickerLauncher.launch("text/plain") },
-        onProcessClick = { viewModel.processText(title, content) }
-    )
+        onProcessClick = { viewModel.processText(title, content) })
 }
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TextInputContent(
+fun AddTextContent(
     title: String,
     onTitleChange: (String) -> Unit,
     content: String,
@@ -64,16 +77,12 @@ fun TextInputContent(
 ) {
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.add_text_title)) },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                    }
+            TopAppBar(title = { Text(stringResource(R.string.add_text_title)) }, navigationIcon = {
+                IconButton(onClick = onBackClick) {
+                    Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                 }
-            )
-        }
-    ) { paddingValues ->
+            })
+        }) { paddingValues ->
         Column(
             modifier = modifier
                 .fillMaxSize()
@@ -104,8 +113,7 @@ fun TextInputContent(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 OutlinedButton(
-                    onClick = onOpenFileClick,
-                    modifier = Modifier.weight(1f)
+                    onClick = onOpenFileClick, modifier = Modifier.weight(1f)
                 ) {
                     Icon(Icons.Default.AttachFile, contentDescription = null)
                     Spacer(Modifier.width(8.dp))

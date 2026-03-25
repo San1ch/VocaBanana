@@ -12,6 +12,7 @@ private object AppScreens {
     const val MAIN_SCREEN = "MainScreen"
     const val VOCABULARY_SCREEN = "VocabularyScreen"
     const val TEXT_LIST_SCREEN = "TextListScreen"
+    const val TEXT_CREATE_SCREEN = "TextCreateScreen"
 }
 
 /**
@@ -29,6 +30,7 @@ object AppDestinations {
     const val MAIN_DESTINATION = AppScreens.MAIN_SCREEN
     const val VOCABULARY_DESTINATION = AppScreens.VOCABULARY_SCREEN
     const val TEXT_LIST_DESTINATION = AppScreens.TEXT_LIST_SCREEN
+    const val TEXT_CREATE_DESTINATION = AppScreens.TEXT_CREATE_SCREEN
 }
 
 /**
@@ -71,6 +73,11 @@ class AppNavigationActions(private val navController: NavHostController) {
 
     fun navigateToTextList() {
         navController.navigate(AppDestinations.TEXT_LIST_DESTINATION) {
+
+        }
+    }
+    fun navigateToCreateText() {
+        navController.navigate(AppDestinations.TEXT_CREATE_DESTINATION) {
 
         }
     }
