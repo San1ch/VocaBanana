@@ -3,15 +3,13 @@ package com.example.vocabanana.feature.word.data.local
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.example.vocabanana.feature.word.data.WordState
 
 
 @Entity(tableName = "words")
 data class WordEntity(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    @ColumnInfo(name = "word") val word: String,
+    val lemma: String,
+    val state: Int,
     @ColumnInfo(name = "when_added") val whenAdded: Long,
-
-
 )
-
-

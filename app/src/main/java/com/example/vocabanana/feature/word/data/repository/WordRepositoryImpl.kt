@@ -1,5 +1,6 @@
 package com.example.vocabanana.feature.word.data.repository
 
+import com.example.vocabanana.feature.word.data.WordDomain
 import com.example.vocabanana.feature.word.data.local.WordDao
 import com.example.vocabanana.feature.word.data.local.WordEntity
 import com.example.vocabanana.feature.word.domain.WordRepository
@@ -12,3 +13,11 @@ class WordRepositoryRoomImpl @Inject constructor (private val dao: WordDao) : Wo
     override fun updateWord(word: WordEntity) = dao.updateWord(word)
     override fun removeWord(word: WordEntity) = dao.deleteWord(word)
 }
+
+
+
+fun WordEntity.toDomain() = WordDomain.fromExisting(
+    id = id,
+    lemma = lemma,
+    whenAdded = whenAdded
+)

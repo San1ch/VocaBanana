@@ -1,12 +1,12 @@
 package com.example.vocabanana.feature.word.data
 
 @ConsistentCopyVisibility
-data class WordForm private constructor(
+data class WordFormDomain private constructor(
     val wordId: Int,
     val wordForms: List<String>
 ) {
     companion object {
-        fun create(input: List<String>): ValidateResult<WordForm, WordFormValidateError> {
+        fun create(input: List<String>): ValidateResult<WordFormDomain, WordFormValidateError> {
             val trimmed = input.map { it.trim() }
 
             if (trimmed.isEmpty()) return ValidateResult.Error(WordFormValidateError.EMPTY)
@@ -18,7 +18,7 @@ data class WordForm private constructor(
                 WordFormValidateError.INVALID_CHARS
             )
             return ValidateResult.Success(
-                WordForm(
+                WordFormDomain(
                     wordId = 0,
                     wordForms = trimmed
                 )
