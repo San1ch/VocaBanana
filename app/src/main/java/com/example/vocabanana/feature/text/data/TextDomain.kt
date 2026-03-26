@@ -2,54 +2,41 @@ package com.example.vocabanana.feature.text.data
 
 import com.example.vocabanana.feature.text.data.TextConstant.MAX_NAME_LENGTH
 import com.example.vocabanana.feature.text.data.TextConstant.NAME_REGEX
-import com.example.vocabanana.feature.text.data.TextConstant.TEXT_REGEX
 import com.example.vocabanana.feature.word.data.ValidateResult
 
 @ConsistentCopyVisibility
 data class TextDomain private constructor(
     val id: Int,
     val name: String,
-    val sentences: List<SentenceDomain>
+    val content: String
 ) {
     companion object {
-        fun create(name: String, text: String): ValidateResult<TextDomain, TextValidateError> {
+        fun create(
+            id: Int = 0,
+            name: String,
+            text: String
+        ): ValidateResult<TextDomain, TextValidateError> {
             val validName = when (val validNameResult = validateName(name)) {
                 is ValidateResult.Success -> validNameResult.value
                 is ValidateResult.Error -> return ValidateResult.Error(validNameResult.error)
             }
 
-            val validText = when (val validTextResult = validateText(text)){
+            val validText = when (val validTextResult = validateText(text)) {
                 is ValidateResult.Success -> validTextResult.value
                 is ValidateResult.Error -> return ValidateResult.Error(validTextResult.error)
             }
-
-            val sentencesText = splitTextIntoSentences(validText)
-            val sentences = sentencesText.mapIndexed { index, sentenceText ->
-                SentenceDomain(
-                    id = index,
-                    text = sentenceText,
-                    words = emptyList()
-                )
-            }
-
             return ValidateResult.Success(
                 TextDomain(
-                    id = 0,
+                    id = id,
                     name = validName,
-                    sentences = sentences
+                    content = validText
                 )
             )
         }
 
-
-
-
         private fun validateText(text: String): ValidateResult<String, TextValidateError> {
             val trimmedText = text.trim()
             if (trimmedText.isEmpty()) return ValidateResult.Error(TextValidateError.EmptyText)
-
-            val invalidChar = findFirstInvalidChar(trimmedText, TEXT_REGEX)
-            if (invalidChar != null) return ValidateResult.Error(TextValidateError.InvalidText(invalidChar))
 
             return ValidateResult.Success(trimmedText)
         }
@@ -59,16 +46,13 @@ data class TextDomain private constructor(
             if (trimmed.length > MAX_NAME_LENGTH) return ValidateResult.Error(TextValidateError.TooLongName)
 
             val invalidChar = findFirstInvalidChar(trimmed, NAME_REGEX)
-            if (invalidChar != null) return ValidateResult.Error(TextValidateError.InvalidName(invalidChar))
+            if (invalidChar != null) return ValidateResult.Error(
+                TextValidateError.InvalidName(
+                    invalidChar
+                )
+            )
 
             return ValidateResult.Success(trimmed)
-        }
-
-
-
-        private fun splitTextIntoSentences(text: String): List<String> {
-            val regex = Regex("(?<=[.!?])\\s+(?=[A-Z])")
-            return text.split(regex).map { it.trim() }
         }
 
         fun findFirstInvalidChar(input: String, regex: Regex): Char? {
@@ -79,7 +63,6 @@ data class TextDomain private constructor(
 
 sealed class TextValidateError {
     object EmptyText : TextValidateError()
-    data class InvalidText(val invalidChar: Char) : TextValidateError()
     object TooLongName : TextValidateError()
     data class InvalidName(val invalidChar: Char) : TextValidateError()
 }
