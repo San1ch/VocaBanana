@@ -39,11 +39,11 @@ data class WordDomain private constructor(
          * Use this only when you are 100% sure the data is already valid.
          * Faster than [create], but unsafe if the data might be invalid.
          */
-        fun createUnsafe(): WordDomain {
+        fun createUnsafe(id: Int, lemma: String, whenAdded: Long): WordDomain {
             return WordDomain(
-                id = 0,
-                lemma = "",
-                whenAdded = System.currentTimeMillis(),
+                id = id,
+                lemma = lemma,
+                whenAdded = whenAdded,
             )
         }
         private fun validateLemma(input: String): ValidateResult<String, WordValidateError> {

@@ -16,7 +16,7 @@ class WordRepositoryRoomImpl @Inject constructor (private val dao: WordDao) : Wo
 
 
 
-fun WordEntity.toDomain() = WordDomain.fromExisting(
+fun WordEntity.toDomain() = WordDomain.createUnsafe(
     id = id,
     lemma = lemma,
     whenAdded = whenAdded
