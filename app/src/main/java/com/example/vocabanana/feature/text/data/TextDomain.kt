@@ -2,7 +2,7 @@ package com.example.vocabanana.feature.text.data
 
 import com.example.vocabanana.feature.text.data.TextConstant.MAX_NAME_LENGTH
 import com.example.vocabanana.feature.text.data.TextConstant.NAME_REGEX
-import com.example.vocabanana.feature.word.data.ValidateResult
+import com.example.vocabanana.core.data.ValidateResult
 
 @ConsistentCopyVisibility
 data class TextDomain private constructor(
@@ -11,6 +11,13 @@ data class TextDomain private constructor(
     val content: String
 ) {
     companion object {
+
+        /**
+         * Creates a TextDomain object with validation.
+         * Use this for any data coming from users or external sources.
+         * Returns [ValidateResult.Success] with TextDomain if valid,
+         * or [ValidateResult.Error] if validation fails.
+         */
         fun create(
             id: Int = 0,
             name: String,
@@ -25,6 +32,7 @@ data class TextDomain private constructor(
                 is ValidateResult.Success -> validTextResult.value
                 is ValidateResult.Error -> return ValidateResult.Error(validTextResult.error)
             }
+
             return ValidateResult.Success(
                 TextDomain(
                     id = id,
@@ -34,10 +42,26 @@ data class TextDomain private constructor(
             )
         }
 
+        /**
+         * Creates a TextDomain object without validation.
+         * Use this only when you are 100% sure the data is already valid.
+         * Faster than [create], but unsafe if the data might be invalid.
+         */
+        fun unsafeCreate(
+            id: Int = 0,
+            name: String,
+            text: String
+        ): TextDomain {
+            return TextDomain(
+                id = id,
+                name = name,
+                content = text
+            )
+        }
+
         private fun validateText(text: String): ValidateResult<String, TextValidateError> {
             val trimmedText = text.trim()
             if (trimmedText.isEmpty()) return ValidateResult.Error(TextValidateError.EmptyText)
-
             return ValidateResult.Success(trimmedText)
         }
 
@@ -46,11 +70,7 @@ data class TextDomain private constructor(
             if (trimmed.length > MAX_NAME_LENGTH) return ValidateResult.Error(TextValidateError.TooLongName)
 
             val invalidChar = findFirstInvalidChar(trimmed, NAME_REGEX)
-            if (invalidChar != null) return ValidateResult.Error(
-                TextValidateError.InvalidName(
-                    invalidChar
-                )
-            )
+            if (invalidChar != null) return ValidateResult.Error(TextValidateError.InvalidName(invalidChar))
 
             return ValidateResult.Success(trimmed)
         }
