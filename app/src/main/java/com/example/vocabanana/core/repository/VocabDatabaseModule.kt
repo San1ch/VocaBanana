@@ -2,6 +2,7 @@ package com.example.vocabanana.core.repository
 
 import android.content.Context
 import androidx.room.Room
+import com.example.vocabanana.feature.text.data.local.TextDao
 import com.example.vocabanana.feature.word.data.local.WordFormDao
 import com.example.vocabanana.feature.word.data.local.WordDao
 import dagger.Module
@@ -34,5 +35,11 @@ object VocabDatabaseModule {
     @Singleton
     fun provideWordFormDao(appDatabase: AppDatabase): WordFormDao {
         return appDatabase.wordFormDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideTextDao(appDatabase: AppDatabase): TextDao {
+        return appDatabase.textDao()
     }
 }

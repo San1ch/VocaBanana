@@ -21,8 +21,8 @@ interface WordDao {
     fun getWordById(id: Int): WordEntity
 
 
-    @Query("SELECT * FROM words WHERE word = :word")
-    fun getWordByWord(word: String): WordEntity
+    @Query("SELECT * FROM words WHERE lemma = :lemma")
+    fun getWordByWord(lemma: String): WordEntity
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertWord(word: WordEntity)

@@ -54,6 +54,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalViewConfiguration
 import androidx.compose.ui.platform.ViewConfiguration
+import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.delay
 import kotlin.math.abs
 
@@ -62,15 +63,10 @@ data class TextItemModel(val id: Int, val title: String, val wordCount: Int)
 data class TextDetailModel(val title: String, val fullText: String, val isLoading: Boolean)
 
 @Composable
-fun TextListScreen() {
+fun TextListScreen(viewModel: TextListScreenViewModel = hiltViewModel()) {
 
 
-    val textItems = remember {
-        listOf(
-            TextItemModel(1, "Harry Potter - Chapter 1", 3400),
-            TextItemModel(2, "Article about Compose", 850)
-        )
-    }
+    var textItems by remember { mutableStateOf(emptyList<TextItemModel>()) }
 
     var selectedTextId by remember { mutableStateOf<Int?>(null) }
     var detailState by remember {
@@ -116,15 +112,12 @@ fun TextListContent(
             override val touchSlop: Float get() = viewConfiguration.touchSlop * 10f
         }
     }
-
-
     LaunchedEffect(isSwipeAttempted) {
         if (isSwipeAttempted) {
             delay(300)
             isSwipeAttempted = false
         }
     }
-
     BackHandler(enabled = pagerState.currentPage > 0) {
         coroutineScope.launch {
             if (isLocked || selectedTextId == null) {
