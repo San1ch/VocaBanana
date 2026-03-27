@@ -14,7 +14,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.vocabanana.core.navigation.composable.StateContainer
 import com.example.vocabanana.feature.init.InitScreen
-import com.example.vocabanana.feature.main.MainScreen
+import com.example.vocabanana.feature.main.presentation.MainScreen
 import com.example.vocabanana.feature.text.presentation.AddTextScreen
 import com.example.vocabanana.feature.text.presentation.TextListScreen
 import com.example.vocabanana.feature.vocabulary.presentation.VocabularyScreen
@@ -39,8 +39,8 @@ fun NavGraph(
         ) {
             composable(AppDestinations.MAIN_DESTINATION) {
                 MainScreen(
-                    onVocabClick = { appNavigationActions.navigateToVocabulary() },
-                    onTextsClick = { appNavigationActions.navigateToTextList() })
+                    navigateToVocabScreen = { appNavigationActions.navigateToVocabulary() },
+                    navigateToTextListScreen = { appNavigationActions.navigateToTextList() })
             }
             composable(AppDestinations.INIT_DESTINATION) {
                 InitScreen(
@@ -50,10 +50,10 @@ fun NavGraph(
                 VocabularyScreen()
             }
             composable(AppDestinations.TEXT_LIST_DESTINATION) {
-                TextListScreen()
+                TextListScreen(navigateToAddTextScreen = { appNavigationActions.navigateToCreateText() })
             }
             composable(AppDestinations.TEXT_CREATE_DESTINATION) {
-                AddTextScreen(onBackClick = {  })
+                AddTextScreen(onBackClick = { appNavigationActions.navigateBack() })
             }
         }
     }

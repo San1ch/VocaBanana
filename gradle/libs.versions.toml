@@ -30,6 +30,7 @@ material-icons = "1.7.8"
 retrofit = "3.0.0"
 retrofit-converter-gson = "2.9.0"
 animationCore = "1.10.5"
+ui = "1.10.6"
 
 [libraries]
 #Navigation
@@ -71,6 +72,7 @@ androidx-datastore-core = { group = "androidx.datastore", name = "datastore-core
 androidx-datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastoreCore" }
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "datastoreCore" }
 androidx-compose-animation-core = { group = "androidx.compose.animation", name = "animation-core", version.ref = "animationCore" }
+androidx-compose-ui = { group = "androidx.compose.ui", name = "ui", version.ref = "ui" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

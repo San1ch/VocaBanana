@@ -1,4 +1,4 @@
-package com.example.vocabanana.feature.main
+package com.example.vocabanana.feature.main.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

@@ -36,7 +36,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.vocabanana.R
-import com.example.vocabanana.feature.text.domain.data.TextConstant
+import com.example.vocabanana.feature.text.data.TextConstant
 
 @Composable
 fun AddTextScreen(

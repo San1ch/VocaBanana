@@ -1,8 +1,8 @@
 package com.example.vocabanana.feature.text.domain.usecase
 
 import com.example.vocabanana.core.data.ValidateResult
-import com.example.vocabanana.feature.text.domain.data.TextDomain
-import com.example.vocabanana.feature.text.domain.data.TextValidateError
+import com.example.vocabanana.feature.text.data.TextDomain
+import com.example.vocabanana.feature.text.data.TextValidateError
 import com.example.vocabanana.feature.text.domain.TextRepository
 import javax.inject.Inject
 

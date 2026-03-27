@@ -1,4 +1,4 @@
-package com.example.vocabanana.feature.main
+package com.example.vocabanana.feature.main.presentation
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,16 +27,16 @@ import com.example.vocabanana.ui.theme.VocabBananaTheme
 @Composable
 fun MainScreen(
     viewModel: MainScreenViewModel = hiltViewModel(),
-    onVocabClick: () -> Unit,
-    onTextsClick: () -> Unit
+    navigateToVocabScreen: () -> Unit,
+    navigateToTextListScreen: () -> Unit
 ) {
     MainContent(
         onDebugClick = { viewModel.reloadInit() },
         onMenuClick = { },
         onSettingsClick = { },
         onMoreClick = { },
-        onVocabClick = onVocabClick,
-        onTextsClick = onTextsClick
+        onVocabClick = navigateToVocabScreen,
+        onTextsClick = navigateToTextListScreen
     )
 }
 

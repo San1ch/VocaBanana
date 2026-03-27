@@ -56,6 +56,7 @@ dependencies {
     //DI
     implementation(libs.hilt)
     implementation(libs.androidx.compose.animation.core)
+    implementation(libs.androidx.compose.ui)
     ksp(libs.hilt.compiler)
     implementation(libs.hilt.compose)
 

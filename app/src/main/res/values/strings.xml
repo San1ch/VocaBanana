@@ -2,17 +2,20 @@
     <string name="app_name">VocaBanana</string>
 
 
-
+    <!-- Word Validate Errors -->
     <string name="word_validate_error_empty">Word cannot be empty</string>
-    <string name="word_validate_error_length">Word cannot exceed 255 characters</string>
+    <string name="word_validate_error_length">Word cannot exceed %1$d characters</string>
     <string name="word_validate_error_invalid_characters">Word contains invalid characters</string>
 
     <string name="wordform_validate_error_empty">Word forms list cannot be empty</string>
     <string name="wordform_validate_error_empty_item">Word form cannot be empty</string>
-    <string name="wordform_validate_error_length">Word form cannot exceed 255 characters</string>
-    <string name="wordform_validate_error_invalid_characters">Word form contains invalid characters</string>
+    <string name="wordform_validate_error_length">Word form cannot exceed %1$d characters</string>
+    <string name="wordform_validate_error_invalid_characters">Word form contains "%1$d" invalid characters</string>
 
-
+    <!-- Text Validate Errors -->
+    <string name="text_validate_error_empty">Text cannot be empty</string>
+    <string name="text_validate_error_too_long_name">Text name cannot exceed %1$d characters</string>
+    <string name="text_validate_error_invalid_name">Text name contains " %1$d ",that is invalid character</string>
 
     <string name="vocabulary">Vocabulary</string>
     <string name="add_word">Add Word</string>
