@@ -67,7 +67,7 @@ data class TextDomain private constructor(
 
         private fun validateName(name: String): ValidateResult<String, TextValidateError> {
             val trimmed = name.trim()
-            if (trimmed.length > MAX_NAME_LENGTH) return ValidateResult.Error(TextValidateError.TooLongName)
+            if (trimmed.length > MAX_NAME_LENGTH) return ValidateResult.Error(TextValidateError.TooLongName(MAX_NAME_LENGTH))
 
             val invalidChar = findFirstInvalidChar(trimmed, NAME_REGEX)
             if (invalidChar != null) return ValidateResult.Error(TextValidateError.InvalidName(invalidChar))
@@ -75,7 +75,7 @@ data class TextDomain private constructor(
             return ValidateResult.Success(trimmed)
         }
 
-        fun findFirstInvalidChar(input: String, regex: Regex): Char? {
+        private fun findFirstInvalidChar(input: String, regex: Regex): Char? {
             return input.firstOrNull { !regex.matches(it.toString()) }
         }
     }
@@ -83,6 +83,6 @@ data class TextDomain private constructor(
 
 sealed class TextValidateError {
     object EmptyText : TextValidateError()
-    object TooLongName : TextValidateError()
+    data class TooLongName(val invalidLength: Int) : TextValidateError()
     data class InvalidName(val invalidChar: Char) : TextValidateError()
 }

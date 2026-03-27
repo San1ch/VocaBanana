@@ -37,13 +37,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
-import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.LockOpen
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.CompositionLocalProvider
@@ -63,7 +65,10 @@ data class TextItemModel(val id: Int, val title: String, val wordCount: Int)
 data class TextDetailModel(val title: String, val fullText: String, val isLoading: Boolean)
 
 @Composable
-fun TextListScreen(viewModel: TextListScreenViewModel = hiltViewModel()) {
+fun TextListScreen(
+    viewModel: TextListScreenViewModel = hiltViewModel(),
+    navigateToAddTextScreen: () -> Unit
+) {
 
 
     var textItems by remember { mutableStateOf(emptyList<TextItemModel>()) }
@@ -86,7 +91,8 @@ fun TextListScreen(viewModel: TextListScreenViewModel = hiltViewModel()) {
         },
         onClearSelection = {
             selectedTextId = null
-        }
+        },
+        navigateToAddTextScreen = navigateToAddTextScreen
     )
 }
 
@@ -97,7 +103,8 @@ fun TextListContent(
     selectedTextId: Int?,
     detailState: TextDetailModel,
     onTextSelected: (Int, String) -> Unit,
-    onClearSelection: () -> Unit
+    onClearSelection: () -> Unit,
+    navigateToAddTextScreen: () -> Unit
 ) {
     val pagerState = rememberPagerState(pageCount = { 3 })
     val coroutineScope = rememberCoroutineScope()
@@ -164,6 +171,11 @@ fun TextListContent(
                         }
                     }
                 )
+            },
+            floatingActionButton = {
+                FloatingActionButton(onClick = navigateToAddTextScreen) {
+                    Icon(Icons.Default.Add, contentDescription = "Add")
+                }
             }
         ) { paddingValues ->
 
@@ -273,7 +285,7 @@ private fun TextsListPage(
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
-        contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
+        contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         items(items) { item ->

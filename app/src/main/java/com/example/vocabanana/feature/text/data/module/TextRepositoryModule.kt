@@ -1,6 +1,5 @@
 package com.example.vocabanana.feature.text.data.module
 
-import com.example.vocabanana.feature.text.data.local.TextDao
 import com.example.vocabanana.feature.text.data.repository.TextRepositoryImpl
 import com.example.vocabanana.feature.text.domain.TextRepository
 import dagger.Binds
