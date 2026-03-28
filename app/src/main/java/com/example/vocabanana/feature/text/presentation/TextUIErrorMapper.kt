@@ -19,4 +19,6 @@ fun TextValidateError.toUiText(): UiText = when (this) {
             R.string.text_validate_error_too_long_name,
             listOf(MAX_NAME_LENGTH)
         )
+
+    TextValidateError.NameAlreadyExists -> UiText(R.string.text_validate_error_name_already_exists, emptyList())
 }

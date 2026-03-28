@@ -50,6 +50,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
@@ -57,52 +58,44 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalViewConfiguration
 import androidx.compose.ui.platform.ViewConfiguration
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.vocabanana.ui.data.ObserveState
+import com.example.vocabanana.ui.data.UiState
 import kotlinx.coroutines.delay
 import kotlin.math.abs
-
-
-data class TextItemModel(val id: Int, val title: String, val wordCount: Int)
-data class TextDetailModel(val title: String, val fullText: String, val isLoading: Boolean)
 
 @Composable
 fun TextListScreen(
     viewModel: TextListScreenViewModel = hiltViewModel(),
     navigateToAddTextScreen: () -> Unit
 ) {
+    val textPreviews by viewModel.textPreviews.collectAsState()
 
-
-    var textItems by remember { mutableStateOf(emptyList<TextItemModel>()) }
-
-    var selectedTextId by remember { mutableStateOf<Int?>(null) }
-    var detailState by remember {
-        mutableStateOf(TextDetailModel("", "", isLoading = true))
+    val currentText by viewModel.currentText.collectAsState()
+    val state by viewModel.textPreviews.collectAsState()
+    ObserveState(
+        state = state
+    ) { textPreviews ->
+        TextListContent(
+            textItems = textPreviews,
+            selectedText = currentText,
+            onTextSelected = { id ->
+                viewModel.selectText(id)
+            },
+            onClearSelection = {
+                viewModel.clearSelection()
+            },
+            navigateToAddTextScreen = navigateToAddTextScreen
+        )
     }
 
-    TextListContent(
-        textItems = textItems,
-        selectedTextId = selectedTextId,
-        detailState = detailState,
-        onTextSelected = { id, title ->
-            selectedTextId = id
-
-            detailState = TextDetailModel(title = title, fullText = "", isLoading = true)
-
-
-        },
-        onClearSelection = {
-            selectedTextId = null
-        },
-        navigateToAddTextScreen = navigateToAddTextScreen
-    )
 }
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun TextListContent(
-    textItems: List<TextItemModel>,
-    selectedTextId: Int?,
-    detailState: TextDetailModel,
-    onTextSelected: (Int, String) -> Unit,
+    textItems: List<TextPreview>,
+    selectedText: TextUi?,
+    onTextSelected: (Int) -> Unit,
     onClearSelection: () -> Unit,
     navigateToAddTextScreen: () -> Unit
 ) {
@@ -127,7 +120,7 @@ fun TextListContent(
     }
     BackHandler(enabled = pagerState.currentPage > 0) {
         coroutineScope.launch {
-            if (isLocked || selectedTextId == null) {
+            if (isLocked || selectedText == null) {
                 isSwipeAttempted = true
                 return@launch
             }
@@ -143,7 +136,7 @@ fun TextListContent(
                         Text(
                             when (pagerState.currentPage) {
                                 0 -> "My Texts"
-                                1 -> detailState.title
+                                1 -> selectedText?.title ?: "Text"
                                 else -> "Settings"
                             }
                         )
@@ -160,7 +153,7 @@ fun TextListContent(
 
                         IconButton(onClick = {
                             coroutineScope.launch {
-                                if (isLocked || selectedTextId == null) {
+                                if (isLocked || selectedText == null) {
                                     isSwipeAttempted = true
                                     return@launch
                                 }
@@ -194,15 +187,15 @@ fun TextListContent(
                             }
                         }
                     },
-                userScrollEnabled = selectedTextId != null && !isLocked
+                userScrollEnabled = selectedText != null && !isLocked
             ) { page ->
                 when (page) {
                     0 -> TextsListPage(items = textItems, onItemClick = { item ->
-                        onTextSelected(item.id, item.title)
+                        onTextSelected(item.id)
                         coroutineScope.launch { pagerState.animateScrollToPage(1) }
                     })
 
-                    1 -> TextReaderPage(state = detailState)
+                    1 -> TextReaderPage(state = selectedText)
                     2 -> SettingsPage()
                 }
             }
@@ -280,8 +273,8 @@ fun SettingsPage() {
 
 @Composable
 private fun TextsListPage(
-    items: List<TextItemModel>,
-    onItemClick: (TextItemModel) -> Unit
+    items: List<TextPreview>,
+    onItemClick: (TextPreview) -> Unit
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -297,7 +290,7 @@ private fun TextsListPage(
 
 @Composable
 private fun TextLazyItem(
-    item: TextItemModel,
+    item: TextPreview,
     onClick: () -> Unit
 ) {
     Card(
@@ -318,22 +311,16 @@ private fun TextLazyItem(
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.weight(1f)
             )
-
-            Text(
-                text = "${item.wordCount} words",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
         }
     }
 }
 
 @Composable
 private fun TextReaderPage(
-    state: TextDetailModel
+    state: TextUi?
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
-        if (state.isLoading) {
+        if (state == null) {
             Column(
                 modifier = Modifier.align(Alignment.Center),
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -344,7 +331,7 @@ private fun TextReaderPage(
             }
         } else {
             Text(
-                text = state.fullText,
+                text = state.content,
                 modifier = Modifier.padding(16.dp),
                 style = MaterialTheme.typography.bodyLarge
             )

@@ -85,4 +85,5 @@ sealed class TextValidateError {
     object EmptyText : TextValidateError()
     data class TooLongName(val invalidLength: Int) : TextValidateError()
     data class InvalidName(val invalidChar: Char) : TextValidateError()
+    object NameAlreadyExists : TextValidateError()
 }

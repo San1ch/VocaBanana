@@ -1,4 +1,4 @@
-package com.example.vocabanana.ui.custom
+package com.example.vocabanana.ui.composable
 
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height

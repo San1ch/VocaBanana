@@ -1,4 +1,4 @@
-package com.example.vocabanana.ui.custom
+package com.example.vocabanana.ui.composable
 
 import android.annotation.SuppressLint
 import android.widget.Toast
@@ -7,7 +7,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
 import com.example.vocabanana.core.presentation.UiEvent
 import kotlinx.coroutines.flow.Flow
-import androidx.compose.ui.res.stringResource
 
 @SuppressLint("LocalContextGetResourceValueCall")
 @Composable

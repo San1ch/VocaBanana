@@ -21,7 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.vocabanana.BuildConfig
-import com.example.vocabanana.ui.custom.SpacerSmall
+import com.example.vocabanana.ui.composable.SpacerSmall
 import com.example.vocabanana.ui.theme.VocabBananaTheme
 
 @Composable

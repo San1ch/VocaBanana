@@ -26,6 +26,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -37,11 +38,14 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.vocabanana.R
 import com.example.vocabanana.feature.text.data.TextConstant
+import com.example.vocabanana.ui.composable.CollectUiEvents
 
 @Composable
 fun AddTextScreen(
     onBackClick: () -> Unit, viewModel: AddTextScreenViewModel = hiltViewModel()
 ) {
+    CollectUiEvents(viewModel.events)
+
     val context = LocalContext.current
     val clipboardManager = LocalContext.current.getSystemService(
         android.content.ClipboardManager::class.java

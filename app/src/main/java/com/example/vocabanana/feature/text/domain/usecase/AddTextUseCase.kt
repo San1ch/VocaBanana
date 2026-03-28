@@ -14,6 +14,9 @@ class AddTextUseCase @Inject constructor(
         textName: String,
         content: String
     ): TextValidateError?{
+        if (!textRepository.isTextNameUnique(textName)) {
+            return TextValidateError.NameAlreadyExists
+        }
         return when (val result = TextDomain.create(name = textName, text = content)) {
             is ValidateResult.Error -> result.error
             is ValidateResult.Success -> {
