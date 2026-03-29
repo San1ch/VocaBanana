@@ -13,11 +13,16 @@ class AddTextUseCase @Inject constructor(
     operator fun invoke(
         textName: String,
         content: String
-    ): TextValidateError?{
+    ): TextValidateError? {
         if (!textRepository.isTextNameUnique(textName)) {
             return TextValidateError.NameAlreadyExists
         }
-        return when (val result = TextDomain.create(name = textName, text = content)) {
+        return when (val result = TextDomain.create(
+            name = textName,
+            text = content,
+            lastScrollPosition = 0f,
+            lastReadTime = 0L
+        )) {
             is ValidateResult.Error -> result.error
             is ValidateResult.Success -> {
                 textRepository.insertText(result.value)

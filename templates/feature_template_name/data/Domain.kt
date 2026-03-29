@@ -31,6 +31,6 @@ data class <feature>Domain private constructor(
 
 
 
-enum class <feature>ValidateError {
+sealed class <feature>ValidateError {
 
 }

@@ -17,7 +17,7 @@
     <string name="text_validate_error_too_long_name">Text name cannot exceed %1$d characters</string>
     <string name="text_validate_error_invalid_name">Text name contains " %1$d ",that is invalid character</string>
 
-    <string name="error_unknown">Unknown error please try again</string>
+    <string name="error_unknown">Unknown error: %1$s</string>
     <string name="text_validate_error_name_already_exists">Text name already exists</string>
 
     <string name="vocabulary">Vocabulary</string>

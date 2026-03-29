@@ -1,4 +1,4 @@
-package com.example.vocabanana.feature.text.presentation
+package com.example.vocabanana.feature.text.presentation.data
 
 import com.example.vocabanana.R
 import com.example.vocabanana.core.presentation.UiText

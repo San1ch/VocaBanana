@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.vocabanana.core.presentation.UiEvent
 import com.example.vocabanana.feature.text.domain.usecase.AddTextUseCase
+import com.example.vocabanana.feature.text.presentation.data.toUiText
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow

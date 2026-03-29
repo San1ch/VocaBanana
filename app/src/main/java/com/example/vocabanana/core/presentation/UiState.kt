@@ -12,7 +12,7 @@ import com.example.vocabanana.core.presentation.uistate.UiState
 
 
 @Composable
-fun <T : Any> ObserveState(
+fun <T : Any> StateObserver(
     state: UiState<T>,
     onLoading: @Composable () -> Unit = { DefaultLoader() },
     onError: @Composable (String) -> Unit = { ErrorContent(errorText = it) },

@@ -2,17 +2,17 @@ package com.example.vocabanana.core.navigation
 
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.vocabanana.core.navigation.composable.StateContainer
+import com.example.vocabanana.core.presentation.StateObserver
 import com.example.vocabanana.feature.init.InitScreen
 import com.example.vocabanana.feature.main.presentation.MainScreen
 import com.example.vocabanana.feature.text.presentation.AddTextScreen
@@ -31,9 +31,8 @@ fun NavGraph(
     },
     viewModel: NavGraphViewModel = hiltViewModel()
 ) {
-    val startDestinationState by viewModel.startDestination.collectAsStateWithLifecycle()
-
-    StateContainer(state = startDestinationState) { destination ->
+    val state by viewModel.startDestination.collectAsState()
+    StateObserver(state = state) { destination ->
         NavHost(
             navController = navController, startDestination = destination, modifier = modifier
         ) {

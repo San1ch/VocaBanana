@@ -19,10 +19,21 @@ class TextRepositoryImpl @Inject constructor(
     override fun getTextById(id: Int): TextDomain = dao.getTextById(id).toDomainUnsafe()
 
     override fun insertText(text: TextDomain) =
-        dao.insertText(TextEntity(text.id, text.name, text.content))
+        dao.insertText(
+            TextEntity(
+                text.id,
+                text.name,
+                text.content,
+                text.lastScrollPosition,
+                text.lastReadTime
+            )
+        )
 
-    override fun deleteText(text: TextDomain) =
-        dao.deleteText(TextEntity(text.id, text.name, text.content))
+    override suspend  fun deleteText(textId: Int) = dao.deleteTextById(textId)
+
+    override suspend  fun updateProgress(id: Int, position: Float, time: Long) {
+        dao.updateProgress(id, position, time)
+    }
 
 
     override fun isTextNameUnique(name: String): Boolean {

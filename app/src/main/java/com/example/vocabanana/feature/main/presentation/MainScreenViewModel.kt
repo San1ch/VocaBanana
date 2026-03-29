@@ -17,4 +17,6 @@ class MainScreenViewModel @Inject constructor(
             dataStoreSettingsRepository.setInitActive(true)
         }
     }
+
+
 }

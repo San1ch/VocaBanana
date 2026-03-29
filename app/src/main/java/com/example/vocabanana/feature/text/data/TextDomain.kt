@@ -9,7 +9,10 @@ import com.example.vocabanana.feature.text.data.TextDomain.Companion.create
 data class TextDomain private constructor(
     val id: Int,
     val name: String,
-    val content: String
+    val content: String,
+
+    val lastScrollPosition: Float,
+    val lastReadTime: Long
 ) {
     companion object {
 
@@ -22,7 +25,9 @@ data class TextDomain private constructor(
         fun create(
             id: Int = 0,
             name: String,
-            text: String
+            text: String,
+            lastScrollPosition: Float,
+            lastReadTime: Long
         ): ValidateResult<TextDomain, TextValidateError> {
             val validName = when (val validNameResult = validateName(name)) {
                 is ValidateResult.Success -> validNameResult.value
@@ -38,7 +43,9 @@ data class TextDomain private constructor(
                 TextDomain(
                     id = id,
                     name = validName,
-                    content = validText
+                    content = validText,
+                    lastScrollPosition = lastScrollPosition,
+                    lastReadTime = lastReadTime
                 )
             )
         }
@@ -51,12 +58,16 @@ data class TextDomain private constructor(
         fun unsafeCreate(
             id: Int = 0,
             name: String,
-            text: String
+            text: String,
+            lastScrollPosition: Float,
+            lastReadTime: Long
         ): TextDomain {
             return TextDomain(
                 id = id,
                 name = name,
-                content = text
+                content = text,
+                lastScrollPosition = lastScrollPosition,
+                lastReadTime = lastReadTime
             )
         }
 
@@ -68,10 +79,18 @@ data class TextDomain private constructor(
 
         private fun validateName(name: String): ValidateResult<String, TextValidateError> {
             val trimmed = name.trim()
-            if (trimmed.length > MAX_NAME_LENGTH) return ValidateResult.Error(TextValidateError.TooLongName(MAX_NAME_LENGTH))
+            if (trimmed.length > MAX_NAME_LENGTH) return ValidateResult.Error(
+                TextValidateError.TooLongName(
+                    MAX_NAME_LENGTH
+                )
+            )
 
             val invalidChar = findFirstInvalidChar(trimmed, NAME_REGEX)
-            if (invalidChar != null) return ValidateResult.Error(TextValidateError.InvalidName(invalidChar))
+            if (invalidChar != null) return ValidateResult.Error(
+                TextValidateError.InvalidName(
+                    invalidChar
+                )
+            )
 
             return ValidateResult.Success(trimmed)
         }

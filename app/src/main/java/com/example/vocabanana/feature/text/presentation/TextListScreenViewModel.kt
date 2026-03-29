@@ -6,8 +6,14 @@ import com.example.vocabanana.feature.text.domain.TextRepository
 import com.example.vocabanana.core.presentation.uistate.UiState
 import com.example.vocabanana.core.presentation.uistate.UiStateError
 import com.example.vocabanana.core.presentation.uistate.toUiText
+import com.example.vocabanana.feature.text.presentation.data.TextPreview
+import com.example.vocabanana.feature.text.presentation.data.TextUi
+import com.example.vocabanana.feature.text.presentation.data.toPreview
+import com.example.vocabanana.feature.text.presentation.data.toUi
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
@@ -21,13 +27,15 @@ import javax.inject.Inject
 class TextListScreenViewModel @Inject constructor(
     private val textRepository: TextRepository,
 ) : ViewModel() {
+    private var saveJob: Job? = null
+
     val textPreviews =
         textRepository.getTexts()
             .map { list ->
                 UiState.Success(list.map { it.toPreview() }) as UiState<List<TextPreview>>
             }
             .catch { e ->
-                emit(UiState.Error(UiStateError.Unknown.toUiText()))
+                emit(UiState.Error(UiStateError.Unknown(e.message ?: "Unknown error").toUiText()))
             }
             .stateIn(
                 viewModelScope,
@@ -47,6 +55,14 @@ class TextListScreenViewModel @Inject constructor(
 
     fun clearSelection() {
         _currentText.value = null
+    }
+
+    fun updateProgress(textId: Int, position: Float) {
+        saveJob?.cancel()
+        saveJob = viewModelScope.launch(Dispatchers.IO) {
+            delay(500)
+            textRepository.updateProgress(textId, position, System.currentTimeMillis())
+        }
     }
 }
 

@@ -22,7 +22,7 @@ object VocabDatabaseModule {
             context,
             AppDatabase::class.java,
             "vocab_database"
-        ).build()
+        ).fallbackToDestructiveMigration(false).build()
     }
 
     @Provides

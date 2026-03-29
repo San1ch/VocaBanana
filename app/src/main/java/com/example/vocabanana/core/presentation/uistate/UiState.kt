@@ -11,12 +11,12 @@ sealed interface UiState<out T> {
 }
 
 sealed class UiStateError : AppError {
-    object Unknown : UiStateError()
+    data class Unknown(val message: String) : UiStateError()
 }
 
 
 fun UiStateError.toUiText(): UiText {
     return when (this) {
-        is UiStateError.Unknown -> UiText.StringResource(R.string.error_unknown)
+        is UiStateError.Unknown -> UiText.StringResource(R.string.error_unknown, message)
     }
 }

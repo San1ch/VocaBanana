@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
+import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -17,8 +18,11 @@ interface TextDao {
     @Insert
     fun insertText(text: TextEntity)
 
-    @Delete
-    fun deleteText(text: TextEntity)
+    @Query("DELETE FROM texts WHERE id = :textId")
+    suspend fun deleteTextById(textId: Int)
+
+    @Query("UPDATE texts SET last_scroll_position = :position, last_read_time = :time WHERE id = :id")
+    suspend fun updateProgress(id: Int, position: Float, time: Long)
 
     @Query("SELECT EXISTS(SELECT 1 FROM texts WHERE name = :name)")
     fun isNameUnique(name: String): Boolean
