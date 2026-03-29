@@ -58,8 +58,7 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalViewConfiguration
 import androidx.compose.ui.platform.ViewConfiguration
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.vocabanana.ui.data.ObserveState
-import com.example.vocabanana.ui.data.UiState
+import com.example.vocabanana.core.presentation.ObserveState
 import kotlinx.coroutines.delay
 import kotlin.math.abs
 
@@ -68,8 +67,6 @@ fun TextListScreen(
     viewModel: TextListScreenViewModel = hiltViewModel(),
     navigateToAddTextScreen: () -> Unit
 ) {
-    val textPreviews by viewModel.textPreviews.collectAsState()
-
     val currentText by viewModel.currentText.collectAsState()
     val state by viewModel.textPreviews.collectAsState()
     ObserveState(

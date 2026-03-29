@@ -3,6 +3,7 @@ package com.example.vocabanana.feature.word.data.repository
 import com.example.vocabanana.feature.word.data.WordDomain
 import com.example.vocabanana.feature.word.data.local.WordDao
 import com.example.vocabanana.feature.word.data.local.WordEntity
+import com.example.vocabanana.feature.word.data.toWordState
 import com.example.vocabanana.feature.word.domain.WordRepository
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
@@ -19,5 +20,6 @@ class WordRepositoryRoomImpl @Inject constructor (private val dao: WordDao) : Wo
 fun WordEntity.toDomain() = WordDomain.createUnsafe(
     id = id,
     lemma = lemma,
-    whenAdded = whenAdded
+    whenAdded = whenAdded,
+    state = state.toWordState(),
 )

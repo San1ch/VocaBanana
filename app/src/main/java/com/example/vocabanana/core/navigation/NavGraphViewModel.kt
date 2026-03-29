@@ -2,7 +2,7 @@ package com.example.vocabanana.core.navigation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.vocabanana.core.preference.SettingsDataStore
+import com.example.vocabanana.android.DataStoreSettingsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
@@ -11,9 +11,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class NavGraphViewModel @Inject constructor(
-    private val settingsDataStore: SettingsDataStore
+    dataStoreSettingsRepository: DataStoreSettingsRepository
 ): ViewModel(){
-    val startDestination = settingsDataStore.initActiveFlow
+    val startDestination = dataStoreSettingsRepository.initActiveFlow
         .map { isActive: Boolean ->
             if (isActive) AppDestinations.INIT_DESTINATION
             else AppDestinations.MAIN_DESTINATION

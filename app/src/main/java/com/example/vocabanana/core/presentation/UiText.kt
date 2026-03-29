@@ -1,14 +1,19 @@
 package com.example.vocabanana.core.presentation
 
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.res.stringResource
+import android.content.Context
+import androidx.annotation.StringRes
 
-data class UiText(
-    val resId: Int,
-    val args: List<Any> = emptyList()
-)
+sealed class UiText {
+    data class DynamicString(val value: String) : UiText()
+    class StringResource(
+        @StringRes val resId: Int,
+        vararg val args: Any
+    ) : UiText()
 
-@Composable
-fun UiText.asString(): String {
-    return stringResource(resId, *args.toTypedArray())
+    fun asString(context: Context): String{
+        return when (this) {
+            is DynamicString -> value
+            is StringResource -> context.getString(resId, *args)
+        }
+    }
 }

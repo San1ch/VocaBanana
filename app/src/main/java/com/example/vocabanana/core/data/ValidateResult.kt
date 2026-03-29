@@ -17,3 +17,6 @@ fun <V, E, R> ValidateResult<V, E>.fold(
     is ValidateResult.Success -> onSuccess(value)
     is ValidateResult.Error -> onError(error)
 }
+
+
+

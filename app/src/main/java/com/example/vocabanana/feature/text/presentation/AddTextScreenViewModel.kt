@@ -1,6 +1,5 @@
 package com.example.vocabanana.feature.text.presentation
 
-import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.vocabanana.core.presentation.UiEvent
@@ -30,5 +29,4 @@ class AddTextScreenViewModel @Inject constructor(
             }
         }
     }
-
 }

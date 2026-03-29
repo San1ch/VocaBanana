@@ -2,7 +2,7 @@ package com.example.vocabanana.feature.init
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.vocabanana.core.preference.SettingsDataStore
+import com.example.vocabanana.android.DataStoreSettingsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -10,11 +10,11 @@ import javax.inject.Inject
 
 @HiltViewModel
 class InitScreenViewModel @Inject constructor(
-    private val settingsDataStore: SettingsDataStore
+    private val dataStoreSettingsRepository: DataStoreSettingsRepository
 ) : ViewModel() {
     fun finishInit() {
         viewModelScope.launch(Dispatchers.IO) {
-            settingsDataStore.setInitActive(false)
+            dataStoreSettingsRepository.setInitActive(false)
         }
     }
 }

@@ -1,8 +1,9 @@
 package com.example.vocabanana.feature.text.data
 
+import com.example.vocabanana.core.data.ValidateResult
 import com.example.vocabanana.feature.text.data.TextConstant.MAX_NAME_LENGTH
 import com.example.vocabanana.feature.text.data.TextConstant.NAME_REGEX
-import com.example.vocabanana.core.data.ValidateResult
+import com.example.vocabanana.feature.text.data.TextDomain.Companion.create
 
 @ConsistentCopyVisibility
 data class TextDomain private constructor(
@@ -79,11 +80,4 @@ data class TextDomain private constructor(
             return input.firstOrNull { !regex.matches(it.toString()) }
         }
     }
-}
-
-sealed class TextValidateError {
-    object EmptyText : TextValidateError()
-    data class TooLongName(val invalidLength: Int) : TextValidateError()
-    data class InvalidName(val invalidChar: Char) : TextValidateError()
-    object NameAlreadyExists : TextValidateError()
 }

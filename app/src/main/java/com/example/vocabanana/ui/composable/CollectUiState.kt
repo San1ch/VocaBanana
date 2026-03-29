@@ -21,10 +21,7 @@ fun CollectUiEvents(
                 is UiEvent.ShowToast ->
                     Toast.makeText(
                         context,
-                        context.getString(
-                            event.message.resId,
-                            *event.message.args.toTypedArray()
-                        ),
+                        event.uiText.asString(context),
                         Toast.LENGTH_SHORT
                     ).show()
             }

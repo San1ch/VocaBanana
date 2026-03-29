@@ -1,9 +1,10 @@
-package com.example.vocabanana.core.preference.module
+package com.example.vocabanana.core.preference
 
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
-import com.example.vocabanana.core.preference.dataStore
+import com.example.vocabanana.android.DataStoreSettingsRepository
+import com.example.vocabanana.android.dataStore
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -11,11 +12,9 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
-
-
 @Module
 @InstallIn(SingletonComponent::class)
-object DataStoreModule {
+object PreferencesModule {
 
     @Provides
     @Singleton
@@ -24,4 +23,11 @@ object DataStoreModule {
     ): DataStore<Preferences> {
         return context.dataStore
     }
+
+    @Provides
+    @Singleton
+    fun provideSettingsRepository(dataStore: DataStore<Preferences>): SettingsRepository {
+        return DataStoreSettingsRepository(dataStore)
+    }
+
 }

@@ -1,6 +1,7 @@
 package com.example.vocabanana.feature.word.data
 
 import com.example.vocabanana.core.data.ValidateResult
+import com.example.vocabanana.core.data.ValidationError
 import com.example.vocabanana.core.data.map
 import com.example.vocabanana.feature.word.data.WordConstants.MAX_WORD_LENGTH
 import com.example.vocabanana.feature.word.data.WordConstants.WORD_REGEX
@@ -11,6 +12,7 @@ data class WordDomain private constructor(
     val id: Int,
     val lemma: String,
     val whenAdded: Long,
+    val state: WordState
 ) {
     companion object {
 
@@ -30,6 +32,7 @@ data class WordDomain private constructor(
                     id = id,
                     lemma = validLemma,
                     whenAdded = whenAdded,
+                    state = WordState.NEW
                 )
             }
         }
@@ -39,19 +42,20 @@ data class WordDomain private constructor(
          * Use this only when you are 100% sure the data is already valid.
          * Faster than [create], but unsafe if the data might be invalid.
          */
-        fun createUnsafe(id: Int, lemma: String, whenAdded: Long): WordDomain {
+        fun createUnsafe(id: Int, lemma: String, whenAdded: Long, state: WordState): WordDomain {
             return WordDomain(
                 id = id,
                 lemma = lemma,
                 whenAdded = whenAdded,
+                state = state
             )
         }
         private fun validateLemma(input: String): ValidateResult<String, WordValidateError> {
             val trimmed = input.trim()
 
-            if (trimmed.isEmpty()) return ValidateResult.Error(WordValidateError.EMPTY)
-            if (trimmed.length > MAX_WORD_LENGTH) return ValidateResult.Error(WordValidateError.TOO_LONG)
-            if (!WORD_REGEX.matches(trimmed)) return ValidateResult.Error(WordValidateError.INVALID_CHARS)
+            if (trimmed.isEmpty()) return ValidateResult.Error(WordValidateError.Empty)
+            if (trimmed.length > MAX_WORD_LENGTH) return ValidateResult.Error(WordValidateError.TooLong)
+            if (!WORD_REGEX.matches(trimmed)) return ValidateResult.Error(WordValidateError.InvalidChar)
 
             return ValidateResult.Success(trimmed)
         }
@@ -59,8 +63,8 @@ data class WordDomain private constructor(
 
 }
 
-enum class WordValidateError {
-    EMPTY,
-    TOO_LONG,
-    INVALID_CHARS
+sealed class WordValidateError : ValidationError {
+    object Empty : WordValidateError()
+    object TooLong: WordValidateError()
+    object InvalidChar  : WordValidateError()
 }

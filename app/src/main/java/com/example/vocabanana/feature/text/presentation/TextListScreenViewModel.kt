@@ -3,15 +3,13 @@ package com.example.vocabanana.feature.text.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.vocabanana.feature.text.domain.TextRepository
-import com.example.vocabanana.ui.data.UiState
-import com.example.vocabanana.ui.data.UiStateError
-import com.example.vocabanana.ui.data.mapper.GetTextsUseCase
+import com.example.vocabanana.core.presentation.uistate.UiState
+import com.example.vocabanana.core.presentation.uistate.UiStateError
+import com.example.vocabanana.core.presentation.uistate.toUiText
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.SharingStarted.Companion.Eagerly
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
@@ -29,7 +27,7 @@ class TextListScreenViewModel @Inject constructor(
                 UiState.Success(list.map { it.toPreview() }) as UiState<List<TextPreview>>
             }
             .catch { e ->
-                emit(UiState.Error(UiStateError.Unknown))
+                emit(UiState.Error(UiStateError.Unknown.toUiText()))
             }
             .stateIn(
                 viewModelScope,
@@ -52,4 +50,3 @@ class TextListScreenViewModel @Inject constructor(
     }
 }
 
-data class TextUi(val id: Int, val title: String, val content: String)
