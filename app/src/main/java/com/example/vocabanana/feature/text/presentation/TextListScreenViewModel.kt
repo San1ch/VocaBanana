@@ -59,5 +59,11 @@ class TextListScreenViewModel @Inject constructor(
             textRepository.updateProgress(textId, position, System.currentTimeMillis())
         }
     }
+
+    fun deleteText(textId: Int) {
+        viewModelScope.launch(Dispatchers.IO) {
+            textRepository.deleteText(textId)
+        }
+    }
 }
 
