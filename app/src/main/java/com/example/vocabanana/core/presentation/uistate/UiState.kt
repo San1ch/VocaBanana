@@ -6,7 +6,7 @@ import com.example.vocabanana.core.presentation.UiText
 
 sealed interface UiState<out T> {
     data object Loading : UiState<Nothing>
-    data class Success<T : Any>(val data: T) : UiState<T>
+    data class Success<T>(val data: T) : UiState<T>
     data class Error(val message: UiText) : UiState<Nothing>
 }
 

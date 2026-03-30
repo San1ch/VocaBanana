@@ -21,22 +21,28 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.vocabanana.BuildConfig
+import com.example.vocabanana.core.navigation.AppDestination
+import com.example.vocabanana.ui.composable.CollectUiEvents
 import com.example.vocabanana.ui.composable.SpacerSmall
 import com.example.vocabanana.ui.theme.VocabBananaTheme
 
 @Composable
 fun MainScreen(
     viewModel: MainScreenViewModel = hiltViewModel(),
-    navigateToVocabScreen: () -> Unit,
-    navigateToTextListScreen: () -> Unit
+    navigateTo: (AppDestination) -> Unit,
 ) {
+    CollectUiEvents(
+        events = viewModel.events,
+        navigateBack = { },
+        navigateTo = { navigateTo(it) }
+    )
     MainContent(
         onDebugClick = { viewModel.reloadInit() },
         onMenuClick = { },
         onSettingsClick = { },
         onMoreClick = { },
-        onVocabClick = navigateToVocabScreen,
-        onTextsClick = navigateToTextListScreen
+        onVocabClick = { navigateTo(AppDestination.Vocabulary) },
+        onTextsClick = { navigateTo(AppDestination.TextList) }
     )
 }
 

@@ -16,13 +16,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.vocabanana.core.navigation.AppDestination
+import com.example.vocabanana.ui.composable.CollectUiEvents
 
 @Composable
-fun InitScreen(viewModel: InitScreenViewModel = hiltViewModel(), onFinished: () -> Unit) {
-    InitContent(onFinished = {
-        onFinished()
-        viewModel.finishInit()
-    })
+fun InitScreen(
+    viewModel: InitScreenViewModel = hiltViewModel(),
+    navigateTo: (AppDestination) -> Unit
+) {
+    CollectUiEvents(
+        events = viewModel.events,
+        navigateBack = {  },
+        navigateTo = { navigateTo(it) }
+    )
+    InitContent(onFinished = viewModel::finishInit )
 }
 
 @Composable
@@ -38,7 +45,10 @@ fun InitContent(onFinished: () -> Unit) {
             Button(
                 onClick = onFinished
             ) {
-                Icon(imageVector = Icons.AutoMirrored.Filled.ArrowRight, contentDescription = "Next")
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowRight,
+                    contentDescription = "Next"
+                )
             }
         }
     }

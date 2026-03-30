@@ -1,12 +1,10 @@
 package com.example.vocabanana.feature.text.presentation
 
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.vocabanana.feature.text.domain.TextRepository
+import com.example.vocabanana.core.presentation.BaseViewModel
+import com.example.vocabanana.core.presentation.asUiState
 import com.example.vocabanana.core.presentation.uistate.UiState
-import com.example.vocabanana.core.presentation.uistate.UiStateError
-import com.example.vocabanana.core.presentation.uistate.toUiText
-import com.example.vocabanana.feature.text.presentation.data.TextPreview
+import com.example.vocabanana.feature.text.domain.TextRepository
 import com.example.vocabanana.feature.text.presentation.data.TextUi
 import com.example.vocabanana.feature.text.presentation.data.toPreview
 import com.example.vocabanana.feature.text.presentation.data.toUi
@@ -17,7 +15,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -26,17 +23,15 @@ import javax.inject.Inject
 @HiltViewModel
 class TextListScreenViewModel @Inject constructor(
     private val textRepository: TextRepository,
-) : ViewModel() {
+) : BaseViewModel() {
     private var saveJob: Job? = null
 
     val textPreviews =
         textRepository.getTexts()
             .map { list ->
-                UiState.Success(list.map { it.toPreview() }) as UiState<List<TextPreview>>
+                list.map { it.toPreview() }
             }
-            .catch { e ->
-                emit(UiState.Error(UiStateError.Unknown(e.message ?: "Unknown error").toUiText()))
-            }
+            .asUiState()
             .stateIn(
                 viewModelScope,
                 SharingStarted.Eagerly,

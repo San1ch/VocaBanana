@@ -9,6 +9,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import com.example.vocabanana.core.presentation.uistate.UiState
+import com.example.vocabanana.core.presentation.uistate.UiStateError
+import com.example.vocabanana.core.presentation.uistate.toUiText
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.map
 
 
 @Composable
@@ -38,4 +43,15 @@ fun ErrorContent(errorText: String, modifier: Modifier = Modifier) {
     Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Text(text = errorText)
     }
+}
+
+fun <T> Flow<T>.asUiState(): Flow<UiState<T>> {
+    return this
+        .map<T, UiState<T>> { data ->
+            UiState.Success(data)
+        }
+        .catch { e ->
+            val errorText = UiStateError.Unknown(e.message ?: "Unknown error").toUiText()
+            emit(UiState.Error(errorText))
+        }
 }

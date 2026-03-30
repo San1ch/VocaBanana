@@ -9,3 +9,4 @@ sealed class TextValidateError : ValidationError {
     data class InvalidName(val invalidChar: Char) : TextValidateError()
     object NameAlreadyExists : TextValidateError()
 }
+

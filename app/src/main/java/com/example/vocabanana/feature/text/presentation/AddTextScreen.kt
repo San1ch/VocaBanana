@@ -1,5 +1,7 @@
 package com.example.vocabanana.feature.text.presentation
 
+import android.content.ClipData
+import android.content.ClipboardManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.animateColorAsState
@@ -26,7 +28,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -37,25 +38,32 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.vocabanana.R
+import com.example.vocabanana.core.navigation.AppDestination
 import com.example.vocabanana.feature.text.data.TextConstant
 import com.example.vocabanana.ui.composable.CollectUiEvents
 
 @Composable
 fun AddTextScreen(
-    onBackClick: () -> Unit, viewModel: AddTextScreenViewModel = hiltViewModel()
+    viewModel: AddTextScreenViewModel = hiltViewModel(),
+    navigateTo: (AppDestination) -> Unit,
+    navigateBack: () -> Unit,
 ) {
-    CollectUiEvents(viewModel.events)
+    CollectUiEvents(
+        events = viewModel.events,
+        navigateBack = navigateBack,
+        navigateTo = { navigateTo(it) }
+    )
 
     val context = LocalContext.current
     val clipboardManager = LocalContext.current.getSystemService(
-        android.content.ClipboardManager::class.java
+        ClipboardManager::class.java
     )
 
     var title by remember { mutableStateOf("") }
     var content by remember { mutableStateOf("") }
 
     val onCopyClick = {
-        val clip = android.content.ClipData.newPlainText("text", content)
+        val clip = ClipData.newPlainText("text", content)
         clipboardManager.setPrimaryClip(clip)
     }
 
@@ -89,7 +97,7 @@ fun AddTextScreen(
         onTitleChange = { title = it },
         content = content,
         onContentChange = { content = it },
-        onBackClick = onBackClick,
+        onBackClick = navigateBack,
         onOpenFileClick = { filePickerLauncher.launch("text/plain") },
         onAddTextClick = { viewModel.addText(title, content) },
         onCopyClick = onCopyClick,
@@ -108,8 +116,10 @@ fun AddTextContent(
     content: String,
     onContentChange: (String) -> Unit,
     onBackClick: () -> Unit,
+
     onOpenFileClick: () -> Unit,
     onAddTextClick: () -> Unit,
+
     onCopyClick: () -> Unit,
     onPasteClick: () -> Unit,
     onClearClick: () -> Unit

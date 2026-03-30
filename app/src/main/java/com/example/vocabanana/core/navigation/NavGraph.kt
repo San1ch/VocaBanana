@@ -32,27 +32,34 @@ fun NavGraph(
     viewModel: NavGraphViewModel = hiltViewModel()
 ) {
     val state by viewModel.startDestination.collectAsState()
-    StateObserver(state = state) { destination ->
+    StateObserver(state = state) { isInit ->
+
+        val destination = if (isInit) AppDestination.Init.route else AppDestination.Main.route
         NavHost(
             navController = navController, startDestination = destination, modifier = modifier
         ) {
-            composable(AppDestinations.MAIN_DESTINATION) {
+            composable(AppDestination.Main.route) {
                 MainScreen(
-                    navigateToVocabScreen = { appNavigationActions.navigateToVocabulary() },
-                    navigateToTextListScreen = { appNavigationActions.navigateToTextList() })
+                    navigateTo = { appNavigationActions.navigateTo(it) })
             }
-            composable(AppDestinations.INIT_DESTINATION) {
+            composable(AppDestination.Init.route) {
                 InitScreen(
-                    onFinished = { appNavigationActions.navigateToMain() })
+                    navigateTo = { appNavigationActions.navigateTo(it) })
             }
-            composable(AppDestinations.VOCABULARY_DESTINATION) {
+            composable(AppDestination.Vocabulary.route) {
                 VocabularyScreen()
             }
-            composable(AppDestinations.TEXT_LIST_DESTINATION) {
-                TextListScreen(navigateToAddTextScreen = { appNavigationActions.navigateToCreateText() })
+            composable(AppDestination.TextList.route) {
+                TextListScreen(
+                    navigateTo = { appNavigationActions.navigateTo(it) },
+                    navigateBack = appNavigationActions::navigateBack
+                )
             }
-            composable(AppDestinations.TEXT_CREATE_DESTINATION) {
-                AddTextScreen(onBackClick = { appNavigationActions.navigateBack() })
+            composable(AppDestination.TextCreate.route) {
+                AddTextScreen(
+                    navigateTo = { appNavigationActions.navigateTo(it) },
+                    navigateBack = appNavigationActions::navigateBack
+                )
             }
         }
     }

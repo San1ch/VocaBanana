@@ -1,5 +1,6 @@
 package com.example.vocabanana.feature.text.presentation
 
+import android.annotation.SuppressLint
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
@@ -53,14 +54,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalViewConfiguration
 import androidx.compose.ui.platform.ViewConfiguration
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.vocabanana.core.navigation.AppDestination
 import com.example.vocabanana.core.presentation.StateObserver
 import com.example.vocabanana.feature.text.presentation.data.TextPreview
 import com.example.vocabanana.feature.text.presentation.data.TextUi
+import com.example.vocabanana.ui.composable.CollectUiEvents
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.abs
@@ -68,29 +70,32 @@ import kotlin.math.abs
 @Composable
 fun TextListScreen(
     viewModel: TextListScreenViewModel = hiltViewModel(),
-    navigateToAddTextScreen: () -> Unit
+    navigateTo: (AppDestination) -> Unit,
+    navigateBack: () -> Unit,
 ) {
     val currentText by viewModel.currentText.collectAsState()
     val textPreviewsState by viewModel.textPreviews.collectAsState()
+
+    CollectUiEvents(
+        events = viewModel.events,
+        navigateBack = navigateBack,
+        navigateTo = {},
+    )
+
     StateObserver(
         state = textPreviewsState
     ) { textPreviews ->
         TextListContent(
             textItems = textPreviews,
             selectedText = currentText,
-            onTextSelected = { id ->
-                viewModel.selectText(id)
-            },
-            onClearSelection = {
-                viewModel.clearSelection()
-            },
-            navigateToAddTextScreen = navigateToAddTextScreen,
-            onProgressUpdate = { textId,position ->
-                viewModel.updateProgress(textId,position)
+            onTextSelected = { id -> viewModel.selectText(id) },
+            onClearSelection = viewModel::clearSelection,
+            navigateToAddText = { navigateTo(AppDestination.TextCreate) },
+            onProgressUpdate = { textId, position ->
+                viewModel.updateProgress(textId, position)
             }
         )
     }
-
 }
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
@@ -100,7 +105,7 @@ fun TextListContent(
     selectedText: TextUi?,
     onTextSelected: (Int) -> Unit,
     onClearSelection: () -> Unit,
-    navigateToAddTextScreen: () -> Unit,
+    navigateToAddText: () -> Unit,
     onProgressUpdate: (Int, Float) -> Unit
 ) {
     val pagerState = rememberPagerState(pageCount = { 3 })
@@ -170,7 +175,7 @@ fun TextListContent(
                 )
             },
             floatingActionButton = {
-                FloatingActionButton(onClick = navigateToAddTextScreen) {
+                FloatingActionButton(onClick = navigateToAddText) {
                     Icon(Icons.Default.Add, contentDescription = "Add")
                 }
             }
@@ -203,9 +208,12 @@ fun TextListContent(
                         coroutineScope.launch { pagerState.animateScrollToPage(1) }
                     })
 
-                    1 -> TextReaderPage(state = selectedText, onProgressUpdate = { textId, position ->
-                        onProgressUpdate(textId, position)
-                    })
+                    1 -> TextReaderPage(
+                        state = selectedText,
+                        onProgressUpdate = { textId, position ->
+                            onProgressUpdate(textId, position)
+                        })
+
                     2 -> SettingsPage()
                 }
             }
@@ -216,8 +224,6 @@ fun TextListContent(
 
 @Composable
 fun AnimatedLockIcon(isLocked: Boolean, isSwipeAttempted: Boolean) {
-    val haptic = LocalHapticFeedback.current
-
     val targetColor = when {
         isSwipeAttempted -> Color.Red
         isLocked -> MaterialTheme.colorScheme.primary
@@ -318,15 +324,14 @@ private fun TextLazyItem(
     }
 }
 
+@SuppressLint("FrequentlyChangingValue")
 @Composable
 private fun TextReaderPage(
     state: TextUi?,
     onProgressUpdate: (Int, Float) -> Unit
 ) {
-    // 1. Використовуємо один і той самий scrollState всюди
     val scrollState = rememberScrollState()
 
-    // 2. Логіка збереження прогресу
     LaunchedEffect(scrollState.value, scrollState.maxValue) {
         val id = state?.id
         if (id != null && scrollState.maxValue > 0) {
@@ -334,9 +339,6 @@ private fun TextReaderPage(
             onProgressUpdate(id, progress)
         }
     }
-
-    // 3. Логіка ВІДНОВЛЕННЯ прогресу при відкритті
-    // Чекаємо, поки maxValue стане більше 0 (текст завантажився в розмітку)
     LaunchedEffect(state?.id, scrollState.maxValue) {
         val savedProgress = state?.lastScrollPosition
         if (savedProgress != null && savedProgress > 0f && scrollState.maxValue > 0) {
@@ -359,7 +361,7 @@ private fun TextReaderPage(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .verticalScroll(scrollState) // ПЕРЕДАЄМО НАШ scrollState СЮДИ!
+                    .verticalScroll(scrollState)
             ) {
                 Text(
                     text = state.content,
