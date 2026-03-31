@@ -12,12 +12,18 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 @Database(
-    entities = [WordEntity::class, WordFormsEntity::class, TextEntity::class],
+    entities = [
+        // [ENTITIES_START]
+        WordEntity::class,
+        WordFormsEntity::class,
+        TextEntity::class,
+        // [ENTITIES_END]
+    ],
+
     version = 2,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
-
 
 
     suspend fun clearDebugData(database: AppDatabase) {
@@ -26,7 +32,10 @@ abstract class AppDatabase : RoomDatabase() {
         }
     }
 
+    // [DAOS_START]
     abstract fun wordDao(): WordDao
     abstract fun wordFormDao(): WordFormDao
     abstract fun textDao(): TextDao
+    // [DAOS_END]
+
 }
