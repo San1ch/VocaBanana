@@ -1,16 +1,20 @@
-package com.example.vocabanana.feature.word.data
+package com.example.vocabanana.feature.word.domain
 
 import com.example.vocabanana.core.data.ValidateResult
 import com.example.vocabanana.core.data.ValidationError
 import com.example.vocabanana.core.data.map
 import com.example.vocabanana.feature.word.data.WordConstants.MAX_WORD_LENGTH
 import com.example.vocabanana.feature.word.data.WordConstants.WORD_REGEX
+import com.example.vocabanana.feature.word.data.WordState
+import com.example.vocabanana.feature.word.data.WordState.entries
 
 
 @ConsistentCopyVisibility
 data class WordDomain private constructor(
     val id: Int,
     val lemma: String,
+    val partOfSpeech: PartOfSpeech,
+    val forms: List<WordFormDomain>,
     val whenAdded: Long,
     val state: WordState
 ) {
@@ -25,14 +29,19 @@ data class WordDomain private constructor(
         fun create(
             id: Int = 0,
             lemma: String,
-            whenAdded: Long = System.currentTimeMillis()
+            whenAdded: Long = System.currentTimeMillis(),
+            forms: List<WordFormDomain> = emptyList(),
+            partOfSpeech: PartOfSpeech,
+            state: WordState = WordState.NEW
         ): ValidateResult<WordDomain, WordValidateError> {
             return validateLemma(lemma).map { validLemma ->
                 WordDomain(
                     id = id,
                     lemma = validLemma,
                     whenAdded = whenAdded,
-                    state = WordState.NEW
+                    state = state,
+                    partOfSpeech = partOfSpeech,
+                    forms = forms
                 )
             }
         }
@@ -42,14 +51,24 @@ data class WordDomain private constructor(
          * Use this only when you are 100% sure the data is already valid.
          * Faster than [create], but unsafe if the data might be invalid.
          */
-        fun createUnsafe(id: Int, lemma: String, whenAdded: Long, state: WordState): WordDomain {
+        fun createUnsafe(
+            id: Int,
+            lemma: String,
+            whenAdded: Long,
+            state: WordState,
+            forms: List<WordFormDomain>,
+            partOfSpeech: PartOfSpeech
+        ): WordDomain {
             return WordDomain(
                 id = id,
                 lemma = lemma,
                 whenAdded = whenAdded,
-                state = state
+                state = state,
+                partOfSpeech = partOfSpeech,
+                forms = forms
             )
         }
+
         private fun validateLemma(input: String): ValidateResult<String, WordValidateError> {
             val trimmed = input.trim()
 
@@ -63,8 +82,42 @@ data class WordDomain private constructor(
 
 }
 
+enum class PartOfSpeech (val value: Int) {
+    NOUN(0),
+    VERB(1),
+    ADJECTIVE(2),
+    ADVERB(3),
+
+    PRONOUN(4),
+    DETERMINER(5),
+    NUMERAL(6),
+
+    PREPOSITION(7),
+    CONJUNCTION(8),
+    INTERJECTION(9),
+
+    PARTICLE(10),
+    AUXILIARY(11),
+    MODAL(12),
+
+    ARTICLE(13),
+
+    PHRASAL_VERB(14),
+    IDIOM(15),
+
+    UNKNOWN(16)
+}
+
+//make same
+
+fun PartOfSpeech.toInt() = value
+fun Int.toPartOfSpeech() = entries.first { it.value == this }
+
+
+
+
 sealed class WordValidateError : ValidationError {
     object Empty : WordValidateError()
-    object TooLong: WordValidateError()
-    object InvalidChar  : WordValidateError()
+    object TooLong : WordValidateError()
+    object InvalidChar : WordValidateError()
 }

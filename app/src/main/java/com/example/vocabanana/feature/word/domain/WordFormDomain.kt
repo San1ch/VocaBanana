@@ -1,11 +1,14 @@
-package com.example.vocabanana.feature.word.data
+package com.example.vocabanana.feature.word.domain
 
 import com.example.vocabanana.core.data.ValidateResult
+import com.example.vocabanana.feature.word.data.WordConstants
 
 @ConsistentCopyVisibility
 data class WordFormDomain private constructor(
+    val id: Int,
     val wordId: Int,
-    val wordForms: List<String>
+    val form: String,
+    val partOfSpeech: PartOfSpeech,
 ) {
     companion object {
         /*
@@ -14,34 +17,48 @@ data class WordFormDomain private constructor(
          * Returns [ValidateResult.Success] with WordFormDomain if valid,
          * or [ValidateResult.Error] if validation fails.
          */
-        fun create(wordId: Int, input: List<String>): ValidateResult<WordFormDomain, WordFormValidateError> {
-            val trimmed = input.map { it.trim() }
+        fun create(
+            id: Int,
+            wordId: Int,
+            word: String,
+            partOfSpeech: PartOfSpeech
+        ): ValidateResult<WordFormDomain, WordFormValidateError> {
+            val trimmed = word.trim()
 
             if (trimmed.isEmpty()) return ValidateResult.Error(WordFormValidateError.EMPTY)
-            if (trimmed.any { it.isEmpty() }) return ValidateResult.Error(WordFormValidateError.EMPTY_ITEM)
-            if (trimmed.any { it.length > WordConstants.MAX_WORD_LENGTH }) return ValidateResult.Error(
+            if (trimmed.length > WordConstants.MAX_WORD_LENGTH) return ValidateResult.Error(
                 WordFormValidateError.TOO_LONG
             )
-            if (trimmed.any { !WordConstants.WORD_REGEX.matches(it) }) return ValidateResult.Error(
+            if (!WordConstants.WORD_REGEX.matches(trimmed)) return ValidateResult.Error(
                 WordFormValidateError.INVALID_CHARS
             )
 
             return ValidateResult.Success(
                 WordFormDomain(
+                    id = id,
                     wordId = wordId,
-                    wordForms = trimmed
+                    form = trimmed,
+                    partOfSpeech = partOfSpeech
                 )
             )
         }
+
         /*
          * Creates a WordFormDomain object without validation.
          * Use this only when you are 100% sure the data is already valid.
          * Faster than [create], but unsafe if the data might be invalid.
          */
-        fun createUnsafe(wordId: Int, wordForms: List<String>): WordFormDomain {
+        fun createUnsafe(
+            id: Int,
+            wordId: Int,
+            form: String,
+            partOfSpeech: PartOfSpeech
+        ): WordFormDomain {
             return WordFormDomain(
+                id = id,
                 wordId = wordId,
-                wordForms = wordForms
+                form = form,
+                partOfSpeech = partOfSpeech
             )
         }
     }

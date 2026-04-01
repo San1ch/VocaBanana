@@ -7,7 +7,7 @@ import com.example.vocabanana.feature.text.data.local.TextEntity
 import com.example.vocabanana.feature.word.data.local.WordDao
 import com.example.vocabanana.feature.word.data.local.WordEntity
 import com.example.vocabanana.feature.word.data.local.WordFormDao
-import com.example.vocabanana.feature.word.data.local.WordFormsEntity
+import com.example.vocabanana.feature.word.data.local.WordFormEntity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -15,7 +15,7 @@ import kotlinx.coroutines.withContext
     entities = [
         // [ENTITIES_START]
         WordEntity::class,
-        WordFormsEntity::class,
+        WordFormEntity::class,
         TextEntity::class,
         // [ENTITIES_END]
     ],
@@ -24,14 +24,6 @@ import kotlinx.coroutines.withContext
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
-
-
-    suspend fun clearDebugData(database: AppDatabase) {
-        withContext(Dispatchers.IO) {
-            database.clearAllTables()
-        }
-    }
-
     // [DAOS_START]
     abstract fun wordDao(): WordDao
     abstract fun wordFormDao(): WordFormDao

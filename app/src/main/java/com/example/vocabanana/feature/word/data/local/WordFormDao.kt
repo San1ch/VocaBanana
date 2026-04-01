@@ -8,11 +8,11 @@ import androidx.room.Query
 @Dao
 interface WordFormDao {
     @Query("SELECT * FROM word_form WHERE wordId = :wordId")
-    fun getWordFormsByWordId(wordId: Int): List<WordFormsEntity>
+    fun getWordFormsByWordId(wordId: Int): List<WordFormEntity>
 
     @Query("SELECT * FROM word_form WHERE form = :form")
-    fun getWordFormsByForm(form: String): List<WordFormsEntity>
-
+    fun formExists(form: String): Boolean
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    fun insertWordForms(form: List<WordFormsEntity>)
+    fun insertWordForms(form: List<WordFormEntity>)
 }
+

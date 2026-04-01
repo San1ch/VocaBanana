@@ -5,21 +5,27 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 
 
 @Dao
 interface WordDao {
+
+    @Transaction
+    @Query("SELECT * FROM words")
+    fun getAllWords(): Flow<List<WordWithFormsEntity>>
+
+    @Transaction
+    @Query("SELECT * FROM words WHERE id = :id")
+    fun getWordById(id: Int): Flow<WordWithFormsEntity?>
+
+    @Query("SELECT * FROM words WHERE lemma = :lemma")
+    fun wordExists(lemma: String): Boolean
+
     @Query("SELECT * FROM words")
     fun getAllWordsFlow(): Flow<List<WordEntity>>
-
-    @Query("SELECT * FROM words")
-    fun getAllWords(): Flow<List<WordEntity>>
-
-    @Query("SELECT * FROM words WHERE id = :id")
-    fun getWordById(id: Int): WordEntity
-
 
     @Query("SELECT * FROM words WHERE lemma = :lemma")
     fun getWordByWord(lemma: String): WordEntity

@@ -17,8 +17,9 @@ import androidx.room.PrimaryKey
         value = ["wordId","form"],
     )]
 )
-data class WordFormsEntity(
+data class WordFormEntity(
     @PrimaryKey val id: Int,
     val wordId: Int,
-    val form: String
+    val form: String,
+    val partOfSpeech: Int,
 )
