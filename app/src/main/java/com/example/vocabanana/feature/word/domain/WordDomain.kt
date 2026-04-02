@@ -3,10 +3,10 @@ package com.example.vocabanana.feature.word.domain
 import com.example.vocabanana.core.data.ValidateResult
 import com.example.vocabanana.core.data.ValidationError
 import com.example.vocabanana.core.data.map
-import com.example.vocabanana.feature.word.data.WordConstants.MAX_WORD_LENGTH
-import com.example.vocabanana.feature.word.data.WordConstants.WORD_REGEX
-import com.example.vocabanana.feature.word.data.WordState
-import com.example.vocabanana.feature.word.data.WordState.entries
+import com.example.vocabanana.core.database.word.WordConstants.MAX_WORD_LENGTH
+import com.example.vocabanana.core.database.word.WordConstants.WORD_REGEX
+import com.example.vocabanana.core.database.word.WordState
+import com.example.vocabanana.core.database.word.WordState.entries
 
 
 @ConsistentCopyVisibility
@@ -103,7 +103,6 @@ enum class PartOfSpeech (val value: Int) {
     ARTICLE(13),
 
     PHRASAL_VERB(14),
-    IDIOM(15),
 
     UNKNOWN(16)
 }

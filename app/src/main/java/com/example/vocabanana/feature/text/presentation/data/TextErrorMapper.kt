@@ -2,7 +2,7 @@ package com.example.vocabanana.feature.text.presentation.data
 
 import com.example.vocabanana.R
 import com.example.vocabanana.core.presentation.UiText
-import com.example.vocabanana.feature.text.data.TextValidateError
+import com.example.vocabanana.core.database.text.TextValidateError
 
 fun TextValidateError.toUiText(): UiText {
     return when (this) {

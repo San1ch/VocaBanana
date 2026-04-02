@@ -39,7 +39,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.vocabanana.R
 import com.example.vocabanana.core.navigation.AppDestination
-import com.example.vocabanana.feature.text.data.TextConstant
+import com.example.vocabanana.core.database.text.TextConstant
 import com.example.vocabanana.ui.composable.CollectUiEvents
 
 @Composable

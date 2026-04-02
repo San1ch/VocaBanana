@@ -1,6 +1,6 @@
 package com.example.vocabanana.feature.text.presentation.data
 
-import com.example.vocabanana.feature.text.data.TextDomain
+import com.example.vocabanana.feature.text.domain.TextDomain
 
 data class TextPreview(
     val id: Int,
