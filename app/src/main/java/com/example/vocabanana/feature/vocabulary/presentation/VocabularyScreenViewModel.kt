@@ -7,10 +7,13 @@ import com.example.vocabanana.core.presentation.asUiState
 import com.example.vocabanana.core.presentation.uistate.UiState
 import com.example.vocabanana.feature.word.domain.PartOfSpeech
 import com.example.vocabanana.feature.word.domain.WordDomain
+import com.example.vocabanana.feature.word.domain.WordFormDomain
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -27,6 +30,12 @@ class VocabularyScreenViewModel @Inject constructor(
             UiState.Success(emptyList())
         )
 
+    fun deleteAll() {
+        viewModelScope.launch(Dispatchers.IO) {
+            wordRepository.deleteAll()
+        }
+    }
+
 }
 
 
@@ -34,6 +43,12 @@ data class UiWord(
     val id: Int,
     val word: String,
     val whenAdded: Long,
+    val partOfSpeech: String,
+    val forms: List<UiWordForm>
+)
+
+data class UiWordForm(
+    val form: String,
     val partOfSpeech: String
 )
 
@@ -42,7 +57,6 @@ fun PartOfSpeech.toUi(): String = when (this) {
     PartOfSpeech.VERB -> "verb"
     PartOfSpeech.ADJECTIVE -> "adj"
     PartOfSpeech.ADVERB -> "adverb"
-    PartOfSpeech.PHRASAL_VERB -> "phr. verb"
 
     PartOfSpeech.PRONOUN -> "pron"
     PartOfSpeech.DETERMINER -> "det"
@@ -55,14 +69,18 @@ fun PartOfSpeech.toUi(): String = when (this) {
     PartOfSpeech.MODAL -> "aux verb"
 
     PartOfSpeech.PARTICLE -> "part"
-    PartOfSpeech.INTERJECTION -> "intj"
+    PartOfSpeech.INTERJECTION -> "interjection"
     PartOfSpeech.UNKNOWN -> "other"
 }
-fun WordDomain.toUi() = {
-    UiWord(
-        id = id,
-        word = lemma,
-        whenAdded = whenAdded,
-        partOfSpeech = partOfSpeech.toUi()
-    )
-}
+fun WordDomain.toUi() = UiWord(
+    id = id,
+    word = lemma,
+    whenAdded = whenAdded,
+    partOfSpeech = partOfSpeech.toUi(),
+    forms = forms.map { it.toUi() }
+)
+
+fun WordFormDomain.toUi() = UiWordForm(
+    form = form,
+    partOfSpeech = partOfSpeech.toUi()
+)

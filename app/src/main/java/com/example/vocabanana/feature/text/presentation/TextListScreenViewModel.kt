@@ -8,6 +8,8 @@ import com.example.vocabanana.core.database.text.repository.TextRepository
 import com.example.vocabanana.feature.text.presentation.data.TextUi
 import com.example.vocabanana.feature.text.presentation.data.toPreview
 import com.example.vocabanana.feature.text.presentation.data.toUi
+import com.example.vocabanana.feature.wordanalysis.domain.AiInputCenter
+import com.example.vocabanana.feature.wordanalysis.domain.AiMetaDataResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -23,35 +25,37 @@ import javax.inject.Inject
 @HiltViewModel
 class TextListScreenViewModel @Inject constructor(
     private val textRepository: TextRepository,
+    private val aiInputCenter: AiInputCenter
 ) : BaseViewModel() {
+
     private var saveJob: Job? = null
 
-    val textPreviews =
-        textRepository.getTexts()
-            .map { list ->
-                list.map { it.toPreview() }
-            }
-            .asUiState()
-            .stateIn(
-                viewModelScope,
-                SharingStarted.Eagerly,
-                UiState.Loading
-            )
-
+    
+    val textPreviews = textRepository.getTexts()
+        .map { list -> list.map { it.toPreview() } }
+        .asUiState()
+        .stateIn(
+            viewModelScope,
+            SharingStarted.Eagerly,
+            UiState.Loading
+        )
 
     private val _currentText = MutableStateFlow<TextUi?>(null)
     val currentText = _currentText.asStateFlow()
 
+    
     fun selectText(id: Int) {
         viewModelScope.launch(Dispatchers.IO) {
             _currentText.value = textRepository.getTextById(id).toUi()
         }
     }
 
+    
     fun clearSelection() {
         _currentText.value = null
     }
 
+    
     fun updateProgress(textId: Int, position: Float) {
         saveJob?.cancel()
         saveJob = viewModelScope.launch(Dispatchers.IO) {
@@ -60,10 +64,10 @@ class TextListScreenViewModel @Inject constructor(
         }
     }
 
+    
     fun deleteText(textId: Int) {
         viewModelScope.launch(Dispatchers.IO) {
             textRepository.deleteText(textId)
         }
     }
 }
-

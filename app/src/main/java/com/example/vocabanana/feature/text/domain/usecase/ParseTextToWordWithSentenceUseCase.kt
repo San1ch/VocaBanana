@@ -1,5 +1,6 @@
 package com.example.vocabanana.feature.text.domain.usecase
 
+import android.util.Log
 import com.example.vocabanana.core.database.word.repository.WordRepository
 import com.example.vocabanana.core.language.WordNormalizer
 import javax.inject.Inject
@@ -8,24 +9,53 @@ class ParseTextToWordWithSentenceUseCase @Inject constructor(
     private val wordRepository: WordRepository,
     private val wordNormalizer: WordNormalizer
 ) {
+    private val TAG = "VocaBananaParse"
+
     suspend operator fun invoke(text: String): List<SentenceWithWords> {
+        val startTime = System.currentTimeMillis()
+
         val rawSentences = parseToSentences(text)
+        logTime("Parse sentences", startTime)
+
         val sentenceModels = createSentenceModels(rawSentences)
+        logTime("Extract words", startTime)
 
-        val normalizedModels = sentenceModels.map { model ->
-            model.copy(
-                words = model.words.map { wordNormalizer.normalize(it) }
-            )
-        }
+        val allRawWords = sentenceModels.flatMap { it.words }.distinct()
 
-        val uniqueInText = filterUniqueWordsInText(normalizedModels)
+        val existingInDb = wordRepository.getExistingWords(allRawWords).toSet()
+        logTime("DB Check", startTime)
 
-        return cleanExistingWords(uniqueInText)
+        val wordsToNormalize = allRawWords.filter { it !in existingInDb }
+        val normalizationMap = wordsToNormalize.associateWith { wordNormalizer.normalize(it) }
+
+        val candidateLemmas = normalizationMap.values.distinct()
+        val existingLemmas = wordRepository.getExistingWords(candidateLemmas).toSet()
+
+        val knownWords = (existingInDb + existingLemmas).toMutableSet()
+
+        val seenInThisText = mutableSetOf<String>()
+
+        val finalResult = sentenceModels.map { model ->
+            val uniqueNewWords = model.words
+                .map { raw -> normalizationMap[raw] ?: raw }
+                .filter { it !in knownWords && it !in seenInThisText }
+                .distinct()
+
+            seenInThisText.addAll(uniqueNewWords)
+
+            model.copy(words = uniqueNewWords)
+        }.filter { it.words.isNotEmpty() }
+
+        logTime("Total Processing", startTime)
+        return finalResult
+    }
+
+    private fun logTime(message: String, startTime: Long) {
+        Log.d(TAG, "Step [$message] took: ${System.currentTimeMillis() - startTime}ms")
     }
 
     private fun parseToSentences(text: String): List<String> {
         val sentenceRegex = Regex("(?<=[.!?])\\s+(?=[\\p{Lu}\\p{L}])|\\n+")
-
         return text.split(sentenceRegex)
             .filter { it.isNotBlank() }
             .map { it.trim() }
@@ -40,38 +70,25 @@ class ParseTextToWordWithSentenceUseCase @Inject constructor(
         }
     }
 
-    private fun filterUniqueWordsInText(models: List<SentenceWithWords>): List<SentenceWithWords> {
-        val seenWords = mutableSetOf<String>()
-
-        return models.map { model ->
-            val uniqueWords = model.words.filter { word ->
-                if (word !in seenWords) {
-                    seenWords.add(word)
-                    true
-                } else false
-            }
-            model.copy(words = uniqueWords)
-        }.filter { it.words.isNotEmpty() }
-    }
-
-    private suspend fun cleanExistingWords(models: List<SentenceWithWords>): List<SentenceWithWords> {
-        val allWordsInText = models.flatMap { it.words }.distinct()
-
-        if (allWordsInText.isEmpty()) return emptyList()
-
-        val existingWords = wordRepository.getExistingWords(allWordsInText)
-
-        return models.map { model ->
-            model.copy(
-                words = model.words.filter { it !in existingWords }
-            )
-        }.filter { it.words.isNotEmpty() }
-    }
-
     private fun extractCleanWords(sentence: String): List<String> {
-        return sentence.split(Regex("[^\\p{L}-]+"))
-            .filter { it.isNotBlank() && it.length > 1 }
+        // 1. Розбиваємо на токени
+        return sentence.split(Regex("[^\\p{L}'-]+"))
+            .filter { it.isNotBlank() }
             .map { it.lowercase() }
+            .map { word ->
+                // 2. Обробка специфічних закінчень (скорочень)
+                when {
+                    word.endsWith("'re") -> word.removeSuffix("'re") // they're -> they
+                    word.endsWith("'ve") -> word.removeSuffix("'ve") // I've -> i
+                    word.endsWith("'m") -> word.removeSuffix("'m")   // I'm -> i
+                    word.endsWith("'s") -> word.removeSuffix("'s")   // Amane's / It's -> amane / it
+                    word.endsWith("'d") -> word.removeSuffix("'d")   // He'd -> he
+                    word.endsWith("'ll") -> word.removeSuffix("'ll") // He'll -> he
+                    else -> word
+                }
+            }
+            .filter { it.length > 1 } // Прибираємо "i", "a", якщо вони лишилися після очищення
+            .distinct()
     }
 }
 

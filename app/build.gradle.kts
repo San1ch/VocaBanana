@@ -7,6 +7,8 @@ plugins {
     alias(libs.plugins.hilt)
     alias(libs.plugins.ksp)
 
+    //Json
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -19,7 +21,7 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
-
+        buildConfigField("String", "GROQ_API_KEY", "\"${project.findProperty("GROQ_API_KEY")}\"")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -28,6 +30,7 @@ android {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
+
                 "proguard-rules.pro"
             )
         }
@@ -79,6 +82,10 @@ dependencies {
     //Online
     implementation(libs.retrofit)
     implementation(libs.retrofit.converter.gson)
+    implementation(libs.logging.interceptor)
+
+    //Json
+    implementation(libs.kotlinx.serialization.json)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

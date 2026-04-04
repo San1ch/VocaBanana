@@ -7,7 +7,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircleOutline
-import androidx.compose.material.icons.filled.BugReport
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreVert
@@ -23,6 +23,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,24 +35,31 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.vocabanana.BuildConfig
 import com.example.vocabanana.R
+import com.example.vocabanana.core.presentation.StateObserver
+import com.example.vocabanana.ui.composable.SpacerMicro
 import com.example.vocabanana.ui.theme.VocabBananaTheme
 
 @Composable
 fun VocabularyScreen(viewModel: VocabularyScreenViewModel = hiltViewModel()) {
-    VocabularyContent(
-        onMenuClick = {},
-        onDebugClick = {},
-        onMoreClick = {},
-        onAddWordClick = {},
-        onTextAddingClick = {}
-    )
+    val words = viewModel.words.collectAsState()
+    StateObserver(words.value) { words ->
+        VocabularyContent(
+            words = words,
+            onMenuClick = {},
+            onAllDelete = { viewModel.deleteAll() },
+            onMoreClick = {},
+            onAddWordClick = {},
+            onTextAddingClick = {}
+        )
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun VocabularyContent(
+    words: List<UiWord>,
     onMenuClick: () -> Unit = {},
-    onDebugClick: () -> Unit = {},
+    onAllDelete: () -> Unit = {},
     onMoreClick: () -> Unit = {},
     onAddWordClick: (String) -> Unit = {},
     onTextAddingClick: () -> Unit = {}
@@ -75,8 +83,8 @@ fun VocabularyContent(
                 },
                 actions = {
                     if (BuildConfig.DEBUG) {
-                        IconButton(onClick = onDebugClick) {
-                            Icon(Icons.Default.BugReport, contentDescription = "Debug")
+                        IconButton(onClick = onAllDelete) {
+                            Icon(Icons.Default.Delete, contentDescription = "Debug")
                         }
                     }
                     VocabularyFilterButton()
@@ -106,8 +114,17 @@ fun VocabularyContent(
                         horizontal = 16.dp
                     )
             ) {
-                items(100) {
-                    Text("Item $it")
+                items(words.size) { wordId ->
+                    val uiWord = words[wordId]
+                    val form = uiWord.forms.firstOrNull()
+
+                    Text(
+                        "${uiWord.word} [${uiWord.partOfSpeech}]:"
+                    )
+                    form?.let {
+                        Text("${it.form} [${it.partOfSpeech}]")
+                    }
+                    SpacerMicro()
                 }
             }
         }
@@ -231,6 +248,10 @@ private fun VocabularyFloatingButton(onAddWordClick: () -> Unit, onTextAddingCli
 @Composable
 fun VocabularyScreenPreview() {
     VocabBananaTheme(darkTheme = false) {
-        VocabularyContent()
+        VocabularyContent(
+            listOf(
+
+            )
+        )
     }
 }

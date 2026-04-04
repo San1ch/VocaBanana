@@ -35,7 +35,6 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.LockOpen
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -62,6 +61,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalViewConfiguration
 import androidx.compose.ui.platform.ViewConfiguration
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.vocabanana.core.navigation.AppDestination
@@ -85,6 +85,8 @@ fun TextListScreen(
     val currentText by viewModel.currentText.collectAsState()
     val textPreviewsState by viewModel.textPreviews.collectAsState()
     var deletingText by remember { mutableStateOf<TextPreview?>(null) }
+
+
 
     DeleteConfirmDialog(
         item = deletingText,
@@ -197,7 +199,7 @@ fun TextListContent(
                     )
 
                     1 -> TextReaderPage(state = selectedText, onProgressUpdate = onProgressUpdate)
-                    2 -> SettingsPage()
+                    2 -> TextListSettingsPage()
                 }
             }
         }
@@ -352,23 +354,17 @@ fun AnimatedLockIcon(isLocked: Boolean, isSwipeAttempted: Boolean) {
 }
 
 @Composable
-fun SettingsPage() {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text("Sentences: x / maxCount")
-        Button(onClick = { }) {
-            Text("Parse and clean")
-        }
+fun TextListSettingsPage(
+) {
 
+}
+@Composable
+fun MetricItem(label: String, value: String) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(label, style = MaterialTheme.typography.labelSmall, color = Color.Gray)
+        Text(value, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
     }
 }
-
-
 
 @SuppressLint("FrequentlyChangingValue")
 @Composable

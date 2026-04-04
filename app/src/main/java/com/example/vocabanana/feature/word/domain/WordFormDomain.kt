@@ -20,10 +20,10 @@ data class WordFormDomain private constructor(
         fun create(
             id: Int,
             wordId: Int,
-            word: String,
+            form: String,
             partOfSpeech: PartOfSpeech
         ): ValidateResult<WordFormDomain, WordFormValidateError> {
-            val trimmed = word.trim()
+            val trimmed = form.trim()
 
             if (trimmed.isEmpty()) return ValidateResult.Error(WordFormValidateError.EMPTY)
             if (trimmed.length > WordConstants.MAX_WORD_LENGTH) return ValidateResult.Error(

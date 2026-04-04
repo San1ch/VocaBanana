@@ -29,6 +29,11 @@ material-icons = "1.7.8"
 #Online
 retrofit = "3.0.0"
 retrofit-converter-gson = "2.9.0"
+logging-interceptor = "4.11.0"
+
+#Json
+kotlinxSerializationJson = "1.8.0"
+
 animationCore = "1.10.5"
 ui = "1.10.6"
 animation = "1.10.6"
@@ -55,6 +60,11 @@ material-icons = { module = "androidx.compose.material:material-icons-extended",
 #Online
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 retrofit-converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "retrofit-converter-gson" }
+logging-interceptor = { module = "com.squareup.okhttp3:logging-interceptor", version.ref = "logging-interceptor" }
+
+#Json
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
+
 
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -88,3 +98,4 @@ kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "ko
 #DI
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt"}
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }

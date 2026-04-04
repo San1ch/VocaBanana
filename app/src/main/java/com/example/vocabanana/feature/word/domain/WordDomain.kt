@@ -81,37 +81,36 @@ data class WordDomain private constructor(
     }
 
 }
+enum class PartOfSpeech(val value: Int, val shortName: String) {
+    NOUN(0, "noun"),
+    VERB(1, "verb"),
+    ADJECTIVE(2, "adj"),
+    ADVERB(3, "adv"),
+    PRONOUN(4, "pron"),
+    DETERMINER(5, "det"),
+    NUMERAL(6, "num"),
+    PREPOSITION(7, "prep"),
+    CONJUNCTION(8, "conj"),
+    INTERJECTION(9, "intj"),
+    PARTICLE(10, "part"),
+    AUXILIARY(11, "aux"),
+    MODAL(12, "modal"),
+    ARTICLE(13, "art"),
+    UNKNOWN(14, "other");
 
-enum class PartOfSpeech (val value: Int) {
-    NOUN(0),
-    VERB(1),
-    ADJECTIVE(2),
-    ADVERB(3),
+    companion object {
+        fun fromInt(value: Int): PartOfSpeech {
+            return entries.find { it.value == value } ?: UNKNOWN
+        }
 
-    PRONOUN(4),
-    DETERMINER(5),
-    NUMERAL(6),
-
-    PREPOSITION(7),
-    CONJUNCTION(8),
-    INTERJECTION(9),
-
-    PARTICLE(10),
-    AUXILIARY(11),
-    MODAL(12),
-
-    ARTICLE(13),
-
-    PHRASAL_VERB(14),
-
-    UNKNOWN(16)
+        fun fromShortName(name: String): PartOfSpeech {
+            return entries.find { it.shortName == name.lowercase() } ?: UNKNOWN
+        }
+    }
 }
 
-//make same
-
 fun PartOfSpeech.toInt() = value
-fun Int.toPartOfSpeech() = entries.first { it.value == this }
-
+fun Int.toPartOfSpeech() = PartOfSpeech.fromInt(this)
 
 
 

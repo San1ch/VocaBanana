@@ -18,7 +18,7 @@ import com.example.vocabanana.core.database.word.local.WordFormEntity
         // [ENTITIES_END]
     ],
 
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

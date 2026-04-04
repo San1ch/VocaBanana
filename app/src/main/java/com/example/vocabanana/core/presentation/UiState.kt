@@ -21,11 +21,13 @@ fun <T : Any> StateObserver(
     state: UiState<T>,
     onLoading: @Composable () -> Unit = { DefaultLoader() },
     onError: @Composable (String) -> Unit = { ErrorContent(errorText = it) },
+    onEmpty: @Composable () -> Unit = { Text(text = "No data") },
     onSuccess: @Composable (T) -> Unit
 ) {
     val context = LocalContext.current
     when (state) {
         is UiState.Loading -> onLoading()
+        is UiState.Empty -> onEmpty()
         is UiState.Success -> onSuccess(state.data)
         is UiState.Error -> onError(state.message.asString(context))
     }

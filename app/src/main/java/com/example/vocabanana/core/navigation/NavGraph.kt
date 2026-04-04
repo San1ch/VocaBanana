@@ -18,6 +18,7 @@ import com.example.vocabanana.feature.main.presentation.MainScreen
 import com.example.vocabanana.feature.text.presentation.AddTextScreen
 import com.example.vocabanana.feature.text.presentation.TextListScreen
 import com.example.vocabanana.feature.vocabulary.presentation.VocabularyScreen
+import com.example.vocabanana.feature.wordanalysis.presentation.WordAnalysisScreen
 import kotlinx.coroutines.CoroutineScope
 
 
@@ -60,6 +61,9 @@ fun NavGraph(
                     navigateTo = { appNavigationActions.navigateTo(it) },
                     navigateBack = appNavigationActions::navigateBack
                 )
+            }
+            composable(AppDestination.WordAnalysis.route){
+                WordAnalysisScreen()
             }
         }
     }

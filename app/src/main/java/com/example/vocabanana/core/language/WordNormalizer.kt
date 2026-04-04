@@ -1,31 +1,44 @@
 package com.example.vocabanana.core.language
 
-object WordNormalizer {
-    private val protectedWords = setOf("is", "as", "has", "was", "less", "mess", "gas", "bus", "this")
+import javax.inject.Inject
 
+class WordNormalizer @Inject constructor() {
     fun normalize(word: String): String {
         val w = word.lowercase().trim()
-
-        if (w.length <= 3 || w in protectedWords) return w
+        if (w.length <= 4) return w
 
         return when {
-            // 2. studies -> study (ies -> y)
-            w.endsWith("ies") && w.length > 4 ->
-                w.dropLast(3) + "y"
+            w.endsWith("ies") -> w.dropLast(3) + "y"
+            w.endsWith("ed") -> {
+                val base = w.dropLast(2)
+                when {
+                    w.endsWith("ied") -> base + "y"
 
-            // 3. cats -> cat (s -> base)
-            // Перевірка !endsWith("ss"), щоб не зіпсувати "class", "glass"
-            w.endsWith("s") && !w.endsWith("ss") && w.length > 4 ->
-                w.dropLast(1)
+                    base.length > 1 && base.last() == base[base.length - 2] -> base.dropLast(1)
 
-            // 4. worked -> work (ed -> base)
-            w.endsWith("ed") && w.length > 4 ->
-                w.dropLast(2)
+                    base.endsWith("sh") || base.endsWith("ch") ||
+                            base.endsWith("x") || base.endsWith("ss") -> base
 
-            // 5. playing -> play (ing -> base)
-            w.endsWith("ing") && w.length > 5 ->
-                w.dropLast(3)
+                    else -> base + "e"
+                }
+            }
+            w.endsWith("ing") && w.length > 5 -> {
+                val base = w.dropLast(3)
 
+                when {
+                    base.length > 1 && base.last() == base[base.length - 2] &&
+                            !listOf('s', 'f', 'l', 'z').contains(base.last()) -> {
+                        base.dropLast(1)
+                    }
+
+                   base.last() in "bcdfghjklmnpqrstvez" -> {
+                        base + "e"
+                    }
+
+                    else -> base
+                }
+            }
+            w.endsWith("s") && !w.endsWith("ss") -> w.dropLast(1)
             else -> w
         }
     }

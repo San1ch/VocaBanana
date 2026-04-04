@@ -44,4 +44,10 @@ class WordRepositoryRoomImpl @Inject constructor(
 
         return (existingLemmas + existingForms).toSet()
     }
+    override suspend fun deleteAll(): Int {
+        return wordDao.deleteAll()
+    }
+    override fun addWords(words: List<WordDomain>) {
+        wordDao.insertWords(words.map { it.toWordEntity() })
+    }
 }

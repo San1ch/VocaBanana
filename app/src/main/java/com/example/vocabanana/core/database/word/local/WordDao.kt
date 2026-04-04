@@ -42,6 +42,9 @@ interface WordDao {
     @Delete
     fun deleteWord(word: WordEntity)
 
+    @Query("DELETE FROM words")
+    suspend fun deleteAll(): Int
+
     @Query("SELECT lemma FROM words WHERE lemma IN (:words)")
     fun getExistingWords(words: List<String>): List<String>
 }
