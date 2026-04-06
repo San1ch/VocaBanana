@@ -28,5 +28,4 @@ class DataStoreSettingsRepository @Inject constructor(
     override suspend fun setInitActive(value: Boolean) {
         dataStore.edit { it[INIT_ACTIVE] = value } }
 
-    //
 }

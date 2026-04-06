@@ -1,13 +1,13 @@
 package com.example.vocabanana.feature.vocabulary.presentation
 
 import androidx.lifecycle.viewModelScope
-import com.example.vocabanana.core.database.word.repository.WordRepository
 import com.example.vocabanana.core.presentation.BaseViewModel
 import com.example.vocabanana.core.presentation.asUiState
 import com.example.vocabanana.core.presentation.uistate.UiState
-import com.example.vocabanana.feature.word.domain.PartOfSpeech
-import com.example.vocabanana.feature.word.domain.WordDomain
-import com.example.vocabanana.feature.word.domain.WordFormDomain
+import com.example.vocabanana.feature.database.word.repository.WordRepository
+import com.example.vocabanana.feature.word.domain.model.PartOfSpeech
+import com.example.vocabanana.feature.word.domain.model.WordDomain
+import com.example.vocabanana.feature.word.domain.model.WordFormDomain
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted

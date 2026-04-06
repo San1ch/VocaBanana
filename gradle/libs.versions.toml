@@ -26,7 +26,7 @@ datastoreCore = "1.2.1"
 #Icons
 material-icons = "1.7.8"
 
-#Online
+#Network
 retrofit = "3.0.0"
 retrofit-converter-gson = "2.9.0"
 logging-interceptor = "4.11.0"
@@ -39,6 +39,9 @@ ui = "1.10.6"
 animation = "1.10.6"
 material3 = "1.4.0"
 generativeai = "0.9.0"
+
+#Logs
+timber = "5.0.1"
 
 [libraries]
 #Navigation
@@ -57,7 +60,7 @@ room-compiler-ksp = { module = "androidx.room:room-compiler", version.ref = "roo
 #Icons
 material-icons = { module = "androidx.compose.material:material-icons-extended", version.ref = "material-icons" }
 
-#Online
+#Network
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 retrofit-converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "retrofit-converter-gson" }
 logging-interceptor = { module = "com.squareup.okhttp3:logging-interceptor", version.ref = "logging-interceptor" }
@@ -65,6 +68,8 @@ logging-interceptor = { module = "com.squareup.okhttp3:logging-interceptor", ver
 #Json
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
 
+#Logs
+timber = { module = "com.jakewharton.timber:timber", version.ref = "timber" }
 
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }

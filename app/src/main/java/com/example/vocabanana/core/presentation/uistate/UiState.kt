@@ -1,7 +1,7 @@
 package com.example.vocabanana.core.presentation.uistate
 
 import com.example.vocabanana.R
-import com.example.vocabanana.core.data.AppError
+import com.example.vocabanana.core.domain.model.AppError
 import com.example.vocabanana.core.presentation.UiText
 
 sealed interface UiState<out T> {

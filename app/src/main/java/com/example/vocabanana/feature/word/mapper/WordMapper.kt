@@ -1,14 +1,14 @@
 package com.example.vocabanana.feature.word.mapper
 
-import com.example.vocabanana.core.database.word.local.WordEntity
-import com.example.vocabanana.core.database.word.local.WordFormEntity
-import com.example.vocabanana.core.database.word.local.WordWithFormsEntity
-import com.example.vocabanana.core.database.word.toInt
-import com.example.vocabanana.core.database.word.toWordState
-import com.example.vocabanana.feature.word.domain.PartOfSpeech
-import com.example.vocabanana.feature.word.domain.WordDomain
-import com.example.vocabanana.feature.word.domain.WordFormDomain
-import com.example.vocabanana.feature.word.domain.toInt
+import com.example.vocabanana.feature.database.word.local.WordEntity
+import com.example.vocabanana.feature.database.word.local.WordFormEntity
+import com.example.vocabanana.feature.database.word.local.WordWithFormsEntity
+import com.example.vocabanana.feature.database.word.toInt
+import com.example.vocabanana.feature.database.word.toWordState
+import com.example.vocabanana.feature.word.domain.model.PartOfSpeech
+import com.example.vocabanana.feature.word.domain.model.WordDomain
+import com.example.vocabanana.feature.word.domain.model.WordFormDomain
+import com.example.vocabanana.feature.word.domain.model.toInt
 
 
 fun WordDomain.toWordEntity() = WordEntity(

@@ -4,12 +4,11 @@ import androidx.lifecycle.viewModelScope
 import com.example.vocabanana.core.presentation.BaseViewModel
 import com.example.vocabanana.core.presentation.asUiState
 import com.example.vocabanana.core.presentation.uistate.UiState
-import com.example.vocabanana.core.database.text.repository.TextRepository
+import com.example.vocabanana.feature.database.text.repository.TextRepository
+import com.example.vocabanana.feature.text.domain.GenerateWordsFromTextUseCase
 import com.example.vocabanana.feature.text.presentation.data.TextUi
 import com.example.vocabanana.feature.text.presentation.data.toPreview
 import com.example.vocabanana.feature.text.presentation.data.toUi
-import com.example.vocabanana.feature.wordanalysis.domain.AiInputCenter
-import com.example.vocabanana.feature.wordanalysis.domain.AiMetaDataResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -25,7 +24,7 @@ import javax.inject.Inject
 @HiltViewModel
 class TextListScreenViewModel @Inject constructor(
     private val textRepository: TextRepository,
-    private val aiInputCenter: AiInputCenter
+    private val generateWordsFromTextUseCase: GenerateWordsFromTextUseCase //TODO add realization
 ) : BaseViewModel() {
 
     private var saveJob: Job? = null

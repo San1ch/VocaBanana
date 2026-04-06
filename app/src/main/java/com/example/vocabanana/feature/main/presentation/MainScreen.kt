@@ -43,7 +43,6 @@ fun MainScreen(
         onMoreClick = { },
         onVocabClick = { navigateTo(AppDestination.Vocabulary) },
         onTextsClick = { navigateTo(AppDestination.TextList) },
-        onWordAnalysisClick = { navigateTo(AppDestination.WordAnalysis) }
     )
 }
 
@@ -56,7 +55,6 @@ fun MainContent(
     onMenuClick: () -> Unit,
     onVocabClick: () -> Unit,
     onTextsClick: () -> Unit,
-    onWordAnalysisClick: () -> Unit
 ) {
 
     Scaffold(
@@ -98,10 +96,6 @@ fun MainContent(
                 Button(onClick = onTextsClick) {
                     Text("Texts")
                 }
-                SpacerSmall()
-                Button(onClick = onWordAnalysisClick) {
-                    Text("Text Analysis")
-                }
             }
         }
     }
@@ -118,7 +112,6 @@ fun MainScreenPreview() {
             onMoreClick = { },
             onVocabClick = { },
             onTextsClick = { },
-            onWordAnalysisClick = { }
         )
     }
 }

@@ -13,7 +13,6 @@ private object AppScreens {
     const val VOCABULARY_SCREEN = "VocabularyScreen"
     const val TEXT_LIST_SCREEN = "TextListScreen"
     const val TEXT_CREATE_SCREEN = "TextCreateScreen"
-    const val WORD_ANALYSIS_SCREEN = "WordAnalysisScreen"
 }
 
 /**
@@ -32,7 +31,6 @@ sealed class AppDestination(val route: String) {
     object Vocabulary : AppDestination(AppScreens.VOCABULARY_SCREEN)
     object TextList : AppDestination(AppScreens.TEXT_LIST_SCREEN)
     object TextCreate : AppDestination(AppScreens.TEXT_CREATE_SCREEN)
-    object WordAnalysis : AppDestination(AppScreens.WORD_ANALYSIS_SCREEN)
 
 }
 
@@ -40,8 +38,6 @@ sealed class AppDestination(val route: String) {
  * Models the navigation actions in the app.
  */
 class AppNavigationActions(private val navController: NavHostController) {
-
-
     fun navigateBack() {
         navController.popBackStack()
     }
@@ -53,7 +49,6 @@ class AppNavigationActions(private val navController: NavHostController) {
             AppDestination.TextCreate -> navigateToCreateText()
             AppDestination.TextList -> navigateToTextList()
             AppDestination.Vocabulary -> navigateToVocabulary()
-            AppDestination.WordAnalysis -> navigateToWordAnalysis()
         }
     }
 
@@ -78,29 +73,19 @@ class AppNavigationActions(private val navController: NavHostController) {
             restoreState = true
         }
     }
-
     private fun navigateToVocabulary() {
         navController.navigate(AppDestination.Vocabulary.route) {
 
         }
     }
-
     private fun navigateToTextList() {
         navController.navigate(AppDestination.TextList.route) {
 
         }
     }
-
     private fun navigateToCreateText() {
         navController.navigate(AppDestination.TextCreate.route) {
 
         }
     }
-    private fun navigateToWordAnalysis() {
-        navController.navigate(AppDestination.WordAnalysis.route) {
-
-        }
-    }
-
-
 }

@@ -1,11 +1,11 @@
 package com.example.vocabanana.feature.text.mapper
 
-import com.example.vocabanana.core.data.fold
-import com.example.vocabanana.core.database.text.local.TextEntity
-import com.example.vocabanana.feature.text.domain.TextDomain
+import com.example.vocabanana.core.domain.model.fold
+import com.example.vocabanana.feature.database.text.local.TextEntity
+import com.example.vocabanana.feature.text.domain.model.TextDomain
 
 fun TextEntity.toDomain(): TextDomain =
-    TextDomain.Companion.create(id, name, content, lastScrollPosition, lastReadTime).fold(
+    TextDomain.create(id, name, content, lastScrollPosition, lastReadTime).fold(
         onSuccess = { it },
         onError = {
             println("Error creating TextDomain: $it")
@@ -14,4 +14,4 @@ fun TextEntity.toDomain(): TextDomain =
     )
 
 fun TextEntity.toDomainUnsafe(): TextDomain =
-    TextDomain.Companion.unsafeCreate(id, name, content, lastScrollPosition, lastReadTime)
+    TextDomain.unsafeCreate(id, name, content, lastScrollPosition, lastReadTime)

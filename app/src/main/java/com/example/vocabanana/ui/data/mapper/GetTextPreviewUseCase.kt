@@ -1,7 +1,7 @@
 package com.example.vocabanana.ui.data.mapper
 
-import com.example.vocabanana.feature.text.domain.TextDomain
-import com.example.vocabanana.core.database.text.repository.TextRepository
+import com.example.vocabanana.feature.database.text.repository.TextRepository
+import com.example.vocabanana.feature.text.domain.model.TextDomain
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 

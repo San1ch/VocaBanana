@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -11,9 +13,17 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
 }
 
+val localProperties = Properties().apply {
+    val localPropertiesFile = rootProject.file("local.properties")
+    if (localPropertiesFile.exists()) {
+        localPropertiesFile.inputStream().use { load(it) }
+    }
+}
+
 android {
     namespace = "com.example.vocabanana"
     compileSdk = 36
+
 
     defaultConfig {
         applicationId = "com.example.vocabanana"
@@ -21,8 +31,11 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
-        buildConfigField("String", "GROQ_API_KEY", "\"${project.findProperty("GROQ_API_KEY")}\"")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+
+        val apiKey = localProperties.getProperty("GROQ_API_KEY") ?: ""
+        buildConfigField("String", "GROQ_API_KEY", "\"$apiKey\"")
     }
 
     buildTypes {
@@ -86,6 +99,9 @@ dependencies {
 
     //Json
     implementation(libs.kotlinx.serialization.json)
+
+    //Logs
+    implementation(libs.timber)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
