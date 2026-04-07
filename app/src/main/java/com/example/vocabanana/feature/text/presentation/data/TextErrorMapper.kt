@@ -22,12 +22,15 @@ fun TextValidateError.toUiText(): UiText {
         )
     }
 }
-
-fun GenerateWordsFromTextResult.Error.toUiText() = when(this){
-    GenerateWordsFromTextResult.Error.NetworkError -> UiText.StringResource(R.string.network_error)
+fun GenerateWordsFromTextResult.Error.toUiText() = when (this) {
     GenerateWordsFromTextResult.Error.InvalidApiKey -> UiText.StringResource(R.string.API_invalid_api_key)
+    GenerateWordsFromTextResult.Error.NetworkError -> UiText.StringResource(R.string.network_error)
+    is GenerateWordsFromTextResult.Error.NotAllNewWordsAdded -> UiText.StringResource(
+        R.string.generate_words_from_text_not_all_new_words_added,
+        addedCount,
+        totalCount
+    )
     GenerateWordsFromTextResult.Error.RateLimitExceeded -> UiText.StringResource(R.string.API_rate_limit_exceeded)
     GenerateWordsFromTextResult.Error.ServerError -> UiText.StringResource(R.string.server_error)
-    is GenerateWordsFromTextResult.Error.Unknown -> UiText.StringResource(R.string.unknown_error, this.message)
-
+    is GenerateWordsFromTextResult.Error.Unknown -> UiText.StringResource(R.string.unknown_error, message)
 }

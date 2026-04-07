@@ -5,6 +5,8 @@ import com.example.vocabanana.core.presentation.BaseViewModel
 import com.example.vocabanana.core.presentation.asUiState
 import com.example.vocabanana.core.presentation.uistate.UiState
 import com.example.vocabanana.feature.database.word.repository.WordRepository
+import com.example.vocabanana.feature.text.presentation.data.WordFormUi
+import com.example.vocabanana.feature.text.presentation.data.WordUi
 import com.example.vocabanana.feature.word.domain.model.PartOfSpeech
 import com.example.vocabanana.feature.word.domain.model.WordDomain
 import com.example.vocabanana.feature.word.domain.model.WordFormDomain
@@ -39,18 +41,6 @@ class VocabularyScreenViewModel @Inject constructor(
 }
 
 
-data class UiWord(
-    val id: Int,
-    val word: String,
-    val whenAdded: Long,
-    val partOfSpeech: String,
-    val forms: List<UiWordForm>
-)
-
-data class UiWordForm(
-    val form: String,
-    val partOfSpeech: String
-)
 
 fun PartOfSpeech.toUi(): String = when (this) {
     PartOfSpeech.NOUN -> "noun"
@@ -72,7 +62,7 @@ fun PartOfSpeech.toUi(): String = when (this) {
     PartOfSpeech.INTERJECTION -> "interjection"
     PartOfSpeech.UNKNOWN -> "other"
 }
-fun WordDomain.toUi() = UiWord(
+fun WordDomain.toUi() = WordUi(
     id = id,
     word = lemma,
     whenAdded = whenAdded,
@@ -80,7 +70,7 @@ fun WordDomain.toUi() = UiWord(
     forms = forms.map { it.toUi() }
 )
 
-fun WordFormDomain.toUi() = UiWordForm(
+fun WordFormDomain.toUi() = WordFormUi(
     form = form,
     partOfSpeech = partOfSpeech.toUi()
 )

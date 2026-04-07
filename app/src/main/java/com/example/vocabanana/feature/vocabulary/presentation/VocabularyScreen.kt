@@ -36,6 +36,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.vocabanana.BuildConfig
 import com.example.vocabanana.R
 import com.example.vocabanana.core.presentation.StateObserver
+import com.example.vocabanana.feature.text.presentation.data.WordUi
 import com.example.vocabanana.ui.composable.SpacerMicro
 import com.example.vocabanana.ui.theme.VocabBananaTheme
 
@@ -57,7 +58,7 @@ fun VocabularyScreen(viewModel: VocabularyScreenViewModel = hiltViewModel()) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun VocabularyContent(
-    words: List<UiWord>,
+    words: List<WordUi>,
     onMenuClick: () -> Unit = {},
     onAllDelete: () -> Unit = {},
     onMoreClick: () -> Unit = {},

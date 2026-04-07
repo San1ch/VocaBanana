@@ -35,6 +35,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.LockOpen
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -59,14 +60,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalViewConfiguration
 import androidx.compose.ui.platform.ViewConfiguration
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.vocabanana.core.navigation.AppDestination
 import com.example.vocabanana.core.presentation.StateObserver
 import com.example.vocabanana.core.presentation.toFormattedDate
+import com.example.vocabanana.feature.text.presentation.data.GenerateWordsFromTextUiResult
 import com.example.vocabanana.feature.text.presentation.data.TextPreview
 import com.example.vocabanana.feature.text.presentation.data.TextUi
 import com.example.vocabanana.ui.composable.AnimatedTitle
@@ -85,7 +89,6 @@ fun TextListScreen(
     val currentText by viewModel.currentText.collectAsState()
     val textPreviewsState by viewModel.textPreviews.collectAsState()
     var deletingText by remember { mutableStateOf<TextPreview?>(null) }
-
 
 
     DeleteConfirmDialog(
@@ -107,7 +110,10 @@ fun TextListScreen(
             onClearSelection = viewModel::clearSelection,
             navigateToAddText = { navigateTo(AppDestination.TextCreate) },
             onProgressUpdate = { id, pos -> viewModel.updateProgress(id, pos) },
-            onDelete = { preview -> deletingText = preview }
+            onDelete = { preview -> deletingText = preview },
+            onGenerateWords = { viewModel.generateWords() },
+            result = viewModel.generateWordsFromTextResult.value,
+            isGenerating = viewModel.isGenerating.value
         )
     }
 }
@@ -121,7 +127,11 @@ fun TextListContent(
     onClearSelection: () -> Unit,
     navigateToAddText: () -> Unit,
     onProgressUpdate: (Int, Float) -> Unit,
-    onDelete: (TextPreview) -> Unit
+    onDelete: (TextPreview) -> Unit,
+
+    onGenerateWords: () -> Unit,
+    result: GenerateWordsFromTextUiResult?,
+    isGenerating: Boolean
 ) {
     val pagerState = rememberPagerState(pageCount = { 3 })
     val coroutineScope = rememberCoroutineScope()
@@ -199,7 +209,7 @@ fun TextListContent(
                     )
 
                     1 -> TextReaderPage(state = selectedText, onProgressUpdate = onProgressUpdate)
-                    2 -> TextListSettingsPage()
+                    2 -> TextListSettingsPage(onGenerateWords = onGenerateWords, result = result, isGenerating = isGenerating)
                 }
             }
         }
@@ -355,9 +365,108 @@ fun AnimatedLockIcon(isLocked: Boolean, isSwipeAttempted: Boolean) {
 
 @Composable
 fun TextListSettingsPage(
+    onGenerateWords: () -> Unit,
+    result: GenerateWordsFromTextUiResult?,
+    isGenerating: Boolean
 ) {
 
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+            )
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Text(
+                    "AI Vocabulary Generator",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Text(
+                    "AI will analyze your text and add new words with translations and examples to your dictionary.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
+                if (isGenerating) {
+                    CircularProgressIndicator(modifier = Modifier.size(48.dp))
+                    Text("Analyzing text... Please wait", style = MaterialTheme.typography.labelMedium)
+                } else {
+                    Button(
+                        onClick = { onGenerateWords() },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = MaterialTheme.shapes.medium
+                    ) {
+                        Icon(Icons.Default.Add, contentDescription = null)
+                        Text("Generate Words", modifier = Modifier.padding(start = 8.dp))
+                    }
+                }
+            }
+        }
+
+        AnimatedVisibility(
+            visible = result != null,
+            enter = fadeIn() + scaleIn(),
+            modifier = Modifier.padding(top = 24.dp)
+        ) {
+            ResultStatus(result)
+        }
+    }
 }
+
+@Composable
+private fun ResultStatus(result: GenerateWordsFromTextUiResult?) {
+    val context = LocalContext.current
+
+    val color = when (result) {
+        is GenerateWordsFromTextUiResult.Success -> Color(0xFF4CAF50) // Зелений
+        is GenerateWordsFromTextUiResult.NotAllNewWordsAdded -> Color(0xFFFF9800) // Помаранчевий
+        is GenerateWordsFromTextUiResult.Error -> MaterialTheme.colorScheme.error
+        else -> MaterialTheme.colorScheme.primary
+    }
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Icon(
+            imageVector = if (result is GenerateWordsFromTextUiResult.Error) Icons.Default.Delete else Icons.Default.Add, // Можна замінити на Check
+            contentDescription = null,
+            tint = color,
+            modifier = Modifier.size(40.dp)
+        )
+
+        val message = when (result) {
+            is GenerateWordsFromTextUiResult.Success -> "Success! Added ${result.words.size} new words."
+            is GenerateWordsFromTextUiResult.NotAllNewWordsAdded ->
+                "Partial success: Added ${result.addedCount} of ${result.totalCount} words. Some parts failed due to API limits."
+            is GenerateWordsFromTextUiResult.Error -> result.message.asString(context)
+            else -> ""
+        }
+
+        Text(
+            text = message,
+            style = MaterialTheme.typography.bodyLarge,
+            fontWeight = FontWeight.Medium,
+            color = color,
+            modifier = Modifier.padding(horizontal = 16.dp),
+            textAlign = TextAlign.Center
+        )
+    }
+}
+
 @Composable
 fun MetricItem(label: String, value: String) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {

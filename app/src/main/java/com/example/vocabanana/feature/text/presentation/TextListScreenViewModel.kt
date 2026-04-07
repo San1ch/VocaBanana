@@ -6,6 +6,7 @@ import com.example.vocabanana.core.presentation.asUiState
 import com.example.vocabanana.core.presentation.uistate.UiState
 import com.example.vocabanana.feature.database.text.repository.TextRepository
 import com.example.vocabanana.feature.text.domain.GenerateWordsFromTextUseCase
+import com.example.vocabanana.feature.text.presentation.data.GenerateWordsFromTextUiResult
 import com.example.vocabanana.feature.text.presentation.data.TextUi
 import com.example.vocabanana.feature.text.presentation.data.toPreview
 import com.example.vocabanana.feature.text.presentation.data.toUi
@@ -24,12 +25,18 @@ import javax.inject.Inject
 @HiltViewModel
 class TextListScreenViewModel @Inject constructor(
     private val textRepository: TextRepository,
-    private val generateWordsFromTextUseCase: GenerateWordsFromTextUseCase //TODO add realization
+    private val generateWordsFromTextUseCase: GenerateWordsFromTextUseCase
 ) : BaseViewModel() {
 
     private var saveJob: Job? = null
 
-    
+    private val _generateWordsFromTextResult = MutableStateFlow<GenerateWordsFromTextUiResult?>(null)
+    val generateWordsFromTextResult = _generateWordsFromTextResult.asStateFlow()
+
+    private val _isGenerating = MutableStateFlow(false)
+    val isGenerating = _isGenerating.asStateFlow()
+
+
     val textPreviews = textRepository.getTexts()
         .map { list -> list.map { it.toPreview() } }
         .asUiState()
@@ -49,7 +56,21 @@ class TextListScreenViewModel @Inject constructor(
         }
     }
 
-    
+
+    fun generateWords() {
+        val textId = _currentText.value?.id ?: return
+        viewModelScope.launch(Dispatchers.IO) {
+            _isGenerating.value = true
+            val result = generateWordsFromTextUseCase(textId).toUi()
+            _generateWordsFromTextResult.value = result
+            _isGenerating.value = false
+        }
+    }
+
+    fun resetGenerateResult() {
+        _generateWordsFromTextResult.value = null
+    }
+
     fun clearSelection() {
         _currentText.value = null
     }

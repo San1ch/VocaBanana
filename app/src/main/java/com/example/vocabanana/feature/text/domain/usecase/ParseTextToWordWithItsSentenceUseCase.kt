@@ -3,11 +3,12 @@ package com.example.vocabanana.feature.text.domain.usecase
 import com.example.vocabanana.core.language.TextProcessor
 import com.example.vocabanana.core.domain.model.SentenceWithItsWords
 import com.example.vocabanana.feature.database.word.repository.WordRepository
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class ParseTextToWordWithItsSentenceUseCase @Inject constructor(
     private val wordRepository: WordRepository,
-    private val textProcessor: TextProcessor
+    private val textProcessor: TextProcessor,
 ) {
     suspend operator fun invoke(text: String): List<SentenceWithItsWords> {
 
@@ -24,6 +25,7 @@ class ParseTextToWordWithItsSentenceUseCase @Inject constructor(
         val allRawWords = models.flatMap { it.words }.distinct()
 
         // 3. Pre-filtering of no normalized words by lemma or form from database
+
         val existedWordsInDataBase = wordRepository.getExistingWords(allRawWords).toSet()
         val wordsToNormalize = allRawWords.filter { it !in existedWordsInDataBase }
 

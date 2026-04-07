@@ -31,6 +31,11 @@
     <!-- Unknown Errors -->
     <string name="unknown_error">Unknown error: %1$s</string>
 
+    <!-- Generate Words From Text Errors -->
+    <string name="generate_words_from_text_not_all_new_words_added">Added %1$d out of %2$d new words</string>
+    <string name="generate_words_from_text_server_error">Server error</string>
+    <string name="generate_words_from_text_all_words_already_exists">All words already exist</string>
+
     <!-- General UI Text -->
     <string name="vocabulary">Vocabulary</string>
     <string name="add_word">Add Word</string>

@@ -10,13 +10,22 @@ class TextProcessor @Inject constructor() {
             .map { it.trim() }
     }
     fun tokenizeSentence(sentence: String): List<String> {
-        val rawWords = sentence.split(Regex("[^\\p{L}'-]+"))
-            .filter { it.isNotBlank() && it.length > 1 }
-            .map { it.lowercase() }
+        val normalizedSentence = sentence
+            .replace("’", "'")
+            .replace("‘", "'")
+            .replace("`", "'")
+
+        val rawWords = normalizedSentence.split(Regex("\\s+"))
+            .map { it.trim().lowercase() }
+            .filter { it.isNotBlank() }
 
         val expanded = mutableListOf<String>()
 
-        rawWords.forEach { word ->
+        rawWords.forEach { wordWithPunctuation ->
+            val word = wordWithPunctuation.replace(Regex("^[^\\p{L}']+|[^\\p{L}']+$"), "")
+
+            if (word.length <= 1) return@forEach
+
             when {
                 word.endsWith("'re") -> {
                     expanded.add(word.dropLast(3))

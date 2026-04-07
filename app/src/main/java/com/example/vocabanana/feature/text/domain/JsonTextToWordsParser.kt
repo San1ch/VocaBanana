@@ -23,11 +23,26 @@ class JsonTextToWordsParser @Inject constructor() {
 
     fun parse(rawJson: String): List<AiWordDto> {
         return try {
-            val cleanJson = rawJson.trim()
+            val cleanInput = rawJson.trim()
                 .removeSurrounding("```json", "```")
                 .trim()
 
-            jsonConfig.decodeFromString<List<AiWordDto>>(cleanJson)
+            val arrayRegex = Regex("\\[[\\s\\S]*?]")
+            val matches = arrayRegex.findAll(cleanInput)
+
+            val allWords = mutableListOf<AiWordDto>()
+
+            for (match in matches) {
+                val jsonPart = match.value
+                val partWords = jsonConfig.decodeFromString<List<AiWordDto>>(jsonPart)
+                allWords.addAll(partWords)
+            }
+
+            if (allWords.isEmpty() && cleanInput.isNotEmpty()) {
+                Log.w("AiResponseParser", "No JSON arrays found in input: $cleanInput")
+            }
+
+            allWords
         } catch (e: Exception) {
             Log.e("AiResponseParser", "Failed to parse AI response: ${e.message}")
             emptyList()
