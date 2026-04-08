@@ -1,6 +1,6 @@
 package com.example.vocabanana.feature.database.text.module
 
-import com.example.vocabanana.feature.database.text.repository.TextRepository
+import com.example.vocabanana.core.database.TextRepository
 import com.example.vocabanana.feature.database.text.repository.TextRepositoryImpl
 import dagger.Binds
 import dagger.Module

@@ -33,6 +33,7 @@ class AiPromptBuilder @Inject constructor() {
         2. Lemma POS (${AiJsonKeys.LEMMA_PART_OF_SPEECH}): Identify the primary part of speech of the resulting Lemma.
         3. Normalization: Ensure the Lemma is in its base form (infinitive for verbs, singular for nouns).
         4. Homonyms: If the context clarifies a specific meaning of a homonym (e.g., 'object' as a verb vs 'object' as a noun), ensure both POS fields reflect the usage in the provided context.
+        5. Fixing: If word have mistakes like "buildE", you should return "build" or any other correct form by CONTEXT. Incorrect words shouldn't exist, only fixed forms.
 
         OUTPUT FORMAT:
         Return ONLY a JSON array of objects. Use these keys:

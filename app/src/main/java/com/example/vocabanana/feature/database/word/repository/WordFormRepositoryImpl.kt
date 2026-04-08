@@ -1,5 +1,6 @@
 package com.example.vocabanana.feature.database.word.repository
 
+import com.example.vocabanana.core.database.WordFormRepository
 import com.example.vocabanana.feature.database.word.local.WordFormDao
 import com.example.vocabanana.feature.word.domain.model.WordFormDomain
 import com.example.vocabanana.feature.word.mapper.toDomain

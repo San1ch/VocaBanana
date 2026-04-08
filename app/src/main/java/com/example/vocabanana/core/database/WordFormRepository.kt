@@ -1,4 +1,4 @@
-package com.example.vocabanana.feature.database.word.repository
+package com.example.vocabanana.core.database
 
 import com.example.vocabanana.feature.word.domain.model.WordFormDomain
 

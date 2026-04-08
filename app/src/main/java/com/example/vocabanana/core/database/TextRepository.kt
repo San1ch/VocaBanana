@@ -1,4 +1,4 @@
-package com.example.vocabanana.feature.database.text.repository
+package com.example.vocabanana.core.database
 
 import com.example.vocabanana.feature.text.domain.model.TextDomain
 import kotlinx.coroutines.flow.Flow

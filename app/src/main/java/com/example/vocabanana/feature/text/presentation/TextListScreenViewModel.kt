@@ -4,7 +4,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.vocabanana.core.presentation.BaseViewModel
 import com.example.vocabanana.core.presentation.asUiState
 import com.example.vocabanana.core.presentation.uistate.UiState
-import com.example.vocabanana.feature.database.text.repository.TextRepository
+import com.example.vocabanana.core.database.TextRepository
 import com.example.vocabanana.feature.text.domain.GenerateWordsFromTextUseCase
 import com.example.vocabanana.feature.text.presentation.data.GenerateWordsFromTextUiResult
 import com.example.vocabanana.feature.text.presentation.data.TextUi

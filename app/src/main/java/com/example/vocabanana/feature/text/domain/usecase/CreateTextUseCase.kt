@@ -2,7 +2,7 @@ package com.example.vocabanana.feature.text.domain.usecase
 
 import com.example.vocabanana.core.domain.model.ValidateResult
 import com.example.vocabanana.feature.database.text.TextValidateError
-import com.example.vocabanana.feature.database.text.repository.TextRepository
+import com.example.vocabanana.core.database.TextRepository
 import com.example.vocabanana.feature.text.domain.model.TextDomain
 import javax.inject.Inject
 

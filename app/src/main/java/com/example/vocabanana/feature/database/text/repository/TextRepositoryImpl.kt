@@ -1,5 +1,6 @@
 package com.example.vocabanana.feature.database.text.repository
 
+import com.example.vocabanana.core.database.TextRepository
 import com.example.vocabanana.feature.database.text.local.TextDao
 import com.example.vocabanana.feature.database.text.local.TextEntity
 import com.example.vocabanana.feature.text.domain.model.TextDomain
