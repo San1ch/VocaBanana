@@ -2,6 +2,8 @@ package com.example.vocabanana.feature.database
 
 import android.content.Context
 import androidx.room.Room
+import com.example.vocabanana.feature.database.lemmatizationtablet.LemmaDao
+import com.example.vocabanana.feature.database.lemmatizationtablet.LemmatizationDatabase
 import com.example.vocabanana.feature.database.text.local.TextDao
 import com.example.vocabanana.feature.database.word.local.WordDao
 import com.example.vocabanana.feature.database.word.local.WordFormDao
@@ -24,6 +26,22 @@ object VocabDatabaseModule {
             "vocab_database"
         ).fallbackToDestructiveMigration(false).build()
     }
+
+    @Provides
+    @Singleton
+    fun provideLemmatizationDatabase(@ApplicationContext context: Context): LemmatizationDatabase {
+        return Room.databaseBuilder(
+            context,
+            LemmatizationDatabase::class.java,
+            "external_lemmas.db"
+        )
+            .createFromAsset("english-lemmatization.db") // Це твій файл у папці assets
+            .fallbackToDestructiveMigration()
+            .build()
+    }
+
+    @Provides
+    fun provideLemmaDao(db: LemmatizationDatabase): LemmaDao = db.lemmaDao()
     // [PROVIDES_START]
     @Provides
     @Singleton

@@ -1,4 +1,4 @@
-package com.example.vocabanana.feature.database.text
+package com.example.vocabanana.feature.text.domain.model
 
 import com.example.vocabanana.core.domain.model.ValidationError
 

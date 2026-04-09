@@ -37,7 +37,7 @@ fun MainScreen(
         navigateTo = { navigateTo(it) }
     )
     MainContent(
-        onDebugClick = { viewModel.reloadInit() },
+        onDebugClick = { navigateTo(AppDestination.Debug) },
         onMenuClick = { },
         onSettingsClick = { },
         onMoreClick = { },

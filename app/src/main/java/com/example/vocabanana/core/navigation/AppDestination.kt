@@ -5,7 +5,7 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 
 /**
- * Screens used in [AppDestination]
+ * Screens has been used in [AppDestination]
  */
 private object AppScreens {
     const val INIT_SCREEN = "InitScreen"
@@ -13,17 +13,18 @@ private object AppScreens {
     const val VOCABULARY_SCREEN = "VocabularyScreen"
     const val TEXT_LIST_SCREEN = "TextListScreen"
     const val TEXT_CREATE_SCREEN = "TextCreateScreen"
+    const val DEBUG_SCREEN = "DebugScreen"
 }
 
 /**
- * Arguments used in [AppDestination] routes
+ * Arguments has been used in [AppDestination] routes
  */
-object AppDestinationsArgs {
+object AppDestinationArgs {
 
 }
 
 /**
- * Destinations used in the [AppActivity]
+ * Destinations has been used in the [AppActivity]
  */
 sealed class AppDestination(val route: String) {
     object Init : AppDestination(AppScreens.INIT_SCREEN)
@@ -31,11 +32,12 @@ sealed class AppDestination(val route: String) {
     object Vocabulary : AppDestination(AppScreens.VOCABULARY_SCREEN)
     object TextList : AppDestination(AppScreens.TEXT_LIST_SCREEN)
     object TextCreate : AppDestination(AppScreens.TEXT_CREATE_SCREEN)
+    object Debug : AppDestination(AppScreens.DEBUG_SCREEN)
 
 }
 
 /**
- * Models the navigation actions in the app.
+ * It models the navigation actions in the app.
  */
 class AppNavigationActions(private val navController: NavHostController) {
     fun navigateBack() {
@@ -44,6 +46,8 @@ class AppNavigationActions(private val navController: NavHostController) {
 
     fun navigateTo(destination: AppDestination) {
         when (destination) {
+            AppDestination.Debug -> navigateToDebug()
+
             AppDestination.Init -> navigateToInit()
             AppDestination.Main -> navigateToMain()
             AppDestination.TextCreate -> navigateToCreateText()
@@ -51,8 +55,14 @@ class AppNavigationActions(private val navController: NavHostController) {
             AppDestination.Vocabulary -> navigateToVocabulary()
         }
     }
+    private fun navigateToDebug(){
+        navController.navigate(AppDestination.Debug.route){
 
-    //Navigate implementations
+        }
+    }
+
+
+
     private fun navigateToInit() {
         navController.navigate(AppDestination.Init.route) {
             popUpTo(navController.graph.findStartDestination().id) {

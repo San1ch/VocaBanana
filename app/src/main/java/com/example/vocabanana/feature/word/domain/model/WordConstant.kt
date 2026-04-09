@@ -1,4 +1,4 @@
-package com.example.vocabanana.feature.database.word
+package com.example.vocabanana.feature.word.domain.model
 
 
 object WordConstants {

@@ -1,31 +1,48 @@
 package com.example.vocabanana.feature.text.domain
 
-import com.example.vocabanana.core.domain.TextToTextAiHub
-import com.example.vocabanana.core.utilities.logs.Logger
-import com.example.vocabanana.feature.ai.texttotext.groq.AiResult
+import com.example.vocabanana.core.database.LemmatizationRepository
 import com.example.vocabanana.core.database.TextRepository
-import com.example.vocabanana.core.database.WordRepository
+import com.example.vocabanana.core.utilities.logs.Logger
 import com.example.vocabanana.feature.text.domain.usecase.TextProcessingService
-import com.example.vocabanana.feature.text.presentation.AiDtoToWordsUseCase
 import com.example.vocabanana.feature.word.domain.model.WordDomain
 import javax.inject.Inject
+import kotlin.math.log
 
 class GenerateWordsFromTextUseCase @Inject constructor(
     private val textRepository: TextRepository,
-    private val textProcessingService: TextProcessingService,
-    private val logger: Logger
+    private val logger: Logger,
+    private val lemmatizationRepository: LemmatizationRepository,
+    private val tps: TextProcessingService
 ) {
-    suspend operator fun invoke(textId: Int): GenerateWordsFromTextResult {
-        // 1. Get text by id
+    suspend operator fun invoke(textId: Int) {
         val targetText = textRepository.getTextById(textId).content
-        logger.d("Target text: $targetText", tag = "GenerateWordsFromTextUseCase")
 
-        // 2. Parse and clean at objects
-        val sentencesWithWords = textProcessingService.parseTextToWordWithItsSentence(targetText)
-        if (sentencesWithWords.isEmpty()) {
-            return GenerateWordsFromTextResult.Success.AllWordsAlreadyExists
-        }
+        var currentList = tps.parseText(tps.cleanText(targetText)).distinct()
+        logger.d("Words count: ${currentList.size}", "GenerateWordsFromTextUseCase")
+        logger.d("============================================================", "GenerateWordsFromTextUseCase")
 
+        val pairs = lemmatizationRepository.getWordLemmaPairs(currentList)
+        logger.d("Pairs count: ${pairs.size}", "GenerateWordsFromTextUseCase")
+        logger.d("============================================================", "GenerateWordsFromTextUseCase")
+
+        val wordsFoundInDatabase = pairs.map { it.word }.toSet()
+        logger.d("Words found in database: ${wordsFoundInDatabase.size}", "GenerateWordsFromTextUseCase")
+        logger.d("============================================================", "GenerateWordsFromTextUseCase")
+
+        val extractedLemmas = pairs.map { it.lemma }.toSet()
+
+        currentList = currentList.filter { it !in wordsFoundInDatabase }
+        logger.d("Filtered words count: ${currentList.size}: $currentList", "GenerateWordsFromTextUseCase")
+        logger.d("============================================================", "GenerateWordsFromTextUseCase")
+
+        val listWithoutTabletLemmas = lemmatizationRepository.findExistingLemmas(currentList)
+        logger.d("List without tablet lemmas count: ${listWithoutTabletLemmas.size}: $listWithoutTabletLemmas", "GenerateWordsFromTextUseCase")
+        logger.d("============================================================", "GenerateWordsFromTextUseCase")
+
+        val withoutLemmasAndWord = currentList.filter { it !in listWithoutTabletLemmas }
+        logger.d("Without lemmas and word count: ${withoutLemmasAndWord.size}: $withoutLemmasAndWord", "GenerateWordsFromTextUseCase")
+        logger.d("============================================================", "GenerateWordsFromTextUseCase")
+    }
 }
 
 sealed class GenerateWordsFromTextResult {

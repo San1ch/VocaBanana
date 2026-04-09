@@ -3,12 +3,11 @@ package com.example.vocabanana.feature.word.mapper
 import com.example.vocabanana.feature.database.word.local.WordEntity
 import com.example.vocabanana.feature.database.word.local.WordFormEntity
 import com.example.vocabanana.feature.database.word.local.WordWithFormsEntity
-import com.example.vocabanana.feature.database.word.toInt
-import com.example.vocabanana.feature.database.word.toWordState
+import com.example.vocabanana.feature.word.domain.model.toInt
+import com.example.vocabanana.feature.word.domain.model.toWordState
 import com.example.vocabanana.feature.word.domain.model.PartOfSpeech
 import com.example.vocabanana.feature.word.domain.model.WordDomain
 import com.example.vocabanana.feature.word.domain.model.WordFormDomain
-import com.example.vocabanana.feature.word.domain.model.toInt
 
 
 fun WordDomain.toWordEntity() = WordEntity(

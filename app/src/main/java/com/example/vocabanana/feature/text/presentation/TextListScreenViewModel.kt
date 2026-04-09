@@ -60,10 +60,6 @@ class TextListScreenViewModel @Inject constructor(
     fun generateWords() {
         val textId = _currentText.value?.id ?: return
         viewModelScope.launch(Dispatchers.IO) {
-            _isGenerating.value = true
-            val result = generateWordsFromTextUseCase(textId).toUi()
-            _generateWordsFromTextResult.value = result
-            _isGenerating.value = false
         }
     }
 

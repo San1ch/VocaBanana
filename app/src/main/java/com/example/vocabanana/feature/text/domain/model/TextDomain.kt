@@ -1,8 +1,6 @@
 package com.example.vocabanana.feature.text.domain.model
 
 import com.example.vocabanana.core.domain.model.ValidateResult
-import com.example.vocabanana.feature.database.text.TextConstant
-import com.example.vocabanana.feature.database.text.TextValidateError
 
 @ConsistentCopyVisibility
 data class TextDomain private constructor(

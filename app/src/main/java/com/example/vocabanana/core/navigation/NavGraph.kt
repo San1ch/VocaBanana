@@ -13,19 +13,18 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.vocabanana.core.presentation.StateObserver
+import com.example.vocabanana.feature.debug.presentation.DebugScreen
 import com.example.vocabanana.feature.init.InitScreen
 import com.example.vocabanana.feature.main.presentation.MainScreen
 import com.example.vocabanana.feature.text.presentation.AddTextScreen
 import com.example.vocabanana.feature.text.presentation.TextListScreen
 import com.example.vocabanana.feature.vocabulary.presentation.VocabularyScreen
-import kotlinx.coroutines.CoroutineScope
 
 
 @Composable
 fun NavGraph(
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
-    coroutineScope: CoroutineScope = rememberCoroutineScope(),
     appNavigationActions: AppNavigationActions = remember(navController) {
         AppNavigationActions(navController)
     },
@@ -38,6 +37,14 @@ fun NavGraph(
         NavHost(
             navController = navController, startDestination = destination, modifier = modifier
         ) {
+            // Debug version screens
+            composable(AppDestination.Debug.route) {
+                DebugScreen(
+                    navigateBack = appNavigationActions::navigateBack,
+                    navigateTo = { appNavigationActions.navigateTo(it) })
+            }
+
+            // Release version screens
             composable(AppDestination.Main.route) {
                 MainScreen(
                     navigateTo = { appNavigationActions.navigateTo(it) })

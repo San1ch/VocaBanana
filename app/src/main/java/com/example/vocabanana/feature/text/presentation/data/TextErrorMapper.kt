@@ -2,7 +2,7 @@ package com.example.vocabanana.feature.text.presentation.data
 
 import com.example.vocabanana.R
 import com.example.vocabanana.core.presentation.UiText
-import com.example.vocabanana.feature.database.text.TextValidateError
+import com.example.vocabanana.feature.text.domain.model.TextValidateError
 import com.example.vocabanana.feature.text.domain.GenerateWordsFromTextResult
 
 fun TextValidateError.toUiText(): UiText {

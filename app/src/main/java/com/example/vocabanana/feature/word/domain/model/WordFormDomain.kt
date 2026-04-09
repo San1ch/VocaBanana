@@ -1,7 +1,6 @@
 package com.example.vocabanana.feature.word.domain.model
 
 import com.example.vocabanana.core.domain.model.ValidateResult
-import com.example.vocabanana.feature.database.word.WordConstants
 
 @ConsistentCopyVisibility
 data class WordFormDomain private constructor(

@@ -3,8 +3,8 @@ package com.example.vocabanana.feature.word.domain.model
 import com.example.vocabanana.core.domain.model.ValidateResult
 import com.example.vocabanana.core.domain.model.ValidationError
 import com.example.vocabanana.core.domain.model.map
-import com.example.vocabanana.feature.database.word.WordConstants.MAX_WORD_LENGTH
-import com.example.vocabanana.feature.database.word.WordConstants.WORD_REGEX
+import com.example.vocabanana.feature.word.domain.model.WordConstants.MAX_WORD_LENGTH
+import com.example.vocabanana.feature.word.domain.model.WordConstants.WORD_REGEX
 
 
 @ConsistentCopyVisibility
