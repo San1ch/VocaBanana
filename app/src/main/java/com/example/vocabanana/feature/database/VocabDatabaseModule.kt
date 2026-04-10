@@ -2,8 +2,10 @@ package com.example.vocabanana.feature.database
 
 import android.content.Context
 import androidx.room.Room
-import com.example.vocabanana.feature.database.lemmatizationtablet.LemmaDao
-import com.example.vocabanana.feature.database.lemmatizationtablet.LemmatizationDatabase
+import com.example.vocabanana.feature.database.language.lemmatiazation.LemmaDao
+import com.example.vocabanana.feature.database.language.lemmatiazation.LemmatizationDatabase
+import com.example.vocabanana.feature.database.language.lexicon.LexiconDao
+import com.example.vocabanana.feature.database.language.lexicon.LexiconDatabase
 import com.example.vocabanana.feature.database.text.local.TextDao
 import com.example.vocabanana.feature.database.word.local.WordDao
 import com.example.vocabanana.feature.database.word.local.WordFormDao
@@ -39,9 +41,24 @@ object VocabDatabaseModule {
             .fallbackToDestructiveMigration()
             .build()
     }
-
     @Provides
     fun provideLemmaDao(db: LemmatizationDatabase): LemmaDao = db.lemmaDao()
+
+    @Provides
+    @Singleton
+    fun provideLexiconDatabase(@ApplicationContext context: Context): LexiconDatabase {
+        return Room.databaseBuilder(
+            context,
+            LexiconDatabase::class.java,
+            "external_lexicon.db"
+        )
+            .createFromAsset("english-lexicon.db")
+            .fallbackToDestructiveMigration()
+            .build()
+    }
+    @Provides
+    fun provideLexiconDao(db: LexiconDatabase): LexiconDao = db.lexiconDao()
+
     // [PROVIDES_START]
     @Provides
     @Singleton

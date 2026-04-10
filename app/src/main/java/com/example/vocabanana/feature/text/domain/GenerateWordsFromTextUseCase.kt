@@ -3,45 +3,46 @@ package com.example.vocabanana.feature.text.domain
 import com.example.vocabanana.core.database.LemmatizationRepository
 import com.example.vocabanana.core.database.TextRepository
 import com.example.vocabanana.core.utilities.logs.Logger
+import com.example.vocabanana.feature.database.language.lexicon.LexiconRepository
 import com.example.vocabanana.feature.text.domain.usecase.TextProcessingService
 import com.example.vocabanana.feature.word.domain.model.WordDomain
 import javax.inject.Inject
-import kotlin.math.log
 
 class GenerateWordsFromTextUseCase @Inject constructor(
     private val textRepository: TextRepository,
     private val logger: Logger,
-    private val lemmatizationRepository: LemmatizationRepository,
-    private val tps: TextProcessingService
+    private val lemmaRep: LemmatizationRepository,
+    private val tps: TextProcessingService,
+    private val lexiconRepository: LexiconRepository
 ) {
     suspend operator fun invoke(textId: Int) {
         val targetText = textRepository.getTextById(textId).content
+        val currentList = prepareWords(targetText)
+        logger.d("Current list size: ${currentList.size}", tag = "GenerateWordsFromTextUseCase")
 
-        var currentList = tps.parseText(tps.cleanText(targetText)).distinct()
-        logger.d("Words count: ${currentList.size}", "GenerateWordsFromTextUseCase")
-        logger.d("============================================================", "GenerateWordsFromTextUseCase")
+        val notExistingWords = filterNotExistedWords(currentList, lemmaRep.findExistingWords(currentList))
+        logger.d("Not existing words: ${notExistingWords.size}:", tag = "GenerateWordsFromTextUseCase")
+        logger.d("Words: ${notExistingWords.joinToString(", ")}", tag = "GenerateWordsFromTextUseCase")
 
-        val pairs = lemmatizationRepository.getWordLemmaPairs(currentList)
-        logger.d("Pairs count: ${pairs.size}", "GenerateWordsFromTextUseCase")
-        logger.d("============================================================", "GenerateWordsFromTextUseCase")
+        val notExistingLemmas = filterNotExistedWords(notExistingWords, lemmaRep.findExistingLemmas(notExistingWords))
+        logger.d("Not existing lemmas: ${notExistingLemmas.size}:", tag = "GenerateWordsFromTextUseCase")
+        logger.d("Words: ${notExistingLemmas.joinToString(", ")}", tag = "GenerateWordsFromTextUseCase")
 
-        val wordsFoundInDatabase = pairs.map { it.word }.toSet()
-        logger.d("Words found in database: ${wordsFoundInDatabase.size}", "GenerateWordsFromTextUseCase")
-        logger.d("============================================================", "GenerateWordsFromTextUseCase")
+        val notExistingLexicons = filterNotExistedWords(notExistingLemmas, lexiconRepository.getExistingWords(notExistingLemmas))
+        logger.d("Not existing lexicons: ${notExistingLexicons.size}:", tag = "GenerateWordsFromTextUseCase")
+        logger.d("Words: ${notExistingLexicons.joinToString(", ")}", tag = "GenerateWordsFromTextUseCase")
+    }
 
-        val extractedLemmas = pairs.map { it.lemma }.toSet()
+    private fun filterNotExistedWords(previous: List<String>, existed: List<String>): List<String>{
+        return previous.filter { !existed.contains(it) }
+    }
 
-        currentList = currentList.filter { it !in wordsFoundInDatabase }
-        logger.d("Filtered words count: ${currentList.size}: $currentList", "GenerateWordsFromTextUseCase")
-        logger.d("============================================================", "GenerateWordsFromTextUseCase")
-
-        val listWithoutTabletLemmas = lemmatizationRepository.findExistingLemmas(currentList)
-        logger.d("List without tablet lemmas count: ${listWithoutTabletLemmas.size}: $listWithoutTabletLemmas", "GenerateWordsFromTextUseCase")
-        logger.d("============================================================", "GenerateWordsFromTextUseCase")
-
-        val withoutLemmasAndWord = currentList.filter { it !in listWithoutTabletLemmas }
-        logger.d("Without lemmas and word count: ${withoutLemmasAndWord.size}: $withoutLemmasAndWord", "GenerateWordsFromTextUseCase")
-        logger.d("============================================================", "GenerateWordsFromTextUseCase")
+    private fun prepareWords(text: String): List<String>{
+        var text = tps.normalizeGrammar(text)
+        text = tps.cleanText(text)
+        text = tps.hyphenWordsNormalization(text)
+        val words = tps.parseText(text)
+        return words.distinct()
     }
 }
 

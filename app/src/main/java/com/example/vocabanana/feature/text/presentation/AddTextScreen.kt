@@ -6,6 +6,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -25,13 +26,16 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -41,6 +45,9 @@ import com.example.vocabanana.R
 import com.example.vocabanana.core.navigation.AppDestination
 import com.example.vocabanana.feature.text.domain.model.TextConstant
 import com.example.vocabanana.ui.composable.CollectUiEvents
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 fun AddTextScreen(
@@ -55,40 +62,28 @@ fun AddTextScreen(
     )
 
     val context = LocalContext.current
-    val clipboardManager = LocalContext.current.getSystemService(
-        ClipboardManager::class.java
-    )
+    val scope = rememberCoroutineScope()
+    val clipboardManager = context.getSystemService(ClipboardManager::class.java)
 
     var title by remember { mutableStateOf("") }
     var content by remember { mutableStateOf("") }
-
-    val onCopyClick = {
-        val clip = ClipData.newPlainText("text", content)
-        clipboardManager.setPrimaryClip(clip)
-    }
-
-    val onPasteClick = {
-        val pasted = clipboardManager.primaryClip
-            ?.getItemAt(0)
-            ?.text
-            ?.toString()
-
-        if (!pasted.isNullOrBlank()) {
-            content = pasted
-        }
-    }
-
-    val onClearClick = {
-        content = ""
-    }
+    var fileName by remember { mutableStateOf<String?>(null) }
 
     val filePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri ->
-        uri?.let {
-            val text = context.contentResolver.openInputStream(it)?.bufferedReader()
-                ?.use { reader -> reader.readText() } ?: ""
-            content = text
+        uri?.let { selectedUri ->
+            fileName = selectedUri.lastPathSegment ?: "Selected file"
+
+            scope.launch(Dispatchers.IO) {
+                val text = context.contentResolver.openInputStream(selectedUri)
+                    ?.bufferedReader()
+                    ?.use { it.readText() } ?: ""
+
+                withContext(Dispatchers.Main) {
+                    content = text
+                }
+            }
         }
     }
 
@@ -96,16 +91,30 @@ fun AddTextScreen(
         title = title,
         onTitleChange = { title = it },
         content = content,
-        onContentChange = { content = it },
+        onContentChange = {
+            content = it
+            if (it.isNotBlank()) fileName = null
+        },
+        fileName = fileName,
         onBackClick = navigateBack,
         onOpenFileClick = { filePickerLauncher.launch("text/plain") },
         onAddTextClick = { viewModel.addText(title, content) },
-        onCopyClick = onCopyClick,
-        onPasteClick = onPasteClick,
-        onClearClick = onClearClick
+        onCopyClick = {
+            clipboardManager.setPrimaryClip(ClipData.newPlainText("text", content))
+        },
+        onPasteClick = {
+            val pasted = clipboardManager.primaryClip?.getItemAt(0)?.text?.toString()
+            if (!pasted.isNullOrBlank()) {
+                content = pasted
+                fileName = null
+            }
+        },
+        onClearClick = {
+            content = ""
+            fileName = null
+        }
     )
 }
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -113,38 +122,34 @@ fun AddTextContent(
     modifier: Modifier = Modifier,
     title: String,
     onTitleChange: (String) -> Unit,
+    fileName: String?,
     content: String,
     onContentChange: (String) -> Unit,
     onBackClick: () -> Unit,
-
     onOpenFileClick: () -> Unit,
     onAddTextClick: () -> Unit,
-
     onCopyClick: () -> Unit,
     onPasteClick: () -> Unit,
     onClearClick: () -> Unit
-
 ) {
     val isTooLong = title.length > TextConstant.MAX_NAME_LENGTH
     val color by animateColorAsState(
-        targetValue = if (isTooLong) MaterialTheme.colorScheme.error
-        else MaterialTheme.colorScheme.secondary,
+        targetValue = if (isTooLong) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.secondary,
         label = "borderColor"
-    )
-    val labelColor by animateColorAsState(
-        targetValue = if (isTooLong) MaterialTheme.colorScheme.error
-        else MaterialTheme.colorScheme.secondary,
-        label = "labelColor"
     )
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text(stringResource(R.string.add_text_title)) }, navigationIcon = {
-                IconButton(onClick = onBackClick) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+            TopAppBar(
+                title = { Text(stringResource(R.string.add_text_title)) },
+                navigationIcon = {
+                    IconButton(onClick = onBackClick) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    }
                 }
-            })
-        }) { paddingValues ->
+            )
+        }
+    ) { paddingValues ->
         Column(
             modifier = modifier
                 .fillMaxSize()
@@ -155,74 +160,51 @@ fun AddTextContent(
             OutlinedTextField(
                 value = title,
                 onValueChange = onTitleChange,
-                label = {
-                    Text(
-                        text = "Title: ${title.length}/${TextConstant.MAX_NAME_LENGTH} chars",
-                        color = labelColor
-                    )
-                },
+                label = { Text("Title: ${title.length}/${TextConstant.MAX_NAME_LENGTH}") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = color,
-                    unfocusedBorderColor = color,
-                    errorBorderColor = MaterialTheme.colorScheme.error,
-                    cursorColor = color
+                isError = isTooLong
+            )
+
+            // ЛОГІКА: Якщо є файл, показуємо плашку. Якщо немає - текстове поле.
+            if (fileName != null) {
+                Surface(
+                    modifier = Modifier.fillMaxWidth().weight(1f),
+                    color = MaterialTheme.colorScheme.secondaryContainer,
+                    shape = MaterialTheme.shapes.medium
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Text(fileName, style = MaterialTheme.typography.headlineSmall)
+                    }
+                }
+            } else {
+                OutlinedTextField(
+                    value = content,
+                    onValueChange = onContentChange,
+                    label = { Text("Paste your text here") },
+                    modifier = Modifier.fillMaxWidth().weight(1f)
                 )
-            )
-
-            OutlinedTextField(
-                value = content,
-                onValueChange = onContentChange,
-                label = { Text("Paste your text here") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                minLines = 5
-            )
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                OutlinedButton(
-                    onClick = onCopyClick,
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text("Copy")
-                }
-
-                OutlinedButton(
-                    onClick = onPasteClick,
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text("Paste")
-                }
-
-                OutlinedButton(
-                    onClick = onClearClick,
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text("Clear")
-                }
             }
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                OutlinedButton(
-                    onClick = onOpenFileClick, modifier = Modifier.weight(1f)
-                ) {
-                    Icon(Icons.Default.AttachFile, contentDescription = null)
+            // Кнопки Copy/Paste/Clear
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedButton(onClick = onCopyClick, modifier = Modifier.weight(1f)) { Text("Copy") }
+                OutlinedButton(onClick = onPasteClick, modifier = Modifier.weight(1f)) { Text("Paste") }
+                OutlinedButton(onClick = onClearClick, modifier = Modifier.weight(1f)) { Text("Clear") }
+            }
+
+            // Кнопки File/Add
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedButton(onClick = onOpenFileClick, modifier = Modifier.weight(1f)) {
+                    Icon(Icons.Default.AttachFile, null)
                     Spacer(Modifier.width(8.dp))
                     Text("Pick .txt")
                 }
-
                 Button(
                     onClick = onAddTextClick,
                     modifier = Modifier.weight(1f),
-                    enabled = content.isNotBlank()
+                    // Тепер кнопка активна, якщо є ХОЧ ЩОСЬ (файл вже зчитаний в content)
+                    enabled = content.isNotBlank() && !isTooLong
                 ) {
                     Text("Add")
                 }
