@@ -37,7 +37,7 @@ object VocabDatabaseModule {
             LemmatizationDatabase::class.java,
             "external_lemmas.db"
         )
-            .createFromAsset("english-lemmatization.db") // Це твій файл у папці assets
+            .createFromAsset("english-lemmatization.db")
             .fallbackToDestructiveMigration()
             .build()
     }

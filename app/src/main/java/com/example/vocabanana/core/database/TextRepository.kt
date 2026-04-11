@@ -7,7 +7,7 @@ interface TextRepository {
 
     fun getTexts(): Flow<List<TextDomain>>
     fun getTextById(id: Int): TextDomain
-    fun insertText(text: TextDomain)
+    fun saveText(text: TextDomain)
     suspend fun deleteText(textId: Int)
     suspend fun updateProgress(id: Int, position: Float, time: Long)
     fun isTextNameUnique(name: String): Boolean

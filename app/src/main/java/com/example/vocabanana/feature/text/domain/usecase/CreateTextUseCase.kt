@@ -25,7 +25,7 @@ class CreateTextUseCase @Inject constructor(
         )) {
             is ValidateResult.Error -> result.error
             is ValidateResult.Success -> {
-                textRepository.insertText(result.value)
+                textRepository.saveText(result.value)
                 null
             }
         }

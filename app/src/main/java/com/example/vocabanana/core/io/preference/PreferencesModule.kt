@@ -1,4 +1,4 @@
-package com.example.vocabanana.core.preference
+package com.example.vocabanana.core.io.preference
 
 import android.content.Context
 import androidx.datastore.core.DataStore

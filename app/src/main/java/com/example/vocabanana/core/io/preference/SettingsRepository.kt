@@ -1,4 +1,4 @@
-package com.example.vocabanana.core.preference
+package com.example.vocabanana.core.io.preference
 
 import kotlinx.coroutines.flow.Flow
 

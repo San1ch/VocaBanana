@@ -16,21 +16,31 @@ class GenerateWordsFromTextUseCase @Inject constructor(
     private val lexiconRepository: LexiconRepository
 ) {
     suspend operator fun invoke(textId: Int) {
+        val startOperationTime = System.currentTimeMillis()
         val targetText = textRepository.getTextById(textId).content
         val currentList = prepareWords(targetText)
         logger.d("Current list size: ${currentList.size}", tag = "GenerateWordsFromTextUseCase")
 
-        val notExistingWords = filterNotExistedWords(currentList, lemmaRep.findExistingWords(currentList))
-        logger.d("Not existing words: ${notExistingWords.size}:", tag = "GenerateWordsFromTextUseCase")
-        logger.d("Words: ${notExistingWords.joinToString(", ")}", tag = "GenerateWordsFromTextUseCase")
+        val withoutExistingWords = filterNotExistedWords(currentList, lemmaRep.findExistingWords(currentList))
+        logger.d("Without existing words: ${withoutExistingWords.size}:", tag = "GenerateWordsFromTextUseCase")
+        //logger.d("Words: ${withoutExistingWords.joinToString(", ")}", tag = "GenerateWordsFromTextUseCase")
 
-        val notExistingLemmas = filterNotExistedWords(notExistingWords, lemmaRep.findExistingLemmas(notExistingWords))
-        logger.d("Not existing lemmas: ${notExistingLemmas.size}:", tag = "GenerateWordsFromTextUseCase")
-        logger.d("Words: ${notExistingLemmas.joinToString(", ")}", tag = "GenerateWordsFromTextUseCase")
+        val withoutExistingLemmas = filterNotExistedWords(withoutExistingWords, lemmaRep.findExistingLemmas(withoutExistingWords))
+        logger.d("Without existing lemmas: ${withoutExistingLemmas.size}:", tag = "GenerateWordsFromTextUseCase")
+        //logger.d("Words: ${withoutExistingLemmas.joinToString(", ")}", tag = "GenerateWordsFromTextUseCase")
 
-        val notExistingLexicons = filterNotExistedWords(notExistingLemmas, lexiconRepository.getExistingWords(notExistingLemmas))
-        logger.d("Not existing lexicons: ${notExistingLexicons.size}:", tag = "GenerateWordsFromTextUseCase")
-        logger.d("Words: ${notExistingLexicons.joinToString(", ")}", tag = "GenerateWordsFromTextUseCase")
+        val withoutExistingLexicons = filterNotExistedWords(withoutExistingLemmas, lexiconRepository.getExistingWords(withoutExistingLemmas))
+        logger.d("Without existing lexicons: ${withoutExistingLexicons.size}:", tag = "GenerateWordsFromTextUseCase")
+        logger.d("Words: ${withoutExistingLexicons.joinToString(", ")}", tag = "GenerateWordsFromTextUseCase")
+
+        val endOperationTime = System.currentTimeMillis()
+
+        logger.d("Operation time is: ${endOperationTime - startOperationTime}ms", tag = "GenerateWordsFromTextUseCase")
+
+
+        // 1. I need filter number
+        // 2. I need make another table for names, places and other things with name
+        // 3.
     }
 
     private fun filterNotExistedWords(previous: List<String>, existed: List<String>): List<String>{

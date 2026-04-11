@@ -19,12 +19,14 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
@@ -59,6 +61,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalViewConfiguration
@@ -76,9 +79,13 @@ import com.example.vocabanana.feature.text.presentation.data.TextUi
 import com.example.vocabanana.ui.composable.AnimatedTitle
 import com.example.vocabanana.ui.composable.CollectUiEvents
 import com.example.vocabanana.ui.composable.DeleteConfirmDialog
+import com.example.vocabanana.ui.composable.DpSizes
+import com.example.vocabanana.ui.composable.SpacerMicro
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.abs
+
+val spaceBetweenParagraphs = 16.dp
 
 @Composable
 fun TextListScreen(
@@ -208,7 +215,7 @@ fun TextListContent(
                         onDelete = onDelete
                     )
 
-                    1 -> TextReaderPage(state = selectedText, onProgressUpdate = onProgressUpdate)
+                    1 -> TextReaderPage(text = selectedText, onProgressUpdate = onProgressUpdate)
                     2 -> TextListSettingsPage(onGenerateWords = onGenerateWords, result = result, isGenerating = isGenerating)
                 }
             }
@@ -475,50 +482,57 @@ fun MetricItem(label: String, value: String) {
     }
 }
 
-@SuppressLint("FrequentlyChangingValue")
 @Composable
 private fun TextReaderPage(
-    state: TextUi?,
+    text: TextUi?,
     onProgressUpdate: (Int, Float) -> Unit
 ) {
-    val scrollState = rememberScrollState()
+    val listState = rememberLazyListState()
+    var isScrollRestored by remember(text?.id) { mutableStateOf(false) }
 
-    LaunchedEffect(scrollState.value, scrollState.maxValue) {
-        val id = state?.id
-        if (id != null && scrollState.maxValue > 0) {
-            val progress = scrollState.value.toFloat() / scrollState.maxValue
-            onProgressUpdate(id, progress)
+    LaunchedEffect(text?.id, text?.paragraphs?.size) {
+        val savedProgress = text?.lastScrollPosition
+        val totalItems = text?.paragraphs?.size ?: 0
+
+        if (totalItems > 0 && !isScrollRestored) {
+            if (savedProgress != null && savedProgress > 0f) {
+                val targetIndex = (savedProgress * totalItems).toInt()
+                listState.scrollToItem(targetIndex)
+            }
+            isScrollRestored = true
         }
     }
-    LaunchedEffect(state?.id, scrollState.maxValue) {
-        val savedProgress = state?.lastScrollPosition
-        if (savedProgress != null && savedProgress > 0f && scrollState.maxValue > 0) {
-            val targetScroll = (savedProgress * scrollState.maxValue).toInt()
-            scrollState.scrollTo(targetScroll)
+
+    LaunchedEffect(listState.firstVisibleItemIndex) {
+        val id = text?.id
+        val totalItems = listState.layoutInfo.totalItemsCount
+        if (id != null && totalItems > 0 && isScrollRestored) {
+            val progress = listState.firstVisibleItemIndex.toFloat() / totalItems
+            onProgressUpdate(id, progress)
         }
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        if (state == null) {
-            Column(
-                modifier = Modifier.align(Alignment.Center),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                CircularProgressIndicator()
-                Text("Loading text...", style = MaterialTheme.typography.bodyMedium)
-            }
+        if (text == null) {
+            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
         } else {
-            Column(
+            LazyColumn(
+                state = listState,
                 modifier = Modifier
                     .fillMaxSize()
-                    .verticalScroll(scrollState)
+                    .padding(DpSizes.small)
+                    .graphicsLayer { alpha = if (isScrollRestored) 1f else 0f }
             ) {
-                Text(
-                    text = state.content,
-                    modifier = Modifier.padding(16.dp),
-                    style = MaterialTheme.typography.bodyLarge
-                )
+                items(text.paragraphs) { paragraph ->
+                    Text(
+                        text = paragraph.rawText,
+                        modifier = Modifier.padding(bottom = spaceBetweenParagraphs)
+                    )
+                }
+            }
+
+            if (!isScrollRestored) {
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
             }
         }
     }

@@ -9,8 +9,8 @@ data class TextEntity(
     @PrimaryKey(autoGenerate = true) val id: Int,
     val name: String,
 
-    @ColumnInfo(name = "content")
-    val content: String,
+    @ColumnInfo(name = "content_path")
+    val contentPath: String,
 
     @ColumnInfo(name = "last_scroll_position")
     val lastScrollPosition: Float,
