@@ -23,7 +23,7 @@ class VocabularyScreenViewModel @Inject constructor(
     private val wordRepository: WordRepository,
 ) : BaseViewModel() {
 
-    val words = wordRepository.getAllWords()
+    val words = wordRepository.getAllLemmas()
         .map{ list -> list.map { it.toUi() } }
         .asUiState()
         .stateIn(

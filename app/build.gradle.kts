@@ -66,10 +66,11 @@ android {
     }
 }
 dependencies {
-    //Navigation
+
+    // Navigation
     implementation(libs.nav.compose)
 
-    //DI
+    // DI
     implementation(libs.hilt)
     implementation(libs.androidx.compose.animation.core)
     implementation(libs.androidx.compose.ui)
@@ -79,29 +80,32 @@ dependencies {
     ksp(libs.hilt.compiler)
     implementation(libs.hilt.compose)
 
-    //Data
+    // Data
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
     ksp(libs.room.compiler.ksp)
 
-    //DataStore
+    // DataStore
     implementation(libs.androidx.datastore.core)
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.kotlinx.coroutines.android)
 
-    //Icons
+    // Icons
     implementation(libs.material.icons)
 
-    //Online
+    // Online
     implementation(libs.retrofit)
     implementation(libs.retrofit.converter.gson)
     implementation(libs.logging.interceptor)
 
-    //Json
+    // Json
     implementation(libs.kotlinx.serialization.json)
 
-    //Logs
+    // Logs
     implementation(libs.timber)
+
+    // Entity Extraction
+    implementation(libs.entity.extraction)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

@@ -43,6 +43,9 @@ generativeai = "0.9.0"
 #Logs
 timber = "5.0.1"
 
+#Entity Extraction
+entity-extraction = "16.0.0-beta5"
+
 [libraries]
 #Navigation
 nav-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navVersion" }
@@ -70,6 +73,9 @@ kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serializa
 
 #Logs
 timber = { module = "com.jakewharton.timber:timber", version.ref = "timber" }
+
+#Google
+entity-extraction = { module = "com.google.mlkit:entity-extraction", version.ref = "entity-extraction" }
 
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }

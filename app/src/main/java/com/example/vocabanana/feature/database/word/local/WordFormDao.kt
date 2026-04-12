@@ -10,6 +10,10 @@ interface WordFormDao {
     @Query("SELECT * FROM word_form WHERE wordId = :wordId")
     fun getWordFormsByWordId(wordId: Int): List<WordFormEntity>
 
+    @Query("SELECT form FROM word_form")
+    fun getAlLForms(): List<String>
+
+
     @Query("SELECT * FROM word_form WHERE form = :form")
     fun formExists(form: String): Boolean
     @Insert(onConflict = OnConflictStrategy.IGNORE)
