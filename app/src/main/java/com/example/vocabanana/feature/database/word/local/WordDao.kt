@@ -15,11 +15,15 @@ interface WordDao {
 
     @Transaction
     @Query("SELECT * FROM words")
-    fun getAllWords(): Flow<List<WordWithFormsEntity>>
+    fun getAllWords(): Flow<List<WordEntity>>
 
     @Transaction
     @Query("SELECT * FROM words WHERE id = :id")
-    fun getWordById(id: Int): Flow<WordWithFormsEntity?>
+    fun getWordById(id: Int): Flow<WordEntity?>
+
+
+    @Query("SELECT * FROM words WHERE lemma = :lemmas")
+    fun getAllWordByLemma(lemmas: List<String>): Flow<List<WordEntity>>
 
     @Query("SELECT * FROM words WHERE lemma = :lemma")
     fun wordExists(lemma: String): Boolean
@@ -28,7 +32,7 @@ interface WordDao {
     fun getAllWordsFlow(): Flow<List<WordEntity>>
 
     @Query("SELECT * FROM words WHERE lemma = :lemma")
-    fun getWordByWord(lemma: String): WordEntity
+    fun getWordByWord(lemma: String): Flow<WordEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertWord(word: WordEntity)

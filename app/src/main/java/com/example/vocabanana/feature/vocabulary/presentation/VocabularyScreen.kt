@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircleOutline
 import androidx.compose.material.icons.filled.Delete
@@ -28,6 +29,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -54,7 +56,6 @@ fun VocabularyScreen(viewModel: VocabularyScreenViewModel = hiltViewModel()) {
         )
     }
 }
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun VocabularyContent(
@@ -68,7 +69,10 @@ fun VocabularyContent(
     var addWordInlineDialog by remember { mutableStateOf(false) }
 
     AddWordInline(
-        onAddClick = onAddWordClick,
+        onAddClick = {
+            onAddWordClick(it)
+            addWordInlineDialog = false
+        },
         onDismissRequest = { addWordInlineDialog = false },
         showDialog = addWordInlineDialog,
     )
@@ -85,16 +89,15 @@ fun VocabularyContent(
                 actions = {
                     if (BuildConfig.DEBUG) {
                         IconButton(onClick = onAllDelete) {
-                            Icon(Icons.Default.Delete, contentDescription = "Debug")
+                            Icon(Icons.Default.Delete, contentDescription = "Delete All")
                         }
                     }
                     VocabularyFilterButton()
                     IconButton(onClick = onMoreClick) {
                         Icon(Icons.Default.MoreVert, contentDescription = "More")
                     }
-                },
-
-                )
+                }
+            )
         },
         floatingActionButton = {
             VocabularyFloatingButton(
@@ -103,29 +106,41 @@ fun VocabularyContent(
             )
         },
     ) { paddingValues ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
+        // Added check for empty state
+        if (words.isEmpty()) {
+            Box(
+                modifier = Modifier.fillMaxSize().padding(paddingValues),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(text = "No words yet. Add some!")
+            }
+        } else {
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(
-                        horizontal = 16.dp
-                    )
+                    .padding(paddingValues)
+                    .padding(horizontal = 16.dp)
             ) {
-                items(words.size) { wordId ->
-                    val uiWord = words[wordId]
-                    val form = uiWord.forms.firstOrNull()
+                items(
+                    items = words,
+                    key = { "${it.id}_${it.word}" }
+                ) { uiWord ->
+                    Column(modifier = Modifier.padding(vertical = 8.dp)) {
+                        Text(
+                            text = "${uiWord.word} [${uiWord.partOfSpeech ?: "N/A"}]",
+                            style = androidx.compose.material3.MaterialTheme.typography.titleMedium
+                        )
 
-                    Text(
-                        "${uiWord.word} [${uiWord.partOfSpeech}]:"
-                    )
-                    form?.let {
-                        Text("${it.form} [${it.partOfSpeech}]")
+                        // Show all forms instead of just the first one
+                        if (uiWord.forms.isNotEmpty()) {
+                            Text(
+                                text = "Forms: ${uiWord.forms.joinToString(", ")}",
+                                style = androidx.compose.material3.MaterialTheme.typography.bodySmall,
+                                color = androidx.compose.material3.MaterialTheme.colorScheme.outline
+                            )
+                        }
+                        SpacerMicro()
                     }
-                    SpacerMicro()
                 }
             }
         }

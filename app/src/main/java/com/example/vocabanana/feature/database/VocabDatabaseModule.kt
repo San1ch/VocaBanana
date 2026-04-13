@@ -8,7 +8,6 @@ import com.example.vocabanana.feature.database.language.lexicon.LexiconDao
 import com.example.vocabanana.feature.database.language.lexicon.LexiconDatabase
 import com.example.vocabanana.feature.database.text.local.TextDao
 import com.example.vocabanana.feature.database.word.local.WordDao
-import com.example.vocabanana.feature.database.word.local.WordFormDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -64,12 +63,6 @@ object VocabDatabaseModule {
     @Singleton
     fun provideWordDao(appDatabase: AppDatabase): WordDao {
         return appDatabase.wordDao()
-    }
-
-    @Provides
-    @Singleton
-    fun provideWordFormDao(appDatabase: AppDatabase): WordFormDao {
-        return appDatabase.wordFormDao()
     }
 
     @Provides

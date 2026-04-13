@@ -17,6 +17,7 @@ enum class PartOfSpeech(val value: Int, val shortName: String) {
     ARTICLE(13, "art"),
     UNKNOWN(14, "other");
 
+
     companion object {
         fun fromInt(value: Int): PartOfSpeech {
             return entries.find { it.value == value } ?: UNKNOWN

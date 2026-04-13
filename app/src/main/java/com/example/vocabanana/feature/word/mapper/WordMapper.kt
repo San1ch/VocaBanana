@@ -1,13 +1,11 @@
 package com.example.vocabanana.feature.word.mapper
 
 import com.example.vocabanana.feature.database.word.local.WordEntity
-import com.example.vocabanana.feature.database.word.local.WordFormEntity
-import com.example.vocabanana.feature.database.word.local.WordWithFormsEntity
-import com.example.vocabanana.feature.word.domain.model.toInt
-import com.example.vocabanana.feature.word.domain.model.toWordState
 import com.example.vocabanana.feature.word.domain.model.PartOfSpeech
 import com.example.vocabanana.feature.word.domain.model.WordDomain
-import com.example.vocabanana.feature.word.domain.model.WordFormDomain
+import com.example.vocabanana.feature.word.domain.model.toInt
+import com.example.vocabanana.feature.word.domain.model.toPartOfSpeech
+import com.example.vocabanana.feature.word.domain.model.toWordState
 
 
 fun WordDomain.toWordEntity() = WordEntity(
@@ -16,27 +14,14 @@ fun WordDomain.toWordEntity() = WordEntity(
     state = state.toInt(),
     whenAdded = whenAdded,
     partOfSpeech = partOfSpeech.toInt(),
+    forms = forms
 )
-fun WordWithFormsEntity.toDomain() = WordDomain.createUnsafe(
-    id = word.id,
-    lemma = word.lemma,
-    whenAdded = word.whenAdded,
-    state = word.state.toWordState(),
-    partOfSpeech = PartOfSpeech.entries[word.partOfSpeech],
-    forms = forms.map { it.toDomain(word.id) }
-)
-
-
-fun WordFormDomain.toEntity(wordId: Int) = WordFormEntity(
+fun WordEntity.toDomain() = WordDomain.createUnsafe(
     id = id,
-    wordId = wordId,
-    form = form,
-    partOfSpeech = partOfSpeech.toInt()
+    lemma = lemma,
+    whenAdded = whenAdded,
+    state = state.toWordState(),
+    partOfSpeech = partOfSpeech.toPartOfSpeech(),
+    forms = forms
 )
 
-fun WordFormEntity.toDomain(wordId: Int) = WordFormDomain.createUnsafe(
-    id = id,
-    wordId = wordId,
-    form = form,
-    partOfSpeech = PartOfSpeech.entries[partOfSpeech]
-)

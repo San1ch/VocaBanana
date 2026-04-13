@@ -6,54 +6,83 @@ import javax.inject.Inject
 class TextProcessingService @Inject constructor(
     private val wordRepository: WordRepository,
 ) {
+    val stopWords = setOf(
+        // Articles & Conjunctions
+        "the", "a", "an", "and", "or", "but", "if", "then", "else", "when",
+        "while", "because", "as", "until", "although", "since", "nor",
+
+        // Prepositions
+        "with", "from", "to", "for", "in", "on", "at", "by", "of", "about",
+        "into", "through", "during", "before", "after", "above", "below",
+        "under", "between", "among", "against", "toward", "upon", "onto",
+
+        // Pronouns
+        "me", "you", "him", "her", "she", "he", "it", "we", "they", "us", "them",
+        "my", "your", "his", "its", "our", "their", "mine", "yours", "hers", "ours", "theirs",
+        "myself", "yourself", "himself", "herself", "itself", "ourselves", "themselves",
+        "who", "whom", "whose", "which", "that", "this", "those", "these",
+        "someone", "something", "anybody", "anyway", "anyone", "anything", "everyone", "everybody",
+
+        // Auxiliary Verbs / Common Modals
+        "is", "am", "are", "was", "were", "be", "been", "being",
+        "have", "has", "had", "do", "does", "did", "done", "doing",
+        "can", "could", "will", "would", "shall", "should", "may", "might", "must",
+
+        // Common Adverbs/Markers
+        "not", "no", "yes", "too", "very", "just", "only", "well", "even", "now", "then", "there", "here"
+    )
+
     fun isTrash(word: String): Boolean {
-        val w = word.trim().lowercase()
+        if (word.length <= 2 && word !in listOf("is", "am", "at")) return true
+        if (word.firstOrNull()?.isDigit() == true) return true
 
-        return when {
-            // 1. Metadata, Links, and Identifiers
-            w.contains("http") || w.contains(".com") || w.contains("isbn") ||
-                    w.contains("lccn") || w.contains("www") || w == "inc" || w == "llc" -> true
-
-            // 2. Sound Effects & Screaming (e.g., "aaaaah", "uuugh", "mooorniiing")
-            // This regex catches 3 or more repeating letters
-            w.matches(Regex(".*(.)\\1\\1.*")) -> true
-
-            // 3. Romanized Japanese Honorifics
-            w.endsWith("sama") || w.endsWith("san") || w.endsWith("kun") || w.endsWith("chan") -> true
-
-            // 4. Short Junk / Leftovers (e.g., "v", "e", "sb", "ny")
-            w.length <= 2 && w != "is" && w != "am" && w != "at" -> true
-
-            // 5. Pure numbers
-            w.matches(Regex("\\d+")) -> true
-
-            else -> false
-        }
+        val w = word.lowercase()
+        return w.contains("http")
+                || w.contains("com")
+                || w.contains("www")
+                || w.contains("the")
+                || w.contains("a")
+                || w.contains("an")
     }
 
-    fun hyphenWordsNormalization(text: String): String {
-        val regex = Regex("(?<=\\w)-(?=\\w)")
-        return text.replace(regex, " ")
+    fun String.removeSurroundingPunctuation(): String {
+        return this.dropWhile { !it.isLetter() }
+            .dropLastWhile { !it.isLetter() }
     }
 
-    fun cleanText(text: String): String {
-        val regex = Regex("[^a-zA-Z\\s-']")
+    fun prepareText(text: String): List<String> {
+        // 1. Normalize quotes first
+        val normalized = text.replace('’', '\'').replace('`', '\'')
 
-        return text
-            .lowercase()
-            .replace(regex, " ")
-            .replace(Regex("\\s+"), " ")
-            .trim()
-    }
+        val words = normalized.split(Regex("[^a-zA-Z']+"))
 
-    fun parseText(text: String): List<String> {
-        return text
-            .split(Regex("\\s+"))
-            .map { word ->
-                word.trim { !it.isLetter() }
+        return words.asSequence()
+            .filter { it.isNotBlank() }
+            .filter { !stopWords.contains(it) } // the, a, an, and, or, but, if, then...
+            .flatMap { word ->
+                val w = word.lowercase()
+                when {
+                    w.endsWith("n't") -> {
+                        if (w == "can't") listOf("can", "not")
+                        else listOf(w.removeSuffix("n't"), "not")
+                    }
+
+                    w.endsWith("'re") -> listOf(w.removeSuffix("'re"), "are")
+                    w.endsWith("'ve") -> listOf(w.removeSuffix("'ve"), "have")
+                    w.endsWith("'ll") -> listOf(w.removeSuffix("'ll"), "will")
+                    w.endsWith("'m") -> listOf(w.removeSuffix("'m"), "am")
+                    // Strips 's, 'd, 't, 'all
+                    w.contains("'") -> listOf(w.substringBefore("'"))
+                    else -> listOf(w)
+                }
+
             }
-            .filter { it.isNotBlank() && !isTrash(it) }
+            .filter { it.isNotEmpty() && !isTrash(it) }
+            .distinct()
+            .toList()
     }
+
+
     fun normalizeGrammar(text: String): String {
         var result = text.replace('’', '\'').replace('`', '\'')
 

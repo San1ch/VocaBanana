@@ -3,7 +3,6 @@ package com.example.vocabanana.feature.text.domain
 import com.example.vocabanana.core.domain.model.ValidateResult
 import com.example.vocabanana.feature.word.domain.model.PartOfSpeech
 import com.example.vocabanana.feature.word.domain.model.WordDomain
-import com.example.vocabanana.feature.word.domain.model.WordFormDomain
 import javax.inject.Inject
 
 
@@ -19,25 +18,15 @@ class AiDtoToWordsUseCase @Inject constructor(
             val cleanWord = dto.word.lowercase().trim()
 
             // 2. Remove form if form is lemma
-            val rawForms = if (cleanWord != cleanLemma) {
-                listOf(
-                    WordFormDomain.Companion.create(
-                        wordId = 0, form = cleanWord,
-                        partOfSpeech = PartOfSpeech.Companion.fromShortName(dto.wordPos)
-                    )
-                )
+            val forms = if (cleanWord != cleanLemma) {
+                listOf(cleanWord)
             } else emptyList()
 
-            // 3. Validate forms
-            val validatedForms = rawForms.mapNotNull { result ->
-                if (result is ValidateResult.Success) result.value else null
-            }
-
             // 4. Create word
-            val wordResult = WordDomain.Companion.create(
+            val wordResult = WordDomain.create(
                 lemma = cleanLemma,
-                partOfSpeech = PartOfSpeech.Companion.fromShortName(dto.lemmaPos),
-                forms = validatedForms
+                partOfSpeech = PartOfSpeech.fromShortName(dto.lemmaPos),
+                forms = forms
 
             )
 

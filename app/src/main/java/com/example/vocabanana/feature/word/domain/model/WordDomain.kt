@@ -12,10 +12,18 @@ data class WordDomain private constructor(
     val id: Int,
     val lemma: String,
     val partOfSpeech: PartOfSpeech,
-    val forms: List<WordFormDomain>,
+    val forms: List<String>,
     val whenAdded: Long,
     val state: WordState
 ) {
+
+    fun addForms(newForms: List<String>): WordDomain {
+        val updatedForms = (this.forms + newForms).distinct()
+        return this.copy(forms = updatedForms)
+    }
+
+    fun addForm(form: String): WordDomain = addForms(listOf(form))
+
     companion object {
 
         /*
@@ -28,7 +36,7 @@ data class WordDomain private constructor(
             id: Int = 0,
             lemma: String,
             whenAdded: Long = System.currentTimeMillis(),
-            forms: List<WordFormDomain> = emptyList(),
+            forms: List<String> = emptyList(),
             partOfSpeech: PartOfSpeech,
             state: WordState = WordState.NEW
         ): ValidateResult<WordDomain, WordValidateError> {
@@ -54,7 +62,7 @@ data class WordDomain private constructor(
             lemma: String,
             whenAdded: Long,
             state: WordState,
-            forms: List<WordFormDomain>,
+            forms: List<String>,
             partOfSpeech: PartOfSpeech
         ): WordDomain {
             return WordDomain(
@@ -66,7 +74,6 @@ data class WordDomain private constructor(
                 forms = forms
             )
         }
-
         private fun validateLemma(input: String): ValidateResult<String, WordValidateError> {
             val trimmed = input.trim()
 
