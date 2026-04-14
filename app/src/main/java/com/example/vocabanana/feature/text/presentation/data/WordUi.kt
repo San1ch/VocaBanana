@@ -14,22 +14,9 @@ fun PartOfSpeech.toUi(): String = when (this) {
     PartOfSpeech.NOUN -> "noun"
     PartOfSpeech.VERB -> "verb"
     PartOfSpeech.ADJECTIVE -> "adj"
-    PartOfSpeech.ADVERB -> "adverb"
+    PartOfSpeech.ADVERB -> "adv"
 
-    PartOfSpeech.PRONOUN -> "pron"
-    PartOfSpeech.DETERMINER -> "det"
-    PartOfSpeech.NUMERAL -> "num"
-    PartOfSpeech.PREPOSITION -> "prep"
-    PartOfSpeech.CONJUNCTION -> "conj"
-    PartOfSpeech.ARTICLE -> "art"
-
-    PartOfSpeech.AUXILIARY,
-    PartOfSpeech.MODAL -> "aux verb"
-
-    PartOfSpeech.PARTICLE -> "part"
-    PartOfSpeech.INTERJECTION -> "interjection"
-
-    PartOfSpeech.UNKNOWN -> "other"
+    PartOfSpeech.UNKNOWN -> ""
 }
 fun WordDomain.toUi() = WordUi(
     id = id,

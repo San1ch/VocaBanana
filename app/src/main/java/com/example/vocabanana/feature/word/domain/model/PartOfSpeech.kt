@@ -5,17 +5,7 @@ enum class PartOfSpeech(val value: Int, val shortName: String) {
     VERB(1, "verb"),
     ADJECTIVE(2, "adj"),
     ADVERB(3, "adv"),
-    PRONOUN(4, "pron"),
-    DETERMINER(5, "det"),
-    NUMERAL(6, "num"),
-    PREPOSITION(7, "prep"),
-    CONJUNCTION(8, "conj"),
-    INTERJECTION(9, "intj"),
-    PARTICLE(10, "part"),
-    AUXILIARY(11, "aux"),
-    MODAL(12, "modal"),
-    ARTICLE(13, "art"),
-    UNKNOWN(14, "other");
+    UNKNOWN(99, "other");
 
 
     companion object {

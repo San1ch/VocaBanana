@@ -20,92 +20,100 @@ class GenerateWordsFromTextUseCase @Inject constructor(
     private val lexiconRepository: LexiconRepository
 ) {
     suspend operator fun invoke(textId: Int) {
-        val startOperationTime = System.currentTimeMillis()
-        val targetText = textRepository.getTextById(textId).content
+        val startTime = System.currentTimeMillis()
+        val content = textRepository.getTextById(textId).content
 
-        logger.d("Words count: ${targetText.split(Regex("\\s+")).size}")
+        // 1. Filter out words user already knows
+        val userVocab = wordRepository.getAllLemmasAndForms().toSet()
+        val allUniqueWords = tps.prepareText(content)
+        var remainWords = allUniqueWords.filter { it !in userVocab }
 
-        // 1. Initial cleaning and preparation
-        var remainWords = tps.prepareText(targetText)
-        logger.d("Unique words list size: ${remainWords.size}", tag = "GenerateWordsFromTextUseCase")
-
-        // 2. Filter out words already in the user's database
-        remainWords = filterExistedWords(remainWords, wordRepository.getAllLemmasAndForms())
-        logger.d("Unique words list without user vocab: ${remainWords.size}", tag = "GenerateWordsFromTextUseCase")
-
+        // 2. Fetch POS Map (Now Map<String, PartOfSpeech>)
+        val posMap = lexiconRepository.getPartOfSpeeches(remainWords)
         val wordDomains = mutableListOf<WordDomain>()
 
-        // 3. Process Lemmatized Pairs (Word -> Lemma)
-        val lemmatizedWords = lemmaRep.getWordLemmaPairs(remainWords).map { pair ->
-            WordDomain.create(
-                lemma = pair.lemma,
-                forms = listOf(pair.word),
-                partOfSpeech = PartOfSpeech.UNKNOWN
-            ).fold(
-                onSuccess = { wordDomains.add(it) },
-                onError = { logger.d("Validation failed for lemma pair ${pair.lemma}: $it") }
-            )
-            pair.word
-        }
-        remainWords = remainWords.filter { it !in lemmatizedWords }
+        // 3. Sequential processing by priority
+        remainWords = processLemmatizedPairs(remainWords, posMap, wordDomains)
+        remainWords = processExistingLemmas(remainWords, posMap, wordDomains)
+        remainWords = processLexiconWords(remainWords, posMap, wordDomains)
+        processRemainingUnknowns(remainWords, posMap, wordDomains)
 
-        // 4. Process Clear Lemmas (Base forms already in Lemma DB)
-        val clearLemmas = lemmaRep.findExistingLemmas(remainWords).map { lemma ->
-            WordDomain.create(
-                lemma = lemma,
-                partOfSpeech = PartOfSpeech.UNKNOWN
-            ).fold(
-                onSuccess = { wordDomains.add(it) },
-                onError = { logger.d("Validation failed for clear lemma $lemma: $it") }
-            )
-            lemma
-        }
-        remainWords = remainWords.filter { it !in clearLemmas }
-
-        // 5. Process Lexicon Words (Found in dictionary but not Lemma DB)
-        val lexiconFilteredWords = lexiconRepository.getExistingWords(remainWords).map { word ->
-            WordDomain.create(
-                lemma = word,
-                partOfSpeech = PartOfSpeech.UNKNOWN
-            ).fold(
-                onSuccess = { wordDomains.add(it) },
-                onError = { logger.d("Validation failed for lexicon word $word: $it") }
-            )
-            word
-        }
-        remainWords = remainWords.filter { it !in lexiconFilteredWords }
-
-        // 6. Process Absolute Remainders (Unknowns/Names/New words)
-        // These are important because the user might want to add them manually
-        remainWords.forEach { unknownWord ->
-            WordDomain.create(lemma = unknownWord, partOfSpeech = PartOfSpeech.UNKNOWN).fold(
-                onSuccess = { wordDomains.add(it) },
-                onError = { logger.d("Validation failed for unknown word $unknownWord: $it") }
-            )
-        }
-
-        // 7. Final Logging and Saving
-        logger.d("Final Remain list (Names/Unknowns): ${remainWords.size}", tag = "GenerateWordsFromTextUseCase")
-        logger.d("Total WordDomains created: ${wordDomains.size}", tag = "GenerateWordsFromTextUseCase")
-
+        // 4. Batch save (Internal merging handled by Repository)
         if (wordDomains.isNotEmpty()) {
             wordRepository.addWords(wordDomains)
         }
 
-        val endOperationTime = System.currentTimeMillis()
-        logger.d("Operation time is: ${endOperationTime - startOperationTime}ms", tag = "GenerateWordsFromTextUseCase")
+        logger.d("Processed in ${System.currentTimeMillis() - startTime}ms. Created: ${wordDomains.size}")
     }
 
-    private fun filterNotExistedWords(filteringList: List<String>, filter: List<String>): List<String>{
-        return filteringList.filter { !filter.contains(it) }
+    private suspend fun processLemmatizedPairs(
+        words: List<String>,
+        posMap: Map<String, PartOfSpeech>,
+        output: MutableList<WordDomain>
+    ): List<String> {
+        val pairs = lemmaRep.getWordLemmaPairs(words)
+        pairs.forEach { pair ->
+            addValidatedDomain(pair.lemma, listOf(pair.word), posMap, output)
+        }
+        val processed = pairs.map { it.word }.toSet()
+        return words.filter { it !in processed }
     }
-    private fun filterExistedWords(filteringList: List<String>, filter: List<String>): List<String>{
-        return filteringList.filter { filter.contains(it) }
+
+    private suspend fun processExistingLemmas(
+        words: List<String>,
+        posMap: Map<String, PartOfSpeech>,
+        output: MutableList<WordDomain>
+    ): List<String> {
+        val lemmas = lemmaRep.findExistingLemmas(words)
+        lemmas.forEach { lemma ->
+            addValidatedDomain(lemma, emptyList(), posMap, output)
+        }
+        val processed = lemmas.toSet()
+        return words.filter { it !in processed }
+    }
+
+    private suspend fun processLexiconWords(
+        words: List<String>,
+        posMap: Map<String, PartOfSpeech>,
+        output: MutableList<WordDomain>
+    ): List<String> {
+        val existing = lexiconRepository.getExistingWords(words)
+        existing.forEach { word ->
+            addValidatedDomain(word, emptyList(), posMap, output)
+        }
+        val processed = existing.toSet()
+        return words.filter { it !in processed }
+    }
+
+    private fun processRemainingUnknowns(
+        words: List<String>,
+        posMap: Map<String, PartOfSpeech>,
+        output: MutableList<WordDomain>
+    ) {
+        words.forEach { addValidatedDomain(it, emptyList(), posMap, output) }
+    }
+
+    private fun addValidatedDomain(
+        lemma: String,
+        forms: List<String>,
+        posMap: Map<String, PartOfSpeech>,
+        output: MutableList<WordDomain>
+    ) {
+        WordDomain.create(
+            lemma = lemma,
+            forms = forms,
+            partOfSpeech = posMap[lemma] ?: PartOfSpeech.UNKNOWN
+        ).fold(
+            onSuccess = { output.add(it) },
+            onError = { logger.d("Validation failed for $lemma: $it") }
+        )
     }
 
     // TODO
-    //  1. Need add partOfSpeech finding or unknown
-    //  2. Fix creating: Created to words with different forms. Need make fish: fishing, fish: fished -> fish: fishing, fished
+    //  1. Need think where from I can add definition
+    //  2. Move word domain logic to the [core]
+    //  3. And start realizing extra word info into the text reading window
+    //
 }
 
 sealed class GenerateWordsFromTextResult {

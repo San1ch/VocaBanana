@@ -31,20 +31,31 @@ class WordRepositoryRoomImpl @Inject constructor(
     }
 
     override suspend fun addWords(words: List<WordDomain>) {
-        val existingWordsMap = wordDao.getAllWords().first()
+        // 1. Get existing words from DB
+        val databaseWordsMap = wordDao.getAllWords().first()
             .associateBy { it.lemma }
 
-        val finalWordsToItems = words.map { newWord ->
-            val existingEntity = existingWordsMap[newWord.lemma]
+        // 2. This map will track the "current best version" of each word during processing
+        val processingMap = mutableMapOf<String, WordDomain>()
 
-            if (existingEntity != null) {
-                val existingDomain = existingEntity.toDomain()
-                existingDomain.addForms(newWord.forms).toWordEntity()
+        words.forEach { newWord ->
+            // Check if we already handled this lemma in this loop OR if it's in the DB
+            val existingEntry = processingMap[newWord.lemma]
+                ?: databaseWordsMap[newWord.lemma]?.toDomain()
+
+            if (existingEntry != null) {
+                // Merge forms into the existing entry
+                val updatedWord = existingEntry.addForms(newWord.forms)
+                processingMap[newWord.lemma] = updatedWord
             } else {
-                newWord.toWordEntity()
+                // First time seeing this lemma in both DB and this list
+                processingMap[newWord.lemma] = newWord
             }
         }
-        wordDao.insertWords(finalWordsToItems)
+
+        // 3. Convert the merged results to entities and save
+        val finalEntities = processingMap.values.map { it.toWordEntity() }
+        wordDao.insertWords(finalEntities)
     }
 
     override suspend fun updateOrAddWord(word: WordDomain) {

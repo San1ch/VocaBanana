@@ -2,6 +2,7 @@ package com.example.vocabanana.feature.database.language.lemmatiazation
 
 import androidx.room.Dao
 import androidx.room.Query
+import com.example.vocabanana.core.database.model.WordLemmaDto
 
 @Dao
 interface LemmaDao {
@@ -17,7 +18,3 @@ interface LemmaDao {
     suspend fun findExistingWords(words: List<String>): List<String>
 }
 
-data class WordLemmaDto(
-    val word: String,
-    val lemma: String
-)

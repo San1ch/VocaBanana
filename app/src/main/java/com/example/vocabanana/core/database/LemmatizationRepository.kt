@@ -1,6 +1,6 @@
 package com.example.vocabanana.core.database
 
-import com.example.vocabanana.feature.database.language.lemmatiazation.WordLemmaDto
+import com.example.vocabanana.core.database.model.WordLemmaDto
 
 interface LemmatizationRepository {
 
