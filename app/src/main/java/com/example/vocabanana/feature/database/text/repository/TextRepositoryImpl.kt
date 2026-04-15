@@ -6,6 +6,7 @@ import com.example.vocabanana.feature.database.text.local.TextDao
 import com.example.vocabanana.feature.database.text.local.TextEntity
 import com.example.vocabanana.feature.text.domain.model.TextDomain
 import com.example.vocabanana.feature.text.mapper.toDomainUnsafe
+import com.example.vocabanana.feature.word.domain.model.WordDomain
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -28,6 +29,7 @@ class TextRepositoryImpl @Inject constructor(
         val result = dao.getTextById(id)
         return result.toDomainUnsafe(fileStorage.loadText(result.contentPath))
     }
+
 
     override fun saveText(text: TextDomain) {
         val path = fileStorage.saveText(text.name, text.content)

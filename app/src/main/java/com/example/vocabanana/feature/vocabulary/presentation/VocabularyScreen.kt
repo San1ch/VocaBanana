@@ -123,11 +123,11 @@ fun VocabularyContent(
             ) {
                 items(
                     items = words,
-                    key = { "${it.id}_${it.word}" }
+                    key = { "${it.id}_${it.lemma}" }
                 ) { uiWord ->
                     Column(modifier = Modifier.padding(vertical = 8.dp)) {
                         Text(
-                            text = "${uiWord.word} [${uiWord.partOfSpeech ?: "N/A"}]",
+                            text = "${uiWord.lemma} [${uiWord.partOfSpeech ?: "N/A"}]",
                             style = androidx.compose.material3.MaterialTheme.typography.titleMedium
                         )
 

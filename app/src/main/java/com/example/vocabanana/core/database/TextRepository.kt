@@ -1,6 +1,7 @@
 package com.example.vocabanana.core.database
 
 import com.example.vocabanana.feature.text.domain.model.TextDomain
+import com.example.vocabanana.feature.word.domain.model.WordDomain
 import kotlinx.coroutines.flow.Flow
 
 interface TextRepository {

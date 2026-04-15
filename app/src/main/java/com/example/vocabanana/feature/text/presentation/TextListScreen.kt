@@ -1,12 +1,14 @@
+@file:Suppress("DEPRECATION")
+
 package com.example.vocabanana.feature.text.presentation
 
-import android.annotation.SuppressLint
+import android.content.Intent
+import android.net.Uri
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
@@ -22,6 +24,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -29,8 +32,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
@@ -48,6 +50,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -60,30 +63,41 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalViewConfiguration
 import androidx.compose.ui.platform.ViewConfiguration
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.vocabanana.core.navigation.AppDestination
 import com.example.vocabanana.core.presentation.StateObserver
 import com.example.vocabanana.core.presentation.toFormattedDate
 import com.example.vocabanana.feature.text.presentation.data.GenerateWordsFromTextUiResult
+import com.example.vocabanana.feature.text.presentation.data.ParagraphUi
 import com.example.vocabanana.feature.text.presentation.data.TextPreview
+import com.example.vocabanana.feature.text.presentation.data.TextToken
 import com.example.vocabanana.feature.text.presentation.data.TextUi
+import com.example.vocabanana.feature.text.presentation.data.WordUi
+import com.example.vocabanana.feature.text.presentation.data.tokenize
 import com.example.vocabanana.ui.composable.AnimatedTitle
 import com.example.vocabanana.ui.composable.CollectUiEvents
 import com.example.vocabanana.ui.composable.DeleteConfirmDialog
 import com.example.vocabanana.ui.composable.DpSizes
-import com.example.vocabanana.ui.composable.SpacerMicro
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.abs
+import androidx.core.net.toUri
 
 val spaceBetweenParagraphs = 16.dp
 
@@ -97,6 +111,10 @@ fun TextListScreen(
     val textPreviewsState by viewModel.textPreviews.collectAsState()
     var deletingText by remember { mutableStateOf<TextPreview?>(null) }
 
+    val result by viewModel.generateWordsFromTextResult.collectAsState()
+    val isGenerating by viewModel.isGenerating.collectAsState()
+
+    val wordInfoState by viewModel.wordInfoState.collectAsState()
 
     DeleteConfirmDialog(
         item = deletingText,
@@ -119,12 +137,16 @@ fun TextListScreen(
             onProgressUpdate = { id, pos -> viewModel.updateProgress(id, pos) },
             onDelete = { preview -> deletingText = preview },
             onGenerateWords = { viewModel.generateWords() },
-            result = viewModel.generateWordsFromTextResult.value,
-            isGenerating = viewModel.isGenerating.value
+            result = result,
+            isGenerating = isGenerating,
+            onWordClick = { word -> viewModel.selectWordInPage(word) },
+            wordInfoState = wordInfoState,
+            closeWordInfo = viewModel::closeWordInfo
         )
     }
-}
 
+
+}
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun TextListContent(
@@ -135,15 +157,18 @@ fun TextListContent(
     navigateToAddText: () -> Unit,
     onProgressUpdate: (Int, Float) -> Unit,
     onDelete: (TextPreview) -> Unit,
-
     onGenerateWords: () -> Unit,
     result: GenerateWordsFromTextUiResult?,
-    isGenerating: Boolean
+    isGenerating: Boolean,
+    onWordClick: (String) -> Unit,
+    wordInfoState: WordInfoState,
+    closeWordInfo: () -> Unit,
 ) {
     val pagerState = rememberPagerState(pageCount = { 3 })
     val coroutineScope = rememberCoroutineScope()
     var isLocked by remember { mutableStateOf(false) }
     var isSwipeAttempted by remember { mutableStateOf(false) }
+    val context = LocalContext.current
 
     SetupSwipeLockEffects(isSwipeAttempted) { isSwipeAttempted = false }
 
@@ -158,71 +183,93 @@ fun TextListContent(
     }
 
     CustomTouchSlopProvider {
-        Scaffold(
-            topBar = {
-                TopAppBar(
-                    title = {
-                        val titleText = when (pagerState.currentPage) {
-                            0 -> "My Texts"
-                            1 -> selectedText?.title ?: "Loading..."
-                            else -> "Settings"
+        // BOX is the root to allow layering the Popup over the Scaffold
+        Box(modifier = Modifier.fillMaxSize()) {
+            Scaffold(
+                topBar = {
+                    TopAppBar(
+                        title = {
+                            val titleText = when (pagerState.currentPage) {
+                                0 -> "My Texts"
+                                1 -> selectedText?.title ?: "Loading..."
+                                else -> "Settings"
+                            }
+                            AnimatedTitle(targetText = titleText)
+                        },
+                        actions = {
+                            TopBarActions(
+                                currentPage = pagerState.currentPage,
+                                isLocked = isLocked,
+                                isSwipeAttempted = isSwipeAttempted,
+                                onLockClick = { isLocked = !isLocked },
+                                onSettingsClick = {
+                                    coroutineScope.launch {
+                                        if (isLocked || selectedText == null) isSwipeAttempted = true
+                                        else pagerState.animateScrollToPage(2)
+                                    }
+                                }
+                            )
                         }
-                        AnimatedTitle(targetText = titleText)
-                    },
-                    actions = {
-                        TopBarActions(
-                            currentPage = pagerState.currentPage,
-                            isLocked = isLocked,
-                            isSwipeAttempted = isSwipeAttempted,
-                            onLockClick = { isLocked = !isLocked },
-                            onSettingsClick = {
-                                coroutineScope.launch {
-                                    if (isLocked || selectedText == null) isSwipeAttempted = true
-                                    else pagerState.animateScrollToPage(2)
+                    )
+                },
+                floatingActionButton = {
+                    FabAnimated(visible = pagerState.currentPage == 0, onClick = navigateToAddText)
+                }
+            ) { paddingValues ->
+                HorizontalPager(
+                    state = pagerState,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues)
+                        .pointerInput(isLocked) {
+                            if (isLocked) detectDragGestures { change, dragAmount ->
+                                if (abs(dragAmount.x) > abs(dragAmount.y)) {
+                                    isSwipeAttempted = true
+                                    coroutineScope.launch { delay(300); isSwipeAttempted = false }
+                                    change.consume()
                                 }
                             }
+                        },
+                    userScrollEnabled = selectedText != null && !isLocked
+                ) { page ->
+                    when (page) {
+                        0 -> TextListPage(
+                            items = textItems,
+                            onItemClick = { item ->
+                                onTextSelected(item.id)
+                                coroutineScope.launch { pagerState.animateScrollToPage(1) }
+                            },
+                            onDelete = onDelete
+                        )
+                        1 -> TextReaderPage(
+                            text = selectedText,
+                            onProgressUpdate = onProgressUpdate,
+                            onWordClick = onWordClick
+                        )
+                        2 -> TextListSettingsPage(
+                            onGenerateWords = onGenerateWords,
+                            result = result,
+                            isGenerating = isGenerating
                         )
                     }
-                )
-            },
-            floatingActionButton = {
-                FabAnimated(visible = pagerState.currentPage == 0, onClick = navigateToAddText)
-            }
-        ) { paddingValues ->
-            HorizontalPager(
-                state = pagerState,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .pointerInput(isLocked) {
-                        if (isLocked) detectDragGestures { change, dragAmount ->
-                            if (abs(dragAmount.x) > abs(dragAmount.y)) {
-                                isSwipeAttempted = true
-                                coroutineScope.launch { delay(300); isSwipeAttempted = false }
-                                change.consume()
-                            }
-                        }
-                    },
-                userScrollEnabled = selectedText != null && !isLocked
-            ) { page ->
-                when (page) {
-                    0 -> TextListPage(
-                        items = textItems,
-                        onItemClick = { item ->
-                            onTextSelected(item.id)
-                            coroutineScope.launch { pagerState.animateScrollToPage(1) }
-                        },
-                        onDelete = onDelete
-                    )
-
-                    1 -> TextReaderPage(text = selectedText, onProgressUpdate = onProgressUpdate)
-                    2 -> TextListSettingsPage(onGenerateWords = onGenerateWords, result = result, isGenerating = isGenerating)
                 }
             }
+
+            // WINDOW IS HERE: Outside Scaffold = On top of TopBar
+            WordInfoPopup(
+                state = wordInfoState,
+                onDismiss = closeWordInfo, // Fixed: Passing the actual close logic
+                onOxfordClick = { lemma ->
+                    val intent = Intent(
+                        Intent.ACTION_VIEW,
+                        "https://www.oxfordlearnersdictionaries.com/definition/english/$lemma".toUri()
+                    )
+                    context.startActivity(intent)
+                }
+            )
         }
     }
 }
-
 @Composable
 private fun TopBarActions(
     currentPage: Int,
@@ -283,6 +330,8 @@ private fun TextListPage(
         }
     }
 }
+
+
 
 @Composable
 private fun TextLazyItem(item: TextPreview, onClick: () -> Unit, onDelete: (TextPreview) -> Unit) {
@@ -350,23 +399,28 @@ fun AnimatedLockIcon(isLocked: Boolean, isSwipeAttempted: Boolean) {
         else -> MaterialTheme.colorScheme.onSurfaceVariant
     }
 
-    val animatedColor by animateColorAsState(
-        targetValue = targetColor,
-        animationSpec = tween(300),
-        label = "LockColor"
-    )
+    val animatedColor by animateColorAsState(targetValue = targetColor, label = "LockColor")
+    val iconPainter =
+        rememberVectorPainter(if (isLocked) Icons.Default.Lock else Icons.Default.LockOpen)
 
-    val targetSize = if (isSwipeAttempted) 36.dp else 24.dp
-    val animatedSize by animateDpAsState(
-        targetValue = targetSize,
-        animationSpec = spring(dampingRatio = 0.5f, stiffness = 500f),
-        label = "LockSize"
+    val scale by animateFloatAsState(
+        targetValue = if (isSwipeAttempted) 1.5f else 1.0f,
+        animationSpec = spring(dampingRatio = 0.5f, stiffness = 500f)
     )
-    Icon(
-        imageVector = if (isLocked) Icons.Default.Lock else Icons.Default.LockOpen,
-        contentDescription = "Lock Status",
-        tint = animatedColor,
-        modifier = Modifier.size(animatedSize)
+    Spacer(
+        modifier = Modifier
+            .size(24.dp)
+            .graphicsLayer { scaleX = scale; scaleY = scale }
+            .drawWithCache {
+                onDrawBehind {
+                    with(iconPainter) {
+                        draw(
+                            size = size,
+                            colorFilter = ColorFilter.tint(animatedColor)
+                        )
+                    }
+                }
+            }
     )
 }
 
@@ -409,7 +463,10 @@ fun TextListSettingsPage(
 
                 if (isGenerating) {
                     CircularProgressIndicator(modifier = Modifier.size(48.dp))
-                    Text("Analyzing text... Please wait", style = MaterialTheme.typography.labelMedium)
+                    Text(
+                        "Analyzing text... Please wait",
+                        style = MaterialTheme.typography.labelMedium
+                    )
                 } else {
                     Button(
                         onClick = { onGenerateWords() },
@@ -438,8 +495,8 @@ private fun ResultStatus(result: GenerateWordsFromTextUiResult?) {
     val context = LocalContext.current
 
     val color = when (result) {
-        is GenerateWordsFromTextUiResult.Success -> Color(0xFF4CAF50) // Зелений
-        is GenerateWordsFromTextUiResult.NotAllNewWordsAdded -> Color(0xFFFF9800) // Помаранчевий
+        is GenerateWordsFromTextUiResult.Success -> Color(0xFF4CAF50)
+        is GenerateWordsFromTextUiResult.NotAllNewWordsAdded -> Color(0xFFFF9800)
         is GenerateWordsFromTextUiResult.Error -> MaterialTheme.colorScheme.error
         else -> MaterialTheme.colorScheme.primary
     }
@@ -449,7 +506,7 @@ private fun ResultStatus(result: GenerateWordsFromTextUiResult?) {
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Icon(
-            imageVector = if (result is GenerateWordsFromTextUiResult.Error) Icons.Default.Delete else Icons.Default.Add, // Можна замінити на Check
+            imageVector = if (result is GenerateWordsFromTextUiResult.Error) Icons.Default.Delete else Icons.Default.Add,
             contentDescription = null,
             tint = color,
             modifier = Modifier.size(40.dp)
@@ -459,6 +516,7 @@ private fun ResultStatus(result: GenerateWordsFromTextUiResult?) {
             is GenerateWordsFromTextUiResult.Success -> "Success! Added ${result.words.size} new words."
             is GenerateWordsFromTextUiResult.NotAllNewWordsAdded ->
                 "Partial success: Added ${result.addedCount} of ${result.totalCount} words. Some parts failed due to API limits."
+
             is GenerateWordsFromTextUiResult.Error -> result.message.asString(context)
             else -> ""
         }
@@ -485,7 +543,8 @@ fun MetricItem(label: String, value: String) {
 @Composable
 private fun TextReaderPage(
     text: TextUi?,
-    onProgressUpdate: (Int, Float) -> Unit
+    onProgressUpdate: (Int, Float) -> Unit,
+    onWordClick: (String) -> Unit
 ) {
     val listState = rememberLazyListState()
     var isScrollRestored by remember(text?.id) { mutableStateOf(false) }
@@ -524,9 +583,9 @@ private fun TextReaderPage(
                     .graphicsLayer { alpha = if (isScrollRestored) 1f else 0f }
             ) {
                 items(text.paragraphs) { paragraph ->
-                    Text(
-                        text = paragraph.rawText,
-                        modifier = Modifier.padding(bottom = spaceBetweenParagraphs)
+                    ParagraphViewItem(
+                        paragraph = paragraph,
+                        onWordClick = { word -> onWordClick(word) }
                     )
                 }
             }
@@ -536,4 +595,124 @@ private fun TextReaderPage(
             }
         }
     }
+}
+
+@Composable
+fun ParagraphViewItem(paragraph: ParagraphUi, onWordClick: (String) -> Unit) {
+    val color = MaterialTheme.colorScheme.primary
+    val annotatedString = remember(paragraph.rawText) {
+        buildAnnotatedString {
+            val tokens = paragraph.rawText.tokenize()
+            tokens.forEach { token ->
+                if (token is TextToken.Word) {
+                    pushStringAnnotation(tag = "WORD", annotation = token.text)
+                    withStyle(style = SpanStyle(color = color)) {
+                        append(token.text)
+                    }
+                    pop()
+                } else if (token is TextToken.Symbol) {
+                    append(token.text)
+                }
+            }
+        }
+    }
+
+    ClickableText(
+        text = annotatedString,
+        style = MaterialTheme.typography.bodyLarge,
+        onClick = { offset ->
+            annotatedString.getStringAnnotations(tag = "WORD", start = offset, end = offset)
+                .firstOrNull()?.let { annotation ->
+                    onWordClick(annotation.item)
+                }
+        }
+    )
+}
+
+@Composable
+fun WordInfoPopup(
+    state: WordInfoState,
+    onDismiss: () -> Unit,
+    onOxfordClick: (String) -> Unit
+) {
+    AnimatedVisibility(
+        visible = state !is WordInfoState.Hidden,
+        enter = fadeIn() + scaleIn(),
+        exit = fadeOut() + scaleOut()
+    ) {
+        // Full screen transparent box to catch clicks outside
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .clickable(enabled = true, onClick = onDismiss)
+                .padding(16.dp),
+            contentAlignment = Alignment.TopCenter
+        ) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth(0.9f)
+                    .clickable(enabled = false) {},
+                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+            ) {
+                Column(modifier = Modifier.padding(12.dp)) {
+                    when (state) {
+                        is WordInfoState.Loading -> CircularProgressIndicator(Modifier.size(24.dp))
+
+                        is WordInfoState.NotFound -> {
+                            Text("Word not in vocabulary", fontWeight = FontWeight.Bold)
+                            OxfordButton(state.word, onOxfordClick)
+                        }
+
+                        is WordInfoState.Found -> {
+                            // Lemma and POS
+                            Text(
+                                text = "${state.word.lemma} (${state.word.partOfSpeech})",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+
+                            // Forms joined by comma
+                            if (state.word.forms.isNotEmpty()) {
+                                Text(
+                                    text = state.word.forms.joinToString(", "),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.secondary
+                                )
+                            }
+
+                            Spacer(Modifier.height(8.dp))
+
+                            // Definition
+                            Text(
+                                text = state.word.definition.ifEmpty { "No definition found for this word." },
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+
+                            OxfordButton(state.word.lemma, onOxfordClick)
+                        }
+
+                        else -> {}
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun OxfordButton(word: String, onClick: (String) -> Unit) {
+    TextButton(
+        onClick = { onClick(word) },
+        contentPadding = PaddingValues(0.dp)
+    ) {
+        Text("Oxford Dictionary →", style = MaterialTheme.typography.labelSmall)
+    }
+}
+
+sealed class WordInfoState {
+    object Hidden : WordInfoState()
+    object Loading : WordInfoState()
+    data class Found(val word: WordUi) : WordInfoState()
+    data class NotFound(val word: String) : WordInfoState()
 }

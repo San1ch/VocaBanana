@@ -24,7 +24,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -116,6 +115,10 @@ fun AddTextScreen(
     )
 }
 
+// TODO
+//  1. fix "document:100xxxxxxxxx" at the
+
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddTextContent(
@@ -166,7 +169,6 @@ fun AddTextContent(
                 isError = isTooLong
             )
 
-            // ЛОГІКА: Якщо є файл, показуємо плашку. Якщо немає - текстове поле.
             if (fileName != null) {
                 Surface(
                     modifier = Modifier.fillMaxWidth().weight(1f),
@@ -186,14 +188,12 @@ fun AddTextContent(
                 )
             }
 
-            // Кнопки Copy/Paste/Clear
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedButton(onClick = onCopyClick, modifier = Modifier.weight(1f)) { Text("Copy") }
                 OutlinedButton(onClick = onPasteClick, modifier = Modifier.weight(1f)) { Text("Paste") }
                 OutlinedButton(onClick = onClearClick, modifier = Modifier.weight(1f)) { Text("Clear") }
             }
 
-            // Кнопки File/Add
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedButton(onClick = onOpenFileClick, modifier = Modifier.weight(1f)) {
                     Icon(Icons.Default.AttachFile, null)
@@ -203,7 +203,6 @@ fun AddTextContent(
                 Button(
                     onClick = onAddTextClick,
                     modifier = Modifier.weight(1f),
-                    // Тепер кнопка активна, якщо є ХОЧ ЩОСЬ (файл вже зчитаний в content)
                     enabled = content.isNotBlank() && !isTooLong
                 ) {
                     Text("Add")

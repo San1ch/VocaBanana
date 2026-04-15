@@ -12,9 +12,10 @@ data class WordDomain private constructor(
     val id: Int,
     val lemma: String,
     val partOfSpeech: PartOfSpeech,
+    val definition: String,
     val forms: List<String>,
     val whenAdded: Long,
-    val state: WordState
+    val state: WordState,
 ) {
 
     fun addForms(newForms: List<String>): WordDomain {
@@ -38,7 +39,8 @@ data class WordDomain private constructor(
             whenAdded: Long = System.currentTimeMillis(),
             forms: List<String> = emptyList(),
             partOfSpeech: PartOfSpeech,
-            state: WordState = WordState.NEW
+            state: WordState = WordState.NEW,
+            definition: String = ""
         ): ValidateResult<WordDomain, WordValidateError> {
             return validateLemma(lemma).map { validLemma ->
                 WordDomain(
@@ -47,7 +49,8 @@ data class WordDomain private constructor(
                     whenAdded = whenAdded,
                     state = state,
                     partOfSpeech = partOfSpeech,
-                    forms = forms
+                    forms = forms,
+                    definition = definition
                 )
             }
         }
@@ -63,7 +66,8 @@ data class WordDomain private constructor(
             whenAdded: Long,
             state: WordState,
             forms: List<String>,
-            partOfSpeech: PartOfSpeech
+            partOfSpeech: PartOfSpeech,
+            definition: String
         ): WordDomain {
             return WordDomain(
                 id = id,
@@ -71,7 +75,8 @@ data class WordDomain private constructor(
                 whenAdded = whenAdded,
                 state = state,
                 partOfSpeech = partOfSpeech,
-                forms = forms
+                forms = forms,
+                definition = definition
             )
         }
         private fun validateLemma(input: String): ValidateResult<String, WordValidateError> {

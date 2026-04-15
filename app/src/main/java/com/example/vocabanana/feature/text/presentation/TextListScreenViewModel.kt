@@ -5,6 +5,7 @@ import com.example.vocabanana.core.presentation.BaseViewModel
 import com.example.vocabanana.core.presentation.asUiState
 import com.example.vocabanana.core.presentation.uistate.UiState
 import com.example.vocabanana.core.database.TextRepository
+import com.example.vocabanana.core.database.WordRepository
 import com.example.vocabanana.feature.text.domain.GenerateWordsFromTextUseCase
 import com.example.vocabanana.feature.text.presentation.data.GenerateWordsFromTextUiResult
 import com.example.vocabanana.feature.text.presentation.data.TextUi
@@ -25,6 +26,7 @@ import javax.inject.Inject
 @HiltViewModel
 class TextListScreenViewModel @Inject constructor(
     private val textRepository: TextRepository,
+    private val wordRepository: WordRepository,
     private val generateWordsFromTextUseCase: GenerateWordsFromTextUseCase
 ) : BaseViewModel() {
 
@@ -49,6 +51,28 @@ class TextListScreenViewModel @Inject constructor(
     private val _currentText = MutableStateFlow<TextUi?>(null)
     val currentText = _currentText.asStateFlow()
 
+    private val _wordInfoState = MutableStateFlow<WordInfoState>(WordInfoState.Hidden)
+    val wordInfoState = _wordInfoState.asStateFlow()
+
+    fun selectWordInPage(word: String) {
+        val cleanWord = word.trim().lowercase()
+        _wordInfoState.value = WordInfoState.Loading
+
+        viewModelScope.launch(Dispatchers.IO) {
+            // Replace this with your actual DB call
+            val wordDomain = wordRepository.getWordByWord(cleanWord)
+
+            if (wordDomain != null) {
+                _wordInfoState.value = WordInfoState.Found(wordDomain.toUi())
+            } else {
+                _wordInfoState.value = WordInfoState.NotFound(cleanWord)
+            }
+        }
+    }
+
+    fun closeWordInfo() {
+        _wordInfoState.value = WordInfoState.Hidden
+    }
     
     fun selectText(id: Int) {
         viewModelScope.launch(Dispatchers.IO) {

@@ -24,4 +24,5 @@ interface TextDao {
 
     @Query("SELECT EXISTS(SELECT 1 FROM texts WHERE name = :name)")
     fun isNameUnique(name: String): Boolean
+
 }

@@ -4,22 +4,22 @@ import java.io.File
 /**
  * ===================== PRESENTATION GENERATOR =====================
  *
- * ✔ Створює:
+ * ✔ Create:
  *   - <Feature>Screen.kt
  *   - <Feature>ScreenViewModel.kt
  *
- * ✔ Куди:
+ * ✔ Where:
  *   feature/<feature>/presentation/
  *
- * ✔ Використання:
+ * ✔ Using:
  *
  *   kotlinc -script PresentationCreator.main.kts -- Home --to=Main
  *
- *   або:
+ *   or:
  *
  *   kotlinc -script PresentationCreator.main.kts -- AddText to Main
  *
- * ✔ Результат:
+ * ✔ Result:
  *   feature/main/presentation/
  *     ├── HomeScreen.kt
  *     └── HomeScreenViewModel.kt
@@ -36,13 +36,10 @@ val templateDir = File(projectRoot, "templates/feature_template_name/presentatio
 
 val argsClean = args.map { it.trim() }
 
-// Screen name (наприклад: Home, AddText)
+// Screen name (Example: Home, AddText)
 val screenName = argsClean.firstOrNull { !it.startsWith("-") }
     ?: error("Screen name required")
 
-// Підтримка двох варіантів:
-// --to=Main
-// to Main
 val targetFeature =
     argsClean.firstOrNull { it.startsWith("--to=", true) }?.substringAfter("=")
         ?: run {

@@ -77,6 +77,8 @@ dependencies {
     implementation(libs.androidx.compose.animation)
     implementation(libs.androidx.compose.material3)
     implementation(libs.generativeai)
+    implementation(libs.androidx.compose.ui.graphics)
+    implementation(libs.androidx.compose.ui.text)
     ksp(libs.hilt.compiler)
     implementation(libs.hilt.compose)
 

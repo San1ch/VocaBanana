@@ -2,10 +2,9 @@ package com.example.vocabanana.feature.database
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
-import androidx.room.TypeConverters
 import com.example.vocabanana.feature.database.text.local.TextDao
 import com.example.vocabanana.feature.database.text.local.TextEntity
-import com.example.vocabanana.feature.database.word.local.WordConverters
+import com.example.vocabanana.feature.database.word.local.WordFormEntity
 import com.example.vocabanana.feature.database.word.local.WordDao
 import com.example.vocabanana.feature.database.word.local.WordEntity
 
@@ -14,13 +13,13 @@ import com.example.vocabanana.feature.database.word.local.WordEntity
         // [ENTITIES_START]
         WordEntity::class,
         TextEntity::class,
+        WordFormEntity::class,
         // [ENTITIES_END]
     ],
 
-    version = 5,
+    version = 6,
     exportSchema = false
 )
-@TypeConverters(WordConverters::class)
 abstract class AppDatabase : RoomDatabase() {
     // [DAOS_START]
     abstract fun wordDao(): WordDao

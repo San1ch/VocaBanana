@@ -5,8 +5,9 @@ import com.example.vocabanana.feature.word.domain.model.WordDomain
 
 data class WordUi(
     val id: Int,
-    val word: String,
+    val lemma: String,
     val whenAdded: Long,
+    val definition: String,
     val partOfSpeech: String,
     val forms: List<String>
 )
@@ -20,8 +21,9 @@ fun PartOfSpeech.toUi(): String = when (this) {
 }
 fun WordDomain.toUi() = WordUi(
     id = id,
-    word = lemma,
+    lemma = lemma,
     whenAdded = whenAdded,
     partOfSpeech = partOfSpeech.toUi(),
-    forms = forms
+    forms = forms,
+    definition = definition
 )

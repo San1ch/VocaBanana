@@ -6,49 +6,56 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
-import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 
 
 @Dao
 interface WordDao {
-
     @Transaction
     @Query("SELECT * FROM words")
-    fun getAllWords(): Flow<List<WordEntity>>
+    fun getAllWords(): Flow<List<WordWithForms>>
 
     @Transaction
     @Query("SELECT * FROM words WHERE id = :id")
-    fun getWordById(id: Int): Flow<WordEntity?>
+    fun getWordWithFormsById(id: Int): Flow<WordWithForms?>
 
-
-    @Query("SELECT * FROM words WHERE lemma = :lemmas")
-    fun getAllWordByLemma(lemmas: List<String>): Flow<List<WordEntity>>
-
+    @Transaction
     @Query("SELECT * FROM words WHERE lemma = :lemma")
-    fun wordExists(lemma: String): Boolean
+    fun getWordWithFormsByLemma(lemma: String): Flow<WordWithForms?>
 
-    @Query("SELECT * FROM words")
-    fun getAllWordsFlow(): Flow<List<WordEntity>>
-
-    @Query("SELECT * FROM words WHERE lemma = :lemma")
-    fun getWordByWord(lemma: String): Flow<WordEntity>
+    @Transaction
+    @Query("""
+        SELECT * FROM words 
+        WHERE lemma = :word 
+        OR id IN (SELECT wordId FROM word_forms WHERE form = :word)
+        LIMIT 1
+    """)
+    fun getWordByAnyForm(word: String): Flow<WordWithForms?>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertWord(word: WordEntity)
+    suspend fun insertWord(word: WordEntity): Long
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertWords(words: List<WordEntity>)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertForms(forms: List<WordFormEntity>)
 
-    @Update
-    fun updateWord(word: WordEntity)
+    @Transaction
+    suspend fun insertWordWithForms(word: WordEntity, forms: List<String>) {
+        // We delete old forms first to handle updates correctly
+        val wordId = insertWord(word).toInt()
+        deleteFormsForWord(wordId)
+        val formEntities = forms.map { WordFormEntity(wordId, it) }
+        insertForms(formEntities)
+    }
+
+    @Query("DELETE FROM word_forms WHERE wordId = :wordId")
+    suspend fun deleteFormsForWord(wordId: Int)
 
     @Delete
-    fun deleteWord(word: WordEntity)
+    suspend fun deleteWord(word: WordEntity)
 
     @Query("DELETE FROM words")
     suspend fun deleteAll(): Int
 
     @Query("SELECT lemma FROM words WHERE lemma IN (:words)")
-    fun getExistingWords(words: List<String>): List<String>
+    suspend fun getExistingLemmas(words: List<String>): List<String>
 }

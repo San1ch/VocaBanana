@@ -16,4 +16,4 @@ val BananaRipe = Color(0xFFFFD700)
 val BananaSoft = Color(0xFFFFF1A6)
 
 val BananaDark = Color(0xFF423D00)
-val BananaBrown = Color(0xFF5D4037) // Як кінчик банана :)
+val BananaBrown = Color(0xFF5D4037)

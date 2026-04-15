@@ -30,9 +30,24 @@ fun TextDomain.toUi(): TextUi = TextUi(
     lastReadTime = this.info.lastReadTime
 )
 
+sealed class TextToken {
+    data class Word(val text: String) : TextToken()
+    data class Symbol(val text: String) : TextToken()
+}
+
 data class ParagraphUi(
     val rawText: String,
-
-    // for the future TODO
-    // val words: List<WordEntity> 
 )
+
+fun String.tokenize(): List<TextToken> {
+    val wordPattern = Regex("[a-zA-Z']+")
+
+    // We split by anything that IS NOT a letter or an apostrophe
+    // The delimiters (spaces, commas, dots) are kept in the list
+    return this.split(Regex("(?<=[^a-zA-Z'])|(?=[^a-zA-Z'])"))
+        .filter { it.isNotEmpty() }
+        .map {
+            if (it.matches(wordPattern)) TextToken.Word(it)
+            else TextToken.Symbol(it)
+        }
+}

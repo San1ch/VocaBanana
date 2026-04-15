@@ -1,10 +1,11 @@
 package com.example.vocabanana.feature.database.word.local
 
 import androidx.room.ColumnInfo
+import androidx.room.Embedded
 import androidx.room.Entity
+import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
-import androidx.room.TypeConverter
-import kotlinx.serialization.json.Json
+import androidx.room.Relation
 
 
 @Entity(tableName = "words")
@@ -13,19 +14,32 @@ data class WordEntity(
     val lemma: String,
     val state: Int,
     @ColumnInfo(name = "when_added") val whenAdded: Long,
-    val forms: List<String>,
     val partOfSpeech: Int,
+    val definition: String
 )
 
-class WordConverters {
-    @TypeConverter
-    fun fromList(value: List<String>): String {
-        return Json.encodeToString(value)
-    }
+@Entity(
+    tableName = "word_forms",
+    primaryKeys = ["wordId", "form"],
+    foreignKeys = [
+        ForeignKey(
+            entity = WordEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["wordId"],
+            onDelete = ForeignKey.CASCADE
+        )
+    ]
+)
+data class WordFormEntity(
+    val wordId: Int,
+    val form: String
+)
 
-    @TypeConverter
-    fun toList(value: String): List<String> {
-        return Json.decodeFromString(value)
-    }
-
-}
+data class WordWithForms(
+    @Embedded val word: WordEntity,
+    @Relation(
+        parentColumn = "id",
+        entityColumn = "wordId"
+    )
+    val forms: List<WordFormEntity>
+)

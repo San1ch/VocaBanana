@@ -9,85 +9,81 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
-
 class WordRepositoryRoomImpl @Inject constructor(
     private val wordDao: WordDao,
 ) : WordRepository {
+
     override fun getAllLemmas(): Flow<List<WordDomain>> =
         wordDao.getAllWords().map { list ->
             list.map { it.toDomain() }
         }
 
     override suspend fun getAllLemmasAndForms(): List<String> {
-        val result = mutableListOf<String>()
-        val flowData = wordDao.getAllWords().first()
-        flowData.forEach { lemma ->
-            result.add(lemma.lemma)
-            lemma.forms.forEach { form ->
-                result.add(form)
-            }
+        val data = wordDao.getAllWords().first()
+        return data.flatMap { item ->
+            listOf(item.word.lemma) + item.forms.map { it.form }
         }
-        return result
+    }
+
+    override suspend fun getWordByWord(word: String): WordDomain? {
+        val cleanWord = word.trim().lowercase()
+        return wordDao.getWordByAnyForm(cleanWord).first()?.toDomain()
     }
 
     override suspend fun addWords(words: List<WordDomain>) {
-        // 1. Get existing words from DB
+        // 1. Get current DB snapshot
         val databaseWordsMap = wordDao.getAllWords().first()
-            .associateBy { it.lemma }
+            .associateBy { it.word.lemma }
 
-        // 2. This map will track the "current best version" of each word during processing
         val processingMap = mutableMapOf<String, WordDomain>()
 
         words.forEach { newWord ->
-            // Check if we already handled this lemma in this loop OR if it's in the DB
             val existingEntry = processingMap[newWord.lemma]
                 ?: databaseWordsMap[newWord.lemma]?.toDomain()
 
             if (existingEntry != null) {
-                // Merge forms into the existing entry
-                val updatedWord = existingEntry.addForms(newWord.forms)
-                processingMap[newWord.lemma] = updatedWord
+                processingMap[newWord.lemma] = existingEntry.addForms(newWord.forms)
             } else {
-                // First time seeing this lemma in both DB and this list
                 processingMap[newWord.lemma] = newWord
             }
         }
 
-        // 3. Convert the merged results to entities and save
-        val finalEntities = processingMap.values.map { it.toWordEntity() }
-        wordDao.insertWords(finalEntities)
+        // 2. Save merged results
+        processingMap.values.forEach { domain ->
+            wordDao.insertWordWithForms(domain.toWordEntity(), domain.forms)
+        }
     }
 
     override suspend fun updateOrAddWord(word: WordDomain) {
-        val existingEntity = if (word.id != 0) {
-            wordDao.getWordById(word.id).first()
+        val existingRelation = if (word.id != 0) {
+            wordDao.getWordWithFormsById(word.id).first()
         } else {
-            wordDao.getWordByWord(word.lemma).first()
+            wordDao.getWordWithFormsByLemma(word.lemma).first()
         }
 
-        if (existingEntity != null) {
-            val existingDomain = existingEntity.toDomain()
-            val updatedDomain = existingDomain.addForms(word.forms)
-
-            wordDao.insertWord(updatedDomain.toWordEntity())
+        val domainToSave = if (existingRelation != null) {
+            existingRelation.toDomain().addForms(word.forms)
         } else {
-            wordDao.insertWord(word.toWordEntity())
+            word
         }
+
+        wordDao.insertWordWithForms(domainToSave.toWordEntity(), domainToSave.forms)
     }
 
-    override fun removeWord(word: WordDomain) {
+    override suspend fun removeWord(word: WordDomain) {
+        // Room cascades the delete to word_forms automatically
         wordDao.deleteWord(word.toWordEntity())
     }
 
     override suspend fun getExistingWords(words: List<String>): Set<String> {
-        val existingLemmas = wordDao.getExistingWords(words)
-        val existingForms = wordDao.getAllWords().first().flatMap { it.forms }
+        val allData = wordDao.getAllWords().first()
+        val lemmas = allData.map { it.word.lemma }.filter { it in words }
+        val forms = allData.flatMap { it.forms.map { f -> f.form } }.filter { it in words }
 
-        return (existingLemmas + existingForms).toSet()
+        return (lemmas + forms).toSet()
     }
 
     override suspend fun deleteAll(): Int {
         return wordDao.deleteAll()
     }
-
 }
