@@ -18,5 +18,5 @@ data class LexiconEntity(
     val type: String,
 
     @ColumnInfo(name = "definitions")
-    val definitions: String
+    val definition: String
 )

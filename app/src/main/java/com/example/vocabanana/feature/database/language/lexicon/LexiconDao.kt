@@ -16,4 +16,6 @@ interface LexiconDao {
             @MapColumn(columnName = "word") String,
             @MapColumn(columnName = "type") String
                     >
+    @Query("SELECT * FROM 'lexicon-en' WHERE word IN (:words)")
+    suspend fun getWordsFromWords(words: List<String>): List<LexiconEntity>
 }

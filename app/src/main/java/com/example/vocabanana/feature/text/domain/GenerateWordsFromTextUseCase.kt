@@ -5,7 +5,9 @@ import com.example.vocabanana.core.database.TextRepository
 import com.example.vocabanana.core.database.WordRepository
 import com.example.vocabanana.core.domain.model.fold
 import com.example.vocabanana.core.utilities.logs.Logger
+import com.example.vocabanana.feature.database.language.lexicon.LexiconDto
 import com.example.vocabanana.feature.database.language.lexicon.LexiconRepository
+import com.example.vocabanana.feature.database.language.lexicon.toPartOfSpeech
 import com.example.vocabanana.feature.text.domain.usecase.TextProcessingService
 import com.example.vocabanana.feature.word.domain.model.PartOfSpeech
 import com.example.vocabanana.feature.word.domain.model.WordDomain
@@ -19,36 +21,37 @@ class GenerateWordsFromTextUseCase @Inject constructor(
     private val tps: TextProcessingService,
     private val lexiconRepository: LexiconRepository
 ) {
-    suspend operator fun invoke(textId: Int) {
+    suspend operator fun invoke(textId: Int): Boolean {
         val startTime = System.currentTimeMillis()
         val content = textRepository.getTextById(textId).content
 
-        // 1. Filter out words user already knows
         val userVocab = wordRepository.getAllLemmasAndForms().toSet()
         val allUniqueWords = tps.prepareText(content)
         var remainWords = allUniqueWords.filter { it !in userVocab }
 
-        // 2. Fetch POS Map (Now Map<String, PartOfSpeech>)
-        val posMap = lexiconRepository.getPartOfSpeeches(remainWords)
+        // Fetch the DTOs and create a Map for O(1) lookup
+        val lexiconMap = lexiconRepository.getWordsFromWords(remainWords)
+            .associateBy { it.word }
+
         val wordDomains = mutableListOf<WordDomain>()
 
-        // 3. Sequential processing by priority
-        remainWords = processLemmatizedPairs(remainWords, posMap, wordDomains)
-        remainWords = processExistingLemmas(remainWords, posMap, wordDomains)
-        remainWords = processLexiconWords(remainWords, posMap, wordDomains)
-        processRemainingUnknowns(remainWords, posMap, wordDomains)
+        // Pass the lexiconMap instead of the old posMap
+        remainWords = processLemmatizedPairs(remainWords, lexiconMap, wordDomains)
+        remainWords = processExistingLemmas(remainWords, lexiconMap, wordDomains)
+        remainWords = processLexiconWords(remainWords, lexiconMap, wordDomains)
+        processRemainingUnknowns(remainWords, lexiconMap, wordDomains)
 
-        // 4. Batch save (Internal merging handled by Repository)
         if (wordDomains.isNotEmpty()) {
             wordRepository.addWords(wordDomains)
         }
 
         logger.d("Processed in ${System.currentTimeMillis() - startTime}ms. Created: ${wordDomains.size}")
+        return true
     }
 
     private suspend fun processLemmatizedPairs(
         words: List<String>,
-        posMap: Map<String, PartOfSpeech>,
+        posMap: Map<String, LexiconDto>,
         output: MutableList<WordDomain>
     ): List<String> {
         val pairs = lemmaRep.getWordLemmaPairs(words)
@@ -61,7 +64,7 @@ class GenerateWordsFromTextUseCase @Inject constructor(
 
     private suspend fun processExistingLemmas(
         words: List<String>,
-        posMap: Map<String, PartOfSpeech>,
+        posMap: Map<String, LexiconDto>,
         output: MutableList<WordDomain>
     ): List<String> {
         val lemmas = lemmaRep.findExistingLemmas(words)
@@ -74,7 +77,7 @@ class GenerateWordsFromTextUseCase @Inject constructor(
 
     private suspend fun processLexiconWords(
         words: List<String>,
-        posMap: Map<String, PartOfSpeech>,
+        posMap: Map<String, LexiconDto>,
         output: MutableList<WordDomain>
     ): List<String> {
         val existing = lexiconRepository.getExistingWords(words)
@@ -87,7 +90,7 @@ class GenerateWordsFromTextUseCase @Inject constructor(
 
     private fun processRemainingUnknowns(
         words: List<String>,
-        posMap: Map<String, PartOfSpeech>,
+        posMap: Map<String, LexiconDto>,
         output: MutableList<WordDomain>
     ) {
         words.forEach { addValidatedDomain(it, emptyList(), posMap, output) }
@@ -96,13 +99,18 @@ class GenerateWordsFromTextUseCase @Inject constructor(
     private fun addValidatedDomain(
         lemma: String,
         forms: List<String>,
-        posMap: Map<String, PartOfSpeech>,
+        lexiconMap: Map<String, LexiconDto>, // Updated parameter
         output: MutableList<WordDomain>
     ) {
+        val dto = lexiconMap[lemma]
+
         WordDomain.create(
             lemma = lemma,
             forms = forms,
-            partOfSpeech = posMap[lemma] ?: PartOfSpeech.UNKNOWN
+            // Convert String from DTO to Domain Enum
+            partOfSpeech = dto?.type?.toPartOfSpeech ?: PartOfSpeech.UNKNOWN,
+            // Add definition from DTO, or empty if it doesn't exist
+            definition = dto?.definition ?: ""
         ).fold(
             onSuccess = { output.add(it) },
             onError = { logger.d("Validation failed for $lemma: $it") }
@@ -110,11 +118,12 @@ class GenerateWordsFromTextUseCase @Inject constructor(
     }
 
     // TODO
-    //  1. Need think where from I can add definition
-    //  2. Move word domain logic to the [core]
-    //  3. And start realizing extra word info into the text reading window
+    //  1. Move word domain logic to the [core]
     //
 }
+
+
+
 
 sealed class GenerateWordsFromTextResult {
     sealed class Success() : GenerateWordsFromTextResult() {
