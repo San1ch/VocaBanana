@@ -14,6 +14,7 @@ private object AppScreens {
     const val TEXT_LIST_SCREEN = "TextListScreen"
     const val TEXT_CREATE_SCREEN = "TextCreateScreen"
     const val DEBUG_SCREEN = "DebugScreen"
+    const val NEW_WORD_LIST_SCREEN = "NewWordListScreen"
 }
 
 /**
@@ -33,6 +34,7 @@ sealed class AppDestination(val route: String) {
     object TextList : AppDestination(AppScreens.TEXT_LIST_SCREEN)
     object TextCreate : AppDestination(AppScreens.TEXT_CREATE_SCREEN)
     object Debug : AppDestination(AppScreens.DEBUG_SCREEN)
+    object NewWordList : AppDestination(AppScreens.NEW_WORD_LIST_SCREEN)
 
 }
 
@@ -53,6 +55,7 @@ class AppNavigationActions(private val navController: NavHostController) {
             AppDestination.TextCreate -> navigateToCreateText()
             AppDestination.TextList -> navigateToTextList()
             AppDestination.Vocabulary -> navigateToVocabulary()
+            AppDestination.NewWordList -> navigateToNewWordList()
         }
     }
     private fun navigateToDebug(){
@@ -95,6 +98,11 @@ class AppNavigationActions(private val navController: NavHostController) {
     }
     private fun navigateToCreateText() {
         navController.navigate(AppDestination.TextCreate.route) {
+
+        }
+    }
+    private fun navigateToNewWordList() {
+        navController.navigate(AppDestination.NewWordList.route) {
 
         }
     }

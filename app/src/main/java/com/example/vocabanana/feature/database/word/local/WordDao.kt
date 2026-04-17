@@ -1,27 +1,49 @@
 package com.example.vocabanana.feature.database.word.local
 
-import androidx.room.Dao
-import androidx.room.Delete
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
-import androidx.room.Query
-import androidx.room.Transaction
+import androidx.room.*
 import kotlinx.coroutines.flow.Flow
-
 
 @Dao
 interface WordDao {
+
+    // --- Flow Queries for UI Observation ---
+    // Use these in ViewModels to get real-time updates
     @Transaction
     @Query("SELECT * FROM words")
-    fun getAllWords(): Flow<List<WordWithForms>>
+    fun getAllWordsFlow(): Flow<List<WordWithForms>>
 
     @Transaction
     @Query("SELECT * FROM words WHERE id = :id")
-    fun getWordWithFormsById(id: Int): Flow<WordWithForms?>
+    fun getWordWithFormsByIdFlow(id: Int): Flow<WordWithForms?>
+
+    @Transaction
+    @Query("SELECT * FROM words WHERE state IN (:stateValues)")
+    fun getWordsByStates(stateValues: List<Int>): Flow<List<WordWithForms>>
+
+    @Transaction
+    @Query("SELECT * FROM words WHERE state NOT IN (:stateValues)")
+    fun getWordsExceptStates(stateValues: List<Int>): Flow<List<WordWithForms>>
+
+
+    @Query("SELECT COUNT(*) FROM words WHERE state NOT IN (:stateValues)")
+    fun getCountExceptStates(stateValues: List<Int>): Flow<Int>
+
+    @Query("SELECT COUNT(*) FROM words WHERE state IN (:stateValues)")
+    fun getCountByStates(stateValues: List<Int>): Flow<Int>
+
+    // --- Suspend Queries for Repository Logic ---
+    // Use these inside Repository methods to avoid Flow overhead (.first())
+    @Transaction
+    @Query("SELECT * FROM words")
+    suspend fun getAllWordsList(): List<WordWithForms>
+
+    @Transaction
+    @Query("SELECT * FROM words WHERE id = :id")
+    suspend fun getWordWithFormsById(id: Int): WordWithForms?
 
     @Transaction
     @Query("SELECT * FROM words WHERE lemma = :lemma")
-    fun getWordWithFormsByLemma(lemma: String): Flow<WordWithForms?>
+    suspend fun getWordWithFormsByLemma(lemma: String): WordWithForms?
 
     @Transaction
     @Query("""
@@ -30,17 +52,21 @@ interface WordDao {
         OR id IN (SELECT wordId FROM word_forms WHERE form = :word)
         LIMIT 1
     """)
-    fun getWordByAnyForm(word: String): Flow<WordWithForms?>
+    suspend fun getWordByAnyForm(word: String): WordWithForms?
 
+    // --- Write Operations ---
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertWord(word: WordEntity): Long
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertForms(forms: List<WordFormEntity>)
 
+    /**
+     * Inserts a word and its associated forms.
+     * Deletes old forms first to ensure the list is exactly as provided.
+     */
     @Transaction
     suspend fun insertWordWithForms(word: WordEntity, forms: List<String>) {
-        // We delete old forms first to handle updates correctly
         val wordId = insertWord(word).toInt()
         deleteFormsForWord(wordId)
         val formEntities = forms.map { WordFormEntity(wordId, it) }
@@ -50,12 +76,13 @@ interface WordDao {
     @Query("DELETE FROM word_forms WHERE wordId = :wordId")
     suspend fun deleteFormsForWord(wordId: Int)
 
+    @Query("DELETE FROM words WHERE id = :id")
+    suspend fun deleteById(id: Int)
+
     @Delete
     suspend fun deleteWord(word: WordEntity)
 
     @Query("DELETE FROM words")
     suspend fun deleteAll(): Int
 
-    @Query("SELECT lemma FROM words WHERE lemma IN (:words)")
-    suspend fun getExistingLemmas(words: List<String>): List<String>
 }

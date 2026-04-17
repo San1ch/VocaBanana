@@ -2,11 +2,13 @@ package com.example.vocabanana.feature.text.presentation.data
 
 import com.example.vocabanana.feature.word.domain.model.PartOfSpeech
 import com.example.vocabanana.feature.word.domain.model.WordDomain
+import com.example.vocabanana.feature.word.domain.model.WordState
 
 data class WordUi(
     val id: Int,
     val lemma: String,
     val whenAdded: Long,
+    val state: WordState,
     val definition: String,
     val partOfSpeech: String,
     val forms: List<String>
@@ -25,5 +27,6 @@ fun WordDomain.toUi() = WordUi(
     whenAdded = whenAdded,
     partOfSpeech = partOfSpeech.toUi(),
     forms = forms,
-    definition = definition
+    definition = definition,
+    state = state
 )

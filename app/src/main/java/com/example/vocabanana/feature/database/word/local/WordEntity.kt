@@ -10,7 +10,9 @@ import androidx.room.Relation
 
 @Entity(tableName = "words")
 data class WordEntity(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    @PrimaryKey(autoGenerate = true)
+    @ColumnInfo(name = "id")
+    val id: Int = 0,
     val lemma: String,
     val state: Int,
     @ColumnInfo(name = "when_added") val whenAdded: Long,
