@@ -1,7 +1,6 @@
 package com.example.vocabanana.feature.database.language.lexicon
 
-import com.example.vocabanana.feature.word.domain.model.PartOfSpeech
-import com.example.vocabanana.feature.word.domain.model.WordDomain
+import com.example.vocabanana.core.word.domain.model.PartOfSpeech
 import javax.inject.Inject
 
 class LexiconRepositoryImpl @Inject constructor(

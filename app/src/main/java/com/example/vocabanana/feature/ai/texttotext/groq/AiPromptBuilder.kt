@@ -1,7 +1,7 @@
 package com.example.vocabanana.feature.ai.texttotext.groq
 
 import com.example.vocabanana.core.domain.model.SentenceWithItsWords
-import com.example.vocabanana.feature.word.domain.model.PartOfSpeech
+import com.example.vocabanana.core.word.domain.model.PartOfSpeech
 import com.example.vocabanana.feature.text.domain.AiJsonKeys
 import javax.inject.Inject
 

@@ -1,10 +1,10 @@
-package com.example.vocabanana.feature.word.domain.model
+package com.example.vocabanana.core.word.domain.model
 
 import com.example.vocabanana.core.domain.model.ValidateResult
 import com.example.vocabanana.core.domain.model.ValidationError
 import com.example.vocabanana.core.domain.model.map
-import com.example.vocabanana.feature.word.domain.model.WordConstants.MAX_WORD_LENGTH
-import com.example.vocabanana.feature.word.domain.model.WordConstants.WORD_REGEX
+import com.example.vocabanana.core.word.domain.model.WordConstants.MAX_WORD_LENGTH
+import com.example.vocabanana.core.word.domain.model.WordConstants.WORD_REGEX
 
 
 @ConsistentCopyVisibility
@@ -90,8 +90,10 @@ data class WordDomain private constructor(
             val trimmed = input.trim()
 
             if (trimmed.isEmpty()) return ValidateResult.Error(WordValidateError.Empty)
-            if (trimmed.length > MAX_WORD_LENGTH) return ValidateResult.Error(WordValidateError.TooLong)
-            if (!WORD_REGEX.matches(trimmed)) return ValidateResult.Error(WordValidateError.InvalidChar)
+            if (trimmed.length > MAX_WORD_LENGTH) return ValidateResult.Error(WordValidateError.TooLong(MAX_WORD_LENGTH))
+
+            val invalidChar = trimmed.firstOrNull { !WORD_REGEX.matches(it.toString()) }
+            if (invalidChar != null) return ValidateResult.Error(WordValidateError.InvalidLemmaChar(invalidChar))
 
             return ValidateResult.Success(trimmed)
         }
@@ -114,6 +116,6 @@ enum class WordState(val value: Int) {
 
 sealed class WordValidateError : ValidationError {
     object Empty : WordValidateError()
-    object TooLong : WordValidateError()
-    object InvalidChar : WordValidateError()
+    data class TooLong(val maxLength: Int) : WordValidateError()
+    data class InvalidLemmaChar(val char: Char) : WordValidateError()
 }

@@ -4,7 +4,7 @@
     <!-- Word Validate Errors -->
     <string name="word_validate_error_empty">Word cannot be empty</string>
     <string name="word_validate_error_length">Word cannot exceed %1$d characters</string>
-    <string name="word_validate_error_invalid_characters">Word contains invalid characters</string>
+    <string name="word_validate_error_invalid_lemma_char">Word contains invalid characters</string>
 
     <string name="wordform_validate_error_empty">Word forms list cannot be empty</string>
     <string name="wordform_validate_error_empty_item">Word form cannot be empty</string>
@@ -35,6 +35,14 @@
     <string name="generate_words_from_text_not_all_new_words_added">Added %1$d out of %2$d new words</string>
     <string name="generate_words_from_text_server_error">Server error</string>
     <string name="generate_words_from_text_all_words_already_exists">All words already exist</string>
+    <string name="generate_words_from_text_success">%1$d new words added</string>
+    <string name="generate_words_from_text_partial_success">%1$d new words added out of %2$d</string>
+
+    <!-- Generate Words From Text Text -->
+    <string name="generate_words_from_text_analyzing_lexicon">Analyzing lexicon</string>
+    <string name="generate_words_from_text_preparing_text">Preparing text</string>
+    <string name="generate_words_from_text_saving_words">Saving words</string>
+
 
     <!-- General UI Text -->
     <string name="vocabulary">Vocabulary</string>
@@ -42,6 +50,6 @@
     <string name="add">Add</string>
     <string name="cancel">Cancel</string>
     <string name="add_text_title">Add Text</string>
-
+    <string name="success">Success</string>
 
 </resources>

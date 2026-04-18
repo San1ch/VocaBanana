@@ -6,11 +6,15 @@ import com.example.vocabanana.core.presentation.asUiState
 import com.example.vocabanana.core.presentation.uistate.UiState
 import com.example.vocabanana.core.database.TextRepository
 import com.example.vocabanana.core.database.WordRepository
+import com.example.vocabanana.core.presentation.UiText
+import com.example.vocabanana.feature.text.domain.GenerateWordsFromTextState
 import com.example.vocabanana.feature.text.domain.GenerateWordsFromTextUseCase
-import com.example.vocabanana.feature.text.presentation.data.GenerateWordsFromTextUiResult
+import com.example.vocabanana.feature.text.presentation.data.GenerateWordsFromTextUiState
 import com.example.vocabanana.feature.text.presentation.data.TextUi
 import com.example.vocabanana.feature.text.presentation.data.toPreview
 import com.example.vocabanana.feature.text.presentation.data.toUi
+import com.example.vocabanana.feature.text.presentation.data.toUiState
+import com.example.vocabanana.feature.text.presentation.data.toUiText
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -27,16 +31,13 @@ import javax.inject.Inject
 class TextListScreenViewModel @Inject constructor(
     private val textRepository: TextRepository,
     private val wordRepository: WordRepository,
-    private val generateWordsFromTextUseCase: GenerateWordsFromTextUseCase
+    private val generateWordsFromText: GenerateWordsFromTextUseCase
 ) : BaseViewModel() {
 
     private var saveJob: Job? = null
-
-    private val _generateWordsFromTextResult = MutableStateFlow<GenerateWordsFromTextUiResult?>(null)
-    val generateWordsFromTextResult = _generateWordsFromTextResult.asStateFlow()
-
-    private val _isGenerating = MutableStateFlow(false)
-    val isGenerating = _isGenerating.asStateFlow()
+    private val _generatingStateMessage =
+        MutableStateFlow<GenerateWordsFromTextUiState?>(null)
+    val generatingState = _generatingStateMessage.asStateFlow()
 
 
     val textPreviews = textRepository.getTexts()
@@ -73,29 +74,31 @@ class TextListScreenViewModel @Inject constructor(
     fun closeWordInfo() {
         _wordInfoState.value = WordInfoState.Hidden
     }
-    
+
     fun selectText(id: Int) {
         viewModelScope.launch(Dispatchers.IO) {
             _currentText.value = textRepository.getTextById(id).toUi()
         }
     }
 
-
     fun generateWords() {
         val textId = _currentText.value?.id ?: return
         viewModelScope.launch(Dispatchers.IO) {
+            generateWordsFromText(textId).collect {
+                _generatingStateMessage.value = it.toUiState()
+            }
         }
     }
 
-    fun resetGenerateResult() {
-        _generateWordsFromTextResult.value = null
+    fun resetGenerateState() {
+        _generatingStateMessage.value = null
     }
 
     fun clearSelection() {
         _currentText.value = null
     }
 
-    
+
     fun updateProgress(textId: Int, position: Float) {
         saveJob?.cancel()
         saveJob = viewModelScope.launch(Dispatchers.IO) {
@@ -104,7 +107,7 @@ class TextListScreenViewModel @Inject constructor(
         }
     }
 
-    
+
     fun deleteText(textId: Int) {
         viewModelScope.launch(Dispatchers.IO) {
             textRepository.deleteText(textId)

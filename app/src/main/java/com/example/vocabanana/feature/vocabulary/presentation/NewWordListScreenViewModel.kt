@@ -7,7 +7,7 @@ import com.example.vocabanana.core.presentation.asUiState
 import com.example.vocabanana.core.presentation.uistate.UiState
 import com.example.vocabanana.core.utilities.logs.Logger
 import com.example.vocabanana.feature.text.presentation.data.toUi
-import com.example.vocabanana.feature.word.domain.model.WordState
+import com.example.vocabanana.core.word.domain.model.WordState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted

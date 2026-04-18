@@ -1,7 +1,7 @@
 package com.example.vocabanana.core.database
 
-import com.example.vocabanana.feature.word.domain.model.WordDomain
-import com.example.vocabanana.feature.word.domain.model.WordState
+import com.example.vocabanana.core.word.domain.model.WordDomain
+import com.example.vocabanana.core.word.domain.model.WordState
 import kotlinx.coroutines.flow.Flow
 
 interface WordRepository {

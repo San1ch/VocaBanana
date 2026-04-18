@@ -9,8 +9,10 @@ import com.example.vocabanana.feature.database.language.lexicon.LexiconDto
 import com.example.vocabanana.feature.database.language.lexicon.LexiconRepository
 import com.example.vocabanana.feature.database.language.lexicon.toPartOfSpeech
 import com.example.vocabanana.feature.text.domain.usecase.TextProcessingService
-import com.example.vocabanana.feature.word.domain.model.PartOfSpeech
-import com.example.vocabanana.feature.word.domain.model.WordDomain
+import com.example.vocabanana.core.word.domain.model.PartOfSpeech
+import com.example.vocabanana.core.word.domain.model.WordDomain
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
 class GenerateWordsFromTextUseCase @Inject constructor(
@@ -21,13 +23,21 @@ class GenerateWordsFromTextUseCase @Inject constructor(
     private val tps: TextProcessingService,
     private val lexiconRepository: LexiconRepository
 ) {
-    suspend operator fun invoke(textId: Int): Boolean {
+    operator fun invoke(textId: Int): Flow<GenerateWordsFromTextState> = flow {
         val startTime = System.currentTimeMillis()
+        emit(GenerateWordsFromTextState.Loading.PreparingText)
         val content = textRepository.getTextById(textId).content
-
-        val userVocab = wordRepository.getAllLemmasAndForms().toSet()
         val allUniqueWords = tps.prepareText(content)
+
+        // 2. Next Stage
+        emit(GenerateWordsFromTextState.Loading.AnalyzingLexicon)
+        val userVocab = wordRepository.getAllLemmasAndForms().toSet()
         var remainWords = allUniqueWords.filter { it !in userVocab }
+
+        if (remainWords.isEmpty()) {
+            emit(GenerateWordsFromTextState.Success(GenerateWordsFromTextResult.Success.AllWordsAlreadyExists))
+            return@flow
+        }
 
         // Fetch the DTOs and create a Map for O(1) lookup
         val lexiconMap = lexiconRepository.getWordsFromWords(remainWords)
@@ -41,12 +51,14 @@ class GenerateWordsFromTextUseCase @Inject constructor(
         remainWords = processLexiconWords(remainWords, lexiconMap, wordDomains)
         processRemainingUnknowns(remainWords, lexiconMap, wordDomains)
 
+        emit(GenerateWordsFromTextState.Loading.SavingWords)
         if (wordDomains.isNotEmpty()) {
             wordRepository.addWords(wordDomains)
+            emit(GenerateWordsFromTextState.Success(GenerateWordsFromTextResult.Success.Words(wordDomains)))
+        } else {
+            // Maybe something went wrong during validation
+            emit(GenerateWordsFromTextState.Error(GenerateWordsFromTextResult.Error.Unknown("No valid words found")))
         }
-
-        logger.d("Processed in ${System.currentTimeMillis() - startTime}ms. Created: ${wordDomains.size}")
-        return true
     }
 
     private suspend fun processLemmatizedPairs(
@@ -116,14 +128,21 @@ class GenerateWordsFromTextUseCase @Inject constructor(
             onError = { logger.d("Validation failed for $lemma: $it") }
         )
     }
-
-    // TODO
-    //  1. Move word domain logic to the [core]
-    //
 }
 
 
 
+sealed class GenerateWordsFromTextState {
+    // We use data object for simple stages
+    sealed class Loading : GenerateWordsFromTextState() {
+        data object PreparingText : Loading()
+        data object AnalyzingLexicon : Loading()
+        data object SavingWords : Loading()
+    }
+
+    data class Success(val result: GenerateWordsFromTextResult.Success) : GenerateWordsFromTextState()
+    data class Error(val error: GenerateWordsFromTextResult.Error) : GenerateWordsFromTextState()
+}
 
 sealed class GenerateWordsFromTextResult {
     sealed class Success() : GenerateWordsFromTextResult() {

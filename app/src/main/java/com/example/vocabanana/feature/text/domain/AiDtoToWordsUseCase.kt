@@ -1,8 +1,8 @@
 package com.example.vocabanana.feature.text.domain
 
 import com.example.vocabanana.core.domain.model.ValidateResult
-import com.example.vocabanana.feature.word.domain.model.PartOfSpeech
-import com.example.vocabanana.feature.word.domain.model.WordDomain
+import com.example.vocabanana.core.word.domain.model.PartOfSpeech
+import com.example.vocabanana.core.word.domain.model.WordDomain
 import javax.inject.Inject
 
 

@@ -3,7 +3,6 @@
 package com.example.vocabanana.feature.text.presentation
 
 import android.content.Intent
-import android.net.Uri
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
@@ -35,10 +34,14 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.LockOpen
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -78,12 +81,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.vocabanana.core.navigation.AppDestination
 import com.example.vocabanana.core.presentation.StateObserver
 import com.example.vocabanana.core.presentation.toFormattedDate
-import com.example.vocabanana.feature.text.presentation.data.GenerateWordsFromTextUiResult
+import com.example.vocabanana.feature.text.presentation.data.GenerateWordsFromTextUiState
 import com.example.vocabanana.feature.text.presentation.data.ParagraphUi
 import com.example.vocabanana.feature.text.presentation.data.TextPreview
 import com.example.vocabanana.feature.text.presentation.data.TextToken
@@ -97,9 +100,6 @@ import com.example.vocabanana.ui.composable.DpSizes
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.abs
-import androidx.core.net.toUri
-
-val spaceBetweenParagraphs = 16.dp
 
 @Composable
 fun TextListScreen(
@@ -111,8 +111,7 @@ fun TextListScreen(
     val textPreviewsState by viewModel.textPreviews.collectAsState()
     var deletingText by remember { mutableStateOf<TextPreview?>(null) }
 
-    val result by viewModel.generateWordsFromTextResult.collectAsState()
-    val isGenerating by viewModel.isGenerating.collectAsState()
+    val generatingState by viewModel.generatingState.collectAsState()
 
     val wordInfoState by viewModel.wordInfoState.collectAsState()
 
@@ -137,8 +136,7 @@ fun TextListScreen(
             onProgressUpdate = { id, pos -> viewModel.updateProgress(id, pos) },
             onDelete = { preview -> deletingText = preview },
             onGenerateWords = { viewModel.generateWords() },
-            result = result,
-            isGenerating = isGenerating,
+            generatingState = generatingState,
             onWordClick = { word -> viewModel.selectWordInPage(word) },
             wordInfoState = wordInfoState,
             closeWordInfo = viewModel::closeWordInfo
@@ -147,6 +145,7 @@ fun TextListScreen(
 
 
 }
+
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun TextListContent(
@@ -158,8 +157,7 @@ fun TextListContent(
     onProgressUpdate: (Int, Float) -> Unit,
     onDelete: (TextPreview) -> Unit,
     onGenerateWords: () -> Unit,
-    result: GenerateWordsFromTextUiResult?,
-    isGenerating: Boolean,
+    generatingState: GenerateWordsFromTextUiState?,
     onWordClick: (String) -> Unit,
     wordInfoState: WordInfoState,
     closeWordInfo: () -> Unit,
@@ -204,7 +202,8 @@ fun TextListContent(
                                 onLockClick = { isLocked = !isLocked },
                                 onSettingsClick = {
                                     coroutineScope.launch {
-                                        if (isLocked || selectedText == null) isSwipeAttempted = true
+                                        if (isLocked || selectedText == null) isSwipeAttempted =
+                                            true
                                         else pagerState.animateScrollToPage(2)
                                     }
                                 }
@@ -241,15 +240,16 @@ fun TextListContent(
                             },
                             onDelete = onDelete
                         )
+
                         1 -> TextReaderPage(
                             text = selectedText,
                             onProgressUpdate = onProgressUpdate,
                             onWordClick = onWordClick
                         )
+
                         2 -> TextListSettingsPage(
                             onGenerateWords = onGenerateWords,
-                            result = result,
-                            isGenerating = isGenerating
+                            generatingState = generatingState
                         )
                     }
                 }
@@ -270,6 +270,7 @@ fun TextListContent(
         }
     }
 }
+
 @Composable
 private fun TopBarActions(
     currentPage: Int,
@@ -330,7 +331,6 @@ private fun TextListPage(
         }
     }
 }
-
 
 
 @Composable
@@ -427,8 +427,7 @@ fun AnimatedLockIcon(isLocked: Boolean, isSwipeAttempted: Boolean) {
 @Composable
 fun TextListSettingsPage(
     onGenerateWords: () -> Unit,
-    result: GenerateWordsFromTextUiResult?,
-    isGenerating: Boolean
+    generatingState: GenerateWordsFromTextUiState?
 ) {
 
     Column(
@@ -450,85 +449,79 @@ fun TextListSettingsPage(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Text(
-                    "AI Vocabulary Generator",
+                    "Vocabulary Generator",
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
 
-                Text(
-                    "AI will analyze your text and add new words with translations and examples to your dictionary.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
 
-                if (isGenerating) {
-                    CircularProgressIndicator(modifier = Modifier.size(48.dp))
-                    Text(
-                        "Analyzing text... Please wait",
-                        style = MaterialTheme.typography.labelMedium
-                    )
-                } else {
-                    Button(
-                        onClick = { onGenerateWords() },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = MaterialTheme.shapes.medium
-                    ) {
-                        Icon(Icons.Default.Add, contentDescription = null)
-                        Text("Generate Words", modifier = Modifier.padding(start = 8.dp))
-                    }
+                Button(
+                    onClick = { onGenerateWords() },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = MaterialTheme.shapes.medium,
+                    enabled = generatingState !is GenerateWordsFromTextUiState.Loading
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = null)
+                    Text("Generate Words", modifier = Modifier.padding(start = 8.dp))
                 }
             }
         }
 
         AnimatedVisibility(
-            visible = result != null,
+            visible = generatingState != null,
             enter = fadeIn() + scaleIn(),
             modifier = Modifier.padding(top = 24.dp)
         ) {
-            ResultStatus(result)
+            GeneratingWordStatus(generatingState)
         }
     }
 }
 
 @Composable
-private fun ResultStatus(result: GenerateWordsFromTextUiResult?) {
+private fun GeneratingWordStatus(state: GenerateWordsFromTextUiState?) {
+    if (state == null) return
+
+    // This is the ONLY place context is allowed!
     val context = LocalContext.current
 
-    val color = when (result) {
-        is GenerateWordsFromTextUiResult.Success -> Color(0xFF4CAF50)
-        is GenerateWordsFromTextUiResult.NotAllNewWordsAdded -> Color(0xFFFF9800)
-        is GenerateWordsFromTextUiResult.Error -> MaterialTheme.colorScheme.error
-        else -> MaterialTheme.colorScheme.primary
+    val message = when (state) {
+        is GenerateWordsFromTextUiState.Loading -> state.message.asString(context)
+        is GenerateWordsFromTextUiState.Success -> state.message.asString(context)
+        is GenerateWordsFromTextUiState.Error -> state.message.asString(context)
+        is GenerateWordsFromTextUiState.AllExist -> state.message.asString(context)
+        is GenerateWordsFromTextUiState.PartialSuccess -> state.message.asString(context)
+    }
+
+    val (color, icon) = when (state) {
+        is GenerateWordsFromTextUiState.Success -> Color(0xFF4CAF50) to Icons.Default.CheckCircle
+        is GenerateWordsFromTextUiState.PartialSuccess -> Color(0xFFFF9800) to Icons.Default.Warning
+        is GenerateWordsFromTextUiState.Error -> MaterialTheme.colorScheme.error to Icons.Default.Warning
+        is GenerateWordsFromTextUiState.Loading -> MaterialTheme.colorScheme.primary to Icons.Default.Refresh
+        is GenerateWordsFromTextUiState.AllExist -> MaterialTheme.colorScheme.secondary to Icons.Default.Info
     }
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+        modifier = Modifier.padding(24.dp)
     ) {
+        // We add an animation for the loading state later!
         Icon(
-            imageVector = if (result is GenerateWordsFromTextUiResult.Error) Icons.Default.Delete else Icons.Default.Add,
+            imageVector = icon,
             contentDescription = null,
             tint = color,
-            modifier = Modifier.size(40.dp)
+            modifier = Modifier.size(48.dp)
         )
-
-        val message = when (result) {
-            is GenerateWordsFromTextUiResult.Success -> "Success! Added ${result.words.size} new words."
-            is GenerateWordsFromTextUiResult.NotAllNewWordsAdded ->
-                "Partial success: Added ${result.addedCount} of ${result.totalCount} words. Some parts failed due to API limits."
-
-            is GenerateWordsFromTextUiResult.Error -> result.message.asString(context)
-            else -> ""
-        }
-
         Text(
             text = message,
-            style = MaterialTheme.typography.bodyLarge,
-            fontWeight = FontWeight.Medium,
+            style = MaterialTheme.typography.titleMedium,
             color = color,
-            modifier = Modifier.padding(horizontal = 16.dp),
             textAlign = TextAlign.Center
         )
+
+        if (state is GenerateWordsFromTextUiState.Loading) {
+            CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
+        }
     }
 }
 
@@ -599,14 +592,16 @@ private fun TextReaderPage(
 
 @Composable
 fun ParagraphViewItem(paragraph: ParagraphUi, onWordClick: (String) -> Unit) {
-    val color = MaterialTheme.colorScheme.primary
+    val textColor = MaterialTheme.colorScheme.onSurface
+
     val annotatedString = remember(paragraph.rawText) {
         buildAnnotatedString {
             val tokens = paragraph.rawText.tokenize()
             tokens.forEach { token ->
                 if (token is TextToken.Word) {
                     pushStringAnnotation(tag = "WORD", annotation = token.text)
-                    withStyle(style = SpanStyle(color = color)) {
+                    // Change 'color = color' to 'textColor' or keep it subtle
+                    withStyle(style = SpanStyle(color = textColor, fontWeight = FontWeight.Normal)) {
                         append(token.text)
                     }
                     pop()
@@ -619,7 +614,7 @@ fun ParagraphViewItem(paragraph: ParagraphUi, onWordClick: (String) -> Unit) {
 
     ClickableText(
         text = annotatedString,
-        style = MaterialTheme.typography.bodyLarge,
+        style = MaterialTheme.typography.bodyLarge.copy(color = textColor),
         onClick = { offset ->
             annotatedString.getStringAnnotations(tag = "WORD", start = offset, end = offset)
                 .firstOrNull()?.let { annotation ->

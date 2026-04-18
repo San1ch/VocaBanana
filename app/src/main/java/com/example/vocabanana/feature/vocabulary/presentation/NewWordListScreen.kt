@@ -50,7 +50,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.vocabanana.core.navigation.AppDestination
 import com.example.vocabanana.core.presentation.StateObserver
 import com.example.vocabanana.feature.text.presentation.data.WordUi
-import com.example.vocabanana.feature.word.domain.model.WordState
+import com.example.vocabanana.core.word.domain.model.WordState
 import com.example.vocabanana.ui.composable.CollectUiEvents
 
 

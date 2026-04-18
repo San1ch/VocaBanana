@@ -1,12 +1,11 @@
 package com.example.vocabanana.feature.database.word.repository
 
 import com.example.vocabanana.core.database.WordRepository
-import com.example.vocabanana.core.utilities.logs.Logger
 import com.example.vocabanana.feature.database.word.local.WordDao
-import com.example.vocabanana.feature.word.domain.model.WordDomain
-import com.example.vocabanana.feature.word.domain.model.WordState
-import com.example.vocabanana.feature.word.mapper.toDomain
-import com.example.vocabanana.feature.word.mapper.toWordEntity
+import com.example.vocabanana.core.word.domain.model.WordDomain
+import com.example.vocabanana.core.word.domain.model.WordState
+import com.example.vocabanana.core.word.mapper.toDomain
+import com.example.vocabanana.core.word.mapper.toWordEntity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map

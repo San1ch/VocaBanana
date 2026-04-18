@@ -1,4 +1,4 @@
-package com.example.vocabanana.feature.word.domain.model
+package com.example.vocabanana.core.word.domain.model
 
 import kotlin.collections.first
 

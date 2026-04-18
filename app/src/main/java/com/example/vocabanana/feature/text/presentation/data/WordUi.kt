@@ -1,8 +1,9 @@
 package com.example.vocabanana.feature.text.presentation.data
 
-import com.example.vocabanana.feature.word.domain.model.PartOfSpeech
-import com.example.vocabanana.feature.word.domain.model.WordDomain
-import com.example.vocabanana.feature.word.domain.model.WordState
+import com.example.vocabanana.core.word.domain.model.PartOfSpeech
+import com.example.vocabanana.core.word.domain.model.WordDomain
+import com.example.vocabanana.core.word.domain.model.WordState
+import com.example.vocabanana.core.word.domain.model.toPartOfSpeech
 
 data class WordUi(
     val id: Int,
@@ -29,4 +30,14 @@ fun WordDomain.toUi() = WordUi(
     forms = forms,
     definition = definition,
     state = state
+)
+
+fun WordUi.toDomain() = WordDomain.create(
+    id = id,
+    lemma = lemma,
+    whenAdded = whenAdded,
+    forms = forms,
+    partOfSpeech = partOfSpeech.toPartOfSpeech(),
+    state = state,
+    definition = definition
 )

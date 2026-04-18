@@ -42,7 +42,6 @@ fun DebugScreen(
     val textsState by viewModel.textsState.collectAsState()
     val selectedId by viewModel.selectedTextId.collectAsStateWithLifecycle()
 
-    val finished by viewModel.finished.collectAsState()
 
     CollectUiEvents(
         viewModel.events,
@@ -54,8 +53,7 @@ fun DebugScreen(
         DebugContent(
             texts = texts,
             selectedId = selectedId,
-            onAction = viewModel::handleAction,
-            finished = finished
+            onAction = viewModel::handleAction
         )
     }
 }
@@ -65,14 +63,8 @@ fun DebugContent(
     texts: List<TextPreview>,
     selectedId: Int?,
     onAction: (DebugAction) -> Unit,
-    finished: Boolean?
 ) {
-    var textState by remember { mutableStateOf("") }
-    textState = when(finished){
-        true -> "All unknown words were added"
-        false -> "Analyzing in progress"
-        null -> "Analyze wasn't started"
-    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -87,14 +79,5 @@ fun DebugContent(
                 )
             }
         }
-
-        Spacer(Modifier.height(24.dp))
-
-        Text(text = textState)
-
-        Button(onClick = { onAction(DebugAction.AnalyzeUnknowns) }) {
-            Text("Analyze unknowns words")
-        }
-
     }
 }

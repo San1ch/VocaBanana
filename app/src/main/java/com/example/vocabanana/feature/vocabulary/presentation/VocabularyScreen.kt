@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -15,6 +16,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AddCircleOutline
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.AlertDialog
@@ -46,8 +48,11 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.vocabanana.R
 import com.example.vocabanana.core.navigation.AppDestination
+import com.example.vocabanana.core.network.AiResult
 import com.example.vocabanana.core.presentation.StateObserver
 import com.example.vocabanana.core.presentation.UiEvent
+import com.example.vocabanana.core.presentation.UiResult
+import com.example.vocabanana.core.word.domain.model.PartOfSpeech
 import com.example.vocabanana.feature.text.presentation.data.WordUi
 import com.example.vocabanana.ui.composable.CollectUiEvents
 import com.example.vocabanana.ui.composable.DeleteConfirmDialog
@@ -99,10 +104,20 @@ fun VocabularyScreen(
                     onBack = {
                         scope.launch { pagerState.animateScrollToPage(0) }
                     })
+
+                2 -> WordEditContent(
+                    word = selectedWord,
+                    onBack = { scope.launch { pagerState.animateScrollToPage(1) } },
+                    onSave = { updatedWord ->
+                        if (viewModel.updateWord(updatedWord)) {
+                            scope.launch { pagerState.animateScrollToPage(1) }
+                        }
+                    })
             }
         }
     }
 }
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -134,9 +149,12 @@ fun VocabularyListContent(
 
                     VocabularyFilterButton() // Your existing filter
 
+
                     IconButton(onClick = { /* More options */ }) {
                         Icon(Icons.Default.MoreVert, contentDescription = "More")
                     }
+
+
                 }
             )
         }
@@ -150,7 +168,7 @@ fun VocabularyListContent(
                 ListItem(
                     modifier = Modifier.clickable { onWordClick(word.id) },
                     headlineContent = { Text(word.lemma) },
-                    supportingContent = { Text(word.partOfSpeech ?: "") },
+                    supportingContent = { Text(word.partOfSpeech) },
                     trailingContent = {
                         IconButton(onClick = { wordToDelete = word }) {
                             Icon(Icons.Default.Delete, contentDescription = "Delete")
@@ -166,7 +184,7 @@ fun VocabularyListContent(
 @Composable
 fun WordDetailContent(
     word: WordUi?,
-    onBack: () -> Unit
+    onBack: () -> Unit,
 ) {
     Scaffold(
         topBar = {
@@ -199,6 +217,8 @@ fun WordDetailContent(
                 word.forms.forEach { form ->
                     Text("• $form", style = MaterialTheme.typography.bodyMedium)
                 }
+
+
             } else {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Text("Select a word to see details")
@@ -298,10 +318,20 @@ fun NewWordsBadgeButton(
     onClick: () -> Unit
 ) {
     if (count > 0) {
+        val textCount = when (count) {
+            in 1..99 -> count.toString()
+            else -> "99+"
+        }
         IconButton(onClick = onClick) {
             BadgedBox(
                 badge = {
-                    Badge { Text(count.toString()) }
+                    Badge(
+                        containerColor = MaterialTheme.colorScheme.error,
+                        contentColor = MaterialTheme.colorScheme.onError,
+                        modifier = Modifier.padding(2.dp)
+                    ) {
+                        Text(textCount)
+                    }
                 }
             ) {
                 Icon(
@@ -313,31 +343,89 @@ fun NewWordsBadgeButton(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun VocabularyFloatingButton(onAddWordClick: () -> Unit, onTextAddingClick: () -> Unit) {
+fun WordEditContent(
+    word: WordUi?,
+    onBack: () -> Unit,
+    onSave: (WordUi) -> Unit
+) {
+    // Local state for editing
+    var definition by remember(word) { mutableStateOf(word?.definition ?: "") }
+    var selectedPos by remember(word) { mutableStateOf(word?.partOfSpeech ?: "UNKNOWN") }
     var expanded by remember { mutableStateOf(false) }
-    Box {
-        IconButton(onClick = { expanded = true }) {
-            Icon(Icons.Default.AddCircleOutline, contentDescription = "Add Word")
-        }
 
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false }
-        ) {
-            DropdownMenuItem(
-                onClick = {
-                    expanded = false
-                    onAddWordClick()
+
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Edit ${word?.lemma}") },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Cancel")
+                    }
                 },
-                text = { Text("Add word") }
+                actions = {
+                    TextButton(onClick = {
+                        word?.let {
+                            onSave(
+                                it.copy(
+                                    definition = definition,
+                                    partOfSpeech = selectedPos
+                                )
+                            )
+                        }
+                    }) {
+                        Text("SAVE")
+                    }
+                }
             )
-            DropdownMenuItem(
-                onClick = {
-                    expanded = false
-                    onTextAddingClick()
-                },
-                text = { Text("Add words with text") }
+        }
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .padding(padding)
+                .padding(16.dp)
+        ) {
+            Text("Lemma: ${word?.lemma}", style = MaterialTheme.typography.labelLarge)
+            Text("You cannot change the lemma.", style = MaterialTheme.typography.bodySmall)
+
+            Spacer(Modifier.height(16.dp))
+
+            Text("Part of Speech", style = MaterialTheme.typography.titleMedium)
+            Box {
+                OutlinedTextField(
+                    value = selectedPos,
+                    onValueChange = {},
+                    readOnly = true, // User must pick from menu
+                    trailingIcon = { Icon(Icons.Default.FilterList, null) },
+                    modifier = Modifier
+                        .clickable { expanded = true }
+                        .fillMaxWidth()
+                )
+                DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                    PartOfSpeech.entries.forEach { pos ->
+                        DropdownMenuItem(
+                            text = { Text(pos.name) },
+                            onClick = {
+                                selectedPos = pos.name
+                                expanded = false
+                            }
+                        )
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(16.dp))
+
+            // Definition Field
+            OutlinedTextField(
+                value = definition,
+                onValueChange = { definition = it },
+                label = { Text("Definition / Meaning") },
+                modifier = Modifier.fillMaxWidth(),
+                minLines = 3
             )
         }
     }
