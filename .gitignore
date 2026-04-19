@@ -13,3 +13,12 @@
 .externalNativeBuild
 .cxx
 local.properties
+/app/src/main/java/com/example/.vs/slnx.sqlite
+/app/src/main/java/com/example/.vs/VSWorkspaceState.json
+/app/release/output-metadata.json
+/my-release-key.jks
+/app/src/main/java/com/example/.vs/example.slnx/v18/DocumentLayout.json
+/app/release/baselineProfiles/1/app-release.dm
+/app/release/baselineProfiles/0/app-release.dm
+/app/release/app-release.apk
+/app/src/main/java/com/example/.vs/example.slnx/v18/.wsuo

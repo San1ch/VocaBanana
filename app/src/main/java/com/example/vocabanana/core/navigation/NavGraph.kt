@@ -5,7 +5,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
@@ -16,6 +15,7 @@ import com.example.vocabanana.core.presentation.StateObserver
 import com.example.vocabanana.feature.debug.presentation.DebugScreen
 import com.example.vocabanana.feature.init.InitScreen
 import com.example.vocabanana.feature.main.presentation.MainScreen
+import com.example.vocabanana.feature.settings.presentation.SettingsScreen
 import com.example.vocabanana.feature.text.presentation.AddTextScreen
 import com.example.vocabanana.feature.text.presentation.TextListScreen
 import com.example.vocabanana.feature.vocabulary.presentation.NewWordListScreen
@@ -53,6 +53,12 @@ fun NavGraph(
             composable(AppDestination.Init.route) {
                 InitScreen(
                     navigateTo = { appNavigationActions.navigateTo(it) })
+            }
+            composable(AppDestination.Settings.route) {
+                SettingsScreen(
+                    navigateTo = { appNavigationActions.navigateTo(it) },
+                    navigateBack = appNavigationActions::navigateBack
+                )
             }
             composable(AppDestination.Vocabulary.route) {
                 VocabularyScreen(

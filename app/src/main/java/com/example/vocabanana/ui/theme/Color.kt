@@ -11,9 +11,12 @@ val PurpleGrey40 = Color(0xFF625b71)
 val Pink40 = Color(0xFF7D5260)
 
 
-val BananaYellow = Color(0xFFFFE135)
-val BananaRipe = Color(0xFFFFD700)
-val BananaSoft = Color(0xFFFFF1A6)
+val BananaPrimary = Color(0xFF6D5E00) // Deep mustard - readable on light backgrounds
+val BananaOnPrimary = Color(0xFFFFFFFF)
+val BananaContainer = Color(0xFFFFE135) // The bright yellow as a background accent
 
-val BananaDark = Color(0xFF423D00)
-val BananaBrown = Color(0xFF5D4037)
+// Dark Mode Colors (Soft & Glowing)
+val BananaPrimaryDark = Color(0xFFFFE135) // Bright yellow for dark mode
+val BananaOnPrimaryDark = Color(0xFF352D00)
+val BananaBackgroundDark = Color(0xFF1D1B16) // Deep charcoal with a hint of yellow/brown
+val BananaSurfaceDark = Color(0xFF25231E)

@@ -12,30 +12,33 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
-    primary = BananaYellow,
-    secondary = BananaSoft,
-    tertiary = BananaRipe,
-    background = Color(0xFF1C1B00),
+    primary = BananaPrimaryDark,
+    onPrimary = BananaOnPrimaryDark,
+    primaryContainer = Color(0xFF524600),
+    onPrimaryContainer = Color(0xFFFFE135),
 
-    surface = Color(0xFF1C1B00),
-    onPrimary = Color.Black,
-    onSecondary = Color.Black,
-    error = Color.Red,
+    background = BananaBackgroundDark,
+    surface = BananaSurfaceDark,
+    onBackground = Color(0xFFE6E2D9),
+    onSurface = Color(0xFFE6E2D9),
+
+    secondary = Color(0xFFD2C6A1),
+    onSecondary = Color(0xFF373016)
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = BananaYellow,
-    secondary = BananaBrown,
-    tertiary = BananaRipe,
-    background = Color(0xFFFFFFF4),
+    primary = BananaPrimary,
+    onPrimary = Color.White,
+    primaryContainer = Color(0xFFFFE135),
+    onPrimaryContainer = Color(0xFF221B00),
 
-    surface = Color(0xFFFFFFF4),
-    onPrimary = Color.Black,
-    onSecondary = Color.White,
-    error = Color.Red,
+    background = Color(0xFFFFFBFF), // Slightly warm white
+    surface = Color(0xFFFFFBFF),
+    onBackground = Color(0xFF1D1B16),
+    onSurface = Color(0xFF1D1B16),
 
-
-
+    secondary = Color(0xFF645E44),
+    onSecondary = Color(0xFFFFFFFF)
 )
 
 @Composable

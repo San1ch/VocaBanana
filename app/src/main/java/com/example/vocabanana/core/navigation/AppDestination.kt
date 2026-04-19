@@ -10,6 +10,7 @@ import androidx.navigation.NavHostController
 private object AppScreens {
     const val INIT_SCREEN = "InitScreen"
     const val MAIN_SCREEN = "MainScreen"
+    const val SETTINGS_SCREEN = "SettingsScreen"
     const val VOCABULARY_SCREEN = "VocabularyScreen"
     const val TEXT_LIST_SCREEN = "TextListScreen"
     const val TEXT_CREATE_SCREEN = "TextCreateScreen"
@@ -30,6 +31,7 @@ object AppDestinationArgs {
 sealed class AppDestination(val route: String) {
     object Init : AppDestination(AppScreens.INIT_SCREEN)
     object Main : AppDestination(AppScreens.MAIN_SCREEN)
+    object Settings : AppDestination(AppScreens.SETTINGS_SCREEN)
     object Vocabulary : AppDestination(AppScreens.VOCABULARY_SCREEN)
     object TextList : AppDestination(AppScreens.TEXT_LIST_SCREEN)
     object TextCreate : AppDestination(AppScreens.TEXT_CREATE_SCREEN)
@@ -52,6 +54,7 @@ class AppNavigationActions(private val navController: NavHostController) {
 
             AppDestination.Init -> navigateToInit()
             AppDestination.Main -> navigateToMain()
+            AppDestination.Settings -> navigateToSettings()
             AppDestination.TextCreate -> navigateToCreateText()
             AppDestination.TextList -> navigateToTextList()
             AppDestination.Vocabulary -> navigateToVocabulary()
@@ -84,6 +87,12 @@ class AppNavigationActions(private val navController: NavHostController) {
             }
             launchSingleTop = true
             restoreState = true
+        }
+    }
+
+    private fun navigateToSettings() {
+        navController.navigate(AppDestination.Settings.route) {
+
         }
     }
     private fun navigateToVocabulary() {

@@ -16,7 +16,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AddCircleOutline
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.AlertDialog
@@ -48,10 +47,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.vocabanana.R
 import com.example.vocabanana.core.navigation.AppDestination
-import com.example.vocabanana.core.network.AiResult
 import com.example.vocabanana.core.presentation.StateObserver
 import com.example.vocabanana.core.presentation.UiEvent
-import com.example.vocabanana.core.presentation.UiResult
 import com.example.vocabanana.core.word.domain.model.PartOfSpeech
 import com.example.vocabanana.feature.text.presentation.data.WordUi
 import com.example.vocabanana.ui.composable.CollectUiEvents
@@ -324,11 +321,11 @@ fun NewWordsBadgeButton(
         }
         IconButton(onClick = onClick) {
             BadgedBox(
+                modifier = Modifier.padding(top = 4.dp, end = 13.dp),
                 badge = {
                     Badge(
                         containerColor = MaterialTheme.colorScheme.error,
                         contentColor = MaterialTheme.colorScheme.onError,
-                        modifier = Modifier.padding(2.dp)
                     ) {
                         Text(textCount)
                     }
