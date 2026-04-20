@@ -1,13 +1,22 @@
 package com.example.vocabanana.feature.vocabulary.presentation
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
@@ -15,24 +24,33 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AddCircleOutline
+import androidx.compose.material.icons.filled.ArrowDownward
+import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -42,116 +60,214 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.vocabanana.R
 import com.example.vocabanana.core.navigation.AppDestination
 import com.example.vocabanana.core.presentation.StateObserver
-import com.example.vocabanana.core.presentation.UiEvent
 import com.example.vocabanana.core.word.domain.model.PartOfSpeech
+import com.example.vocabanana.core.word.domain.model.WordState
 import com.example.vocabanana.feature.text.presentation.data.WordUi
 import com.example.vocabanana.ui.composable.CollectUiEvents
 import com.example.vocabanana.ui.composable.DeleteConfirmDialog
+import com.example.vocabanana.ui.theme.AppColor
 import kotlinx.coroutines.launch
 
+enum class SortType {
+    ALPHABETIC,
+    STATE,
+    COUNT,
+    DATE
+}
+
+sealed interface VocabularyIntent {
+    data class SelectWord(val id: Int) : VocabularyIntent
+    data class DeleteWord(val id: Int) : VocabularyIntent
+    data class ChangeSortType(val sortType: SortType) : VocabularyIntent
+    data object ToggleSortOrder : VocabularyIntent
+    data object NavigateToNewWords : VocabularyIntent
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun VocabularyScreen(
     viewModel: VocabularyScreenViewModel = hiltViewModel(),
     navigateTo: (AppDestination) -> Unit,
     navigateBack: () -> Unit
 ) {
+
     CollectUiEvents(
-        events = viewModel.events,
+        viewModel.events,
         navigateBack = navigateBack,
-        navigateTo = navigateTo
+        navigateTo = navigateTo,
     )
+
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
 
     val wordsState by viewModel.words.collectAsState()
     val selectedId by viewModel.selectedWordId.collectAsState()
     val newWordsCount by viewModel.newWordsCount.collectAsState()
 
+    val sortType by viewModel.sortType.collectAsState()
+    val isAscending by viewModel.isAscending.collectAsState()
+
     val pagerState = rememberPagerState(pageCount = { 2 })
-    val scope = rememberCoroutineScope()
 
-    StateObserver(wordsState) { words ->
-        val selectedWord = words.find { it.id == selectedId }
-
-        HorizontalPager(
-            state = pagerState,
-            userScrollEnabled = selectedWord != null,
-            modifier = Modifier.fillMaxSize()
-        ) { page ->
-            when (page) {
-                0 -> VocabularyListContent(
-                    words = words,
-                    newWordsCount = newWordsCount,
-                    onWordClick = { id ->
-                        viewModel.selectWord(id)
-                        scope.launch { pagerState.animateScrollToPage(1) }
-                    },
-                    onDeleteWord = { viewModel.deleteWord(it.id) },
-                    onNewWordsClick = {
-                        viewModel.sendEvent(UiEvent.NavigateTo(AppDestination.NewWordList))
-                    }
+    // Wrap everything in the Drawer
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            ModalDrawerSheet {
+                VocabularyDrawerContent(
+                    currentSort = sortType,
+                    isAscending = isAscending,
+                    onIntent = { viewModel.onIntent(it) },
+                    onClose = { scope.launch { drawerState.close() } }
                 )
+            }
+        }
+    ) {
+        StateObserver(wordsState) { words ->
+            val selectedWord = words.find { it.id == selectedId }
 
-                1 -> WordDetailContent(
-                    word = selectedWord,
-                    onBack = {
+            HorizontalPager(
+                state = pagerState,
+                userScrollEnabled = selectedWord != null,
+                modifier = Modifier.fillMaxSize()
+            ) { page ->
+                when (page) {
+                    0 -> VocabularyListContent(
+                        words = words,
+                        newWordsCount = newWordsCount,
+                        onIntent = { viewModel.onIntent(it) },
+                        onMenuClick = { scope.launch { drawerState.open() } },
+                    )
+
+                    1 -> WordDetailContent(word = selectedWord, onBack = {
                         scope.launch { pagerState.animateScrollToPage(0) }
                     })
-
-                2 -> WordEditContent(
-                    word = selectedWord,
-                    onBack = { scope.launch { pagerState.animateScrollToPage(1) } },
-                    onSave = { updatedWord ->
-                        if (viewModel.updateWord(updatedWord)) {
-                            scope.launch { pagerState.animateScrollToPage(1) }
-                        }
-                    })
+                }
             }
         }
     }
 }
 
+@Composable
+fun VocabularyDrawerContent(
+    currentSort: SortType,
+    isAscending: Boolean,
+    onIntent: (VocabularyIntent) -> Unit,
+    onClose: () -> Unit
+) {
+    ModalDrawerSheet {
+        Column(modifier = Modifier
+            .padding(16.dp)
+            .fillMaxHeight()) {
+            Text("Vocabulary Settings", style = MaterialTheme.typography.headlineSmall)
+
+            Spacer(Modifier.height(24.dp))
+
+            // Tags Section
+            Text("Tags", style = MaterialTheme.typography.labelLarge)
+            Text("No tags yet", modifier = Modifier.padding(vertical = 8.dp), color = Color.Gray)
+
+            // The Separator "Stick"
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = 16.dp),
+                thickness = 1.dp,
+                color = MaterialTheme.colorScheme.outlineVariant
+            )
+
+            // Sorting Header with Order Toggle
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("Sort By", style = MaterialTheme.typography.labelLarge)
+                IconButton(onClick = { onIntent(VocabularyIntent.ToggleSortOrder) }) {
+                    Icon(
+                        imageVector = if (isAscending) Icons.Default.ArrowUpward else Icons.Default.ArrowDownward,
+                        contentDescription = "Toggle Order",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+
+            SortOption(
+                label = "Alphabet",
+                selected = currentSort == SortType.ALPHABETIC,
+                onClick = { onIntent(VocabularyIntent.ChangeSortType(SortType.ALPHABETIC)); onClose() }
+            )
+            SortOption(
+                label = "Status/State",
+                selected = currentSort == SortType.STATE,
+                onClick = { onIntent(VocabularyIntent.ChangeSortType(SortType.STATE)); onClose() }
+            )
+            SortOption(
+                label = "Recently Added",
+                selected = currentSort == SortType.DATE,
+                onClick = { onIntent(VocabularyIntent.ChangeSortType(SortType.DATE)); onClose() }
+            )
+            SortOption(
+                label = "Count in Texts",
+                selected = currentSort == SortType.COUNT,
+                onClick = { onIntent(VocabularyIntent.ChangeSortType(SortType.COUNT)); onClose() }
+            )
+        }
+    }
+}
+
+@Composable
+fun SortOption(label: String, selected: Boolean, onClick: () -> Unit) {
+    NavigationDrawerItem(
+        label = { Text(label) },
+        selected = selected,
+        onClick = onClick,
+        modifier = Modifier.padding(vertical = 2.dp)
+    )
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun VocabularyListContent(
     words: List<WordUi>,
     newWordsCount: Int,
-    onWordClick: (Int) -> Unit,
-    onDeleteWord: (WordUi) -> Unit,
-    onNewWordsClick: () -> Unit
+    onIntent: (VocabularyIntent) -> Unit,
+    onMenuClick: () -> Unit
 ) {
     var wordToDelete by remember { mutableStateOf<WordUi?>(null) }
 
     DeleteConfirmDialog(
         item = wordToDelete,
         onDismiss = { wordToDelete = null },
-        onConfirm = { onDeleteWord(it); wordToDelete = null }
+        onConfirm = {
+            onIntent(VocabularyIntent.DeleteWord(it.id))
+            wordToDelete = null
+        }
     )
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.vocabulary)) },
+                navigationIcon = {
+                    IconButton(onClick = onMenuClick) {
+                        Icon(Icons.Default.Menu, contentDescription = "Menu")
+                    }
+                },
                 actions = {
-                    // Show badge button only if count > 0
                     NewWordsBadgeButton(
                         count = newWordsCount,
-                        onClick = onNewWordsClick
+                        onClick = { onIntent(VocabularyIntent.NavigateToNewWords) }
                     )
-
-                    VocabularyFilterButton() // Your existing filter
-
-
-                    IconButton(onClick = { /* More options */ }) {
+                    IconButton(onClick = { onIntent(VocabularyIntent.NavigateToNewWords) }) {
                         Icon(Icons.Default.MoreVert, contentDescription = "More")
                     }
-
-
                 }
             )
         }
@@ -159,18 +275,84 @@ fun VocabularyListContent(
         LazyColumn(
             modifier = Modifier
                 .padding(padding)
-                .fillMaxSize()
+                .fillMaxSize(),
+            contentPadding = PaddingValues(bottom = 80.dp)
         ) {
-            items(words) { word ->
-                ListItem(
-                    modifier = Modifier.clickable { onWordClick(word.id) },
-                    headlineContent = { Text(word.lemma) },
-                    supportingContent = { Text(word.partOfSpeech) },
-                    trailingContent = {
-                        IconButton(onClick = { wordToDelete = word }) {
-                            Icon(Icons.Default.Delete, contentDescription = "Delete")
-                        }
-                    }
+            items(words, key = { it.id }) { word ->
+                WordListItem(
+                    word = word,
+                    onClick = { onIntent(VocabularyIntent.SelectWord(word.id)) },
+                    onDelete = { wordToDelete = word }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun WordListItem(
+    word: WordUi,
+    onClick: () -> Unit,
+    onDelete: () -> Unit
+) {
+    val stateColor = when (word.state) {
+        WordState.NOT_KNOWN -> AppColor.NotKnow
+        WordState.LEARNING -> AppColor.Learn
+        WordState.KNOWN -> AppColor.Known
+        WordState.IGNORED -> AppColor.Ignore
+        else -> Color.Gray
+    }
+
+    // Modern card: Solid color, subtle border, no weird "frame"
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp, vertical = 6.dp)
+            .clickable { onClick() },
+        shape = MaterialTheme.shapes.medium,
+        colors = CardDefaults.cardColors(
+            // If it's light theme, we use pure white. If dark, a slightly lighter gray than background.
+            containerColor = if (isSystemInDarkTheme())
+                MaterialTheme.colorScheme.surface
+            else Color.White
+        ),
+        // Use either elevation or border. For a clean look, let's use a soft border:
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        border = BorderStroke(
+            width = 1.dp,
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
+        )
+    ) {
+        Row(
+            modifier = Modifier.height(IntrinsicSize.Min),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Status bar
+            Box(modifier = Modifier
+                .width(6.dp)
+                .fillMaxHeight()
+                .background(stateColor))
+
+            Column(modifier = Modifier
+                .weight(1f)
+                .padding(16.dp)) {
+                Text(
+                    text = word.lemma,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Text(
+                    text = word.partOfSpeech.lowercase(),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.secondary
+                )
+            }
+
+            IconButton(onClick = onDelete, modifier = Modifier.padding(end = 4.dp)) {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
                 )
             }
         }
@@ -222,89 +404,6 @@ fun WordDetailContent(
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun VocabularyFilterButton() {
-    var expanded by remember { mutableStateOf(false) }
-
-    IconButton(onClick = { expanded = true }) {
-        Icon(Icons.Default.FilterList, contentDescription = "Filter")
-    }
-    DropdownMenu(
-        expanded = expanded,
-        onDismissRequest = { expanded = false }
-    ) {
-        // TODO change from that to normal architecture and make
-        DropdownMenuItem(
-            onClick = {
-                expanded = false
-                //TODO
-            },
-            text = { Text("By alphabet") }
-        )
-        DropdownMenuItem(
-            onClick = {
-                expanded = false
-                //TODO
-            },
-            text = { Text("By state") }
-        )
-        DropdownMenuItem(
-            onClick = {
-                expanded = false
-                //TODO
-            },
-            text = { Text("By word") }
-        )
-        DropdownMenuItem(
-            onClick = {
-                expanded = false
-                //TODO
-            },
-            text = { Text("By date") }
-        )
-    }
-}
-
-@Composable
-fun AddWordInline(
-    onAddClick: (String) -> Unit,
-    onDismissRequest: () -> Unit,
-    showDialog: Boolean
-) {
-    var text by remember { mutableStateOf("") }
-
-    if (showDialog) {
-        AlertDialog(
-            onDismissRequest = {
-                onDismissRequest()
-                text = ""
-            },
-            title = { Text(stringResource(R.string.add_word)) },
-            text = {
-                Column {
-                    OutlinedTextField(
-                        value = text,
-                        onValueChange = { text = it }
-                    )
-                }
-            },
-            confirmButton = {
-                TextButton(onClick = { onAddClick(text) }) {
-                    Text(stringResource(R.string.add))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = {
-                    onDismissRequest()
-                    text = ""
-                }) {
-                    Text(stringResource(R.string.cancel))
-                }
-            }
-        )
     }
 }
 
@@ -427,3 +526,21 @@ fun WordEditContent(
         }
     }
 }
+/*
+
+@Preview
+@Composable
+fun WordListItemPreview() {
+    WordListItem(
+        word = WordUi(
+            id = 0,
+            lemma = "Test 2",
+            whenAdded = 231239213L,
+            state = WordState.LEARNING,
+            definition = "",
+            partOfSpeech = PartOfSpeech.ADJECTIVE.shortName,
+            forms = listOf("Test Form 2")
+        ),
+        onClick = { }
+    ) { }
+}*/

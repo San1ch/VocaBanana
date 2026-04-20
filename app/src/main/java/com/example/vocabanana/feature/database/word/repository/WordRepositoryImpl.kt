@@ -1,11 +1,11 @@
 package com.example.vocabanana.feature.database.word.repository
 
 import com.example.vocabanana.core.database.WordRepository
-import com.example.vocabanana.feature.database.word.local.WordDao
 import com.example.vocabanana.core.word.domain.model.WordDomain
 import com.example.vocabanana.core.word.domain.model.WordState
 import com.example.vocabanana.core.word.mapper.toDomain
 import com.example.vocabanana.core.word.mapper.toWordEntity
+import com.example.vocabanana.feature.database.word.local.WordDao
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
@@ -82,17 +82,29 @@ class WordRepositoryRoomImpl @Inject constructor(
     }
 
     override suspend fun addWords(words: List<WordDomain>) {
-        // Fetch existing data once using suspend method (much faster than .first())
         val databaseWordsMap = wordDao.getAllWordsList().associateBy { it.word.lemma }
         val processingMap = mutableMapOf<String, WordDomain>()
 
         words.forEach { newWord ->
+            // Check if we already handled this lemma in this loop OR if it's in the DB
             val existingEntry = processingMap[newWord.lemma]
                 ?: databaseWordsMap[newWord.lemma]?.toDomain()
 
-            processingMap[newWord.lemma] = existingEntry?.addForms(newWord.forms) ?: newWord
+            if (existingEntry != null) {
+                // MERGE LOGIC: Add forms AND sum the counts
+                processingMap[newWord.lemma] = existingEntry
+                    .addForms(newWord.forms)
+                    .withCount(
+                        // This is the crucial part!
+                        newCount = existingEntry.countInTheTexts + newWord.countInTheTexts
+                    )
+            } else {
+                // New word entirely
+                processingMap[newWord.lemma] = newWord
+            }
         }
 
+        // Save to DB
         processingMap.values.forEach { domain ->
             wordDao.insertWordWithForms(domain.toWordEntity(), domain.forms)
         }
@@ -114,5 +126,5 @@ class WordRepositoryRoomImpl @Inject constructor(
 
     override suspend fun deleteWord(word: WordDomain) = wordDao.deleteWord(word.toWordEntity())
     override suspend fun deleteById(id: Int) = wordDao.deleteById(id)
-    override suspend fun deleteAll(): Int = wordDao.deleteAll()
+    override suspend fun deleteAllWords(): Int = wordDao.deleteAll()
 }

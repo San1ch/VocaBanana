@@ -50,36 +50,27 @@ class TextProcessingService @Inject constructor(
             .dropLastWhile { !it.isLetter() }
     }
 
-    fun prepareText(text: String): List<String> {
-        // 1. Normalize quotes first
+    fun prepareText(text: String): Map<String, Int> { // Changed return type
         val normalized = text.replace('’', '\'').replace('`', '\'')
-
         val words = normalized.split(Regex("[^a-zA-Z']+"))
 
         return words.asSequence()
             .filter { it.isNotBlank() }
-            .filter { !stopWords.contains(it) } // the, a, an, and, or, but, if, then...
             .flatMap { word ->
                 val w = word.lowercase()
+                // ... your existing expansion logic (n't, 're, etc) ...
                 when {
-                    w.endsWith("n't") -> {
-                        if (w == "can't") listOf("can", "not")
-                        else listOf(w.removeSuffix("n't"), "not")
-                    }
-
-                    w.endsWith("'re") -> listOf(w.removeSuffix("'re"), "are")
-                    w.endsWith("'ve") -> listOf(w.removeSuffix("'ve"), "have")
-                    w.endsWith("'ll") -> listOf(w.removeSuffix("'ll"), "will")
-                    w.endsWith("'m") -> listOf(w.removeSuffix("'m"), "am")
-                    // Strips 's, 'd, 't, 'all
-                    w.contains("'") -> listOf(w.substringBefore("'"))
+                    w.endsWith("n't") -> if (w == "can't") listOf(
+                        "can",
+                        "not"
+                    ) else listOf(w.removeSuffix("n't"), "not")
+                    // ... rest of when block ...
                     else -> listOf(w)
                 }
-
             }
-            .filter { it.isNotEmpty() && !isTrash(it) }
-            .distinct()
-            .toList()
+            .filter { it.isNotEmpty() && !isTrash(it) && !stopWords.contains(it) }
+            .groupingBy { it }
+            .eachCount()
     }
 
 

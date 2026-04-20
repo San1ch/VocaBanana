@@ -5,12 +5,12 @@ import com.example.vocabanana.core.database.TextRepository
 import com.example.vocabanana.core.database.WordRepository
 import com.example.vocabanana.core.domain.model.fold
 import com.example.vocabanana.core.utilities.logs.Logger
+import com.example.vocabanana.core.word.domain.model.PartOfSpeech
+import com.example.vocabanana.core.word.domain.model.WordDomain
 import com.example.vocabanana.feature.database.language.lexicon.LexiconDto
 import com.example.vocabanana.feature.database.language.lexicon.LexiconRepository
 import com.example.vocabanana.feature.database.language.lexicon.toPartOfSpeech
 import com.example.vocabanana.feature.text.domain.usecase.TextProcessingService
-import com.example.vocabanana.core.word.domain.model.PartOfSpeech
-import com.example.vocabanana.core.word.domain.model.WordDomain
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
@@ -24,14 +24,17 @@ class GenerateWordsFromTextUseCase @Inject constructor(
     private val lexiconRepository: LexiconRepository
 ) {
     operator fun invoke(textId: Int): Flow<GenerateWordsFromTextState> = flow {
-        val startTime = System.currentTimeMillis()
         emit(GenerateWordsFromTextState.Loading.PreparingText)
         val content = textRepository.getTextById(textId).content
-        val allUniqueWords = tps.prepareText(content)
 
-        // 2. Next Stage
+        // 1. Get frequencies: Map<Word, Count>
+        val wordFrequencies = tps.prepareText(content)
+        val allUniqueWords = wordFrequencies.keys.toList()
+
         emit(GenerateWordsFromTextState.Loading.AnalyzingLexicon)
         val userVocab = wordRepository.getAllLemmasAndForms().toSet()
+
+        // Filter words the user doesn't have yet
         var remainWords = allUniqueWords.filter { it !in userVocab }
 
         if (remainWords.isEmpty()) {
@@ -39,90 +42,99 @@ class GenerateWordsFromTextUseCase @Inject constructor(
             return@flow
         }
 
-        // Fetch the DTOs and create a Map for O(1) lookup
-        val lexiconMap = lexiconRepository.getWordsFromWords(remainWords)
-            .associateBy { it.word }
-
+        val lexiconMap = lexiconRepository.getWordsFromWords(remainWords).associateBy { it.word }
         val wordDomains = mutableListOf<WordDomain>()
 
-        // Pass the lexiconMap instead of the old posMap
-        remainWords = processLemmatizedPairs(remainWords, lexiconMap, wordDomains)
-        remainWords = processExistingLemmas(remainWords, lexiconMap, wordDomains)
-        remainWords = processLexiconWords(remainWords, lexiconMap, wordDomains)
-        processRemainingUnknowns(remainWords, lexiconMap, wordDomains)
+        // 2. RUN DISCOVERY: Pass frequencies to lookup counts during processing
+        remainWords = processLemmatizedPairs(remainWords, lexiconMap, wordDomains, wordFrequencies)
+        remainWords = processExistingLemmas(remainWords, lexiconMap, wordDomains, wordFrequencies)
+        remainWords = processLexiconWords(remainWords, lexiconMap, wordDomains, wordFrequencies)
+        processRemainingUnknowns(remainWords, lexiconMap, wordDomains, wordFrequencies)
 
         emit(GenerateWordsFromTextState.Loading.SavingWords)
         if (wordDomains.isNotEmpty()) {
             wordRepository.addWords(wordDomains)
             emit(GenerateWordsFromTextState.Success(GenerateWordsFromTextResult.Success.Words(wordDomains)))
         } else {
-            // Maybe something went wrong during validation
             emit(GenerateWordsFromTextState.Error(GenerateWordsFromTextResult.Error.Unknown("No valid words found")))
         }
     }
 
+    // Stage 1: Lemmatization pairs (e.g., "running" -> "run")
     private suspend fun processLemmatizedPairs(
         words: List<String>,
         posMap: Map<String, LexiconDto>,
-        output: MutableList<WordDomain>
+        output: MutableList<WordDomain>,
+        frequencies: Map<String, Int>
     ): List<String> {
         val pairs = lemmaRep.getWordLemmaPairs(words)
         pairs.forEach { pair ->
-            addValidatedDomain(pair.lemma, listOf(pair.word), posMap, output)
+            val count = frequencies[pair.word] ?: 1
+            addValidatedDomain(pair.lemma, listOf(pair.word), posMap, output, count)
         }
         val processed = pairs.map { it.word }.toSet()
         return words.filter { it !in processed }
     }
 
+    // Stage 2: Words that are already lemmas
     private suspend fun processExistingLemmas(
         words: List<String>,
         posMap: Map<String, LexiconDto>,
-        output: MutableList<WordDomain>
+        output: MutableList<WordDomain>,
+        frequencies: Map<String, Int>
     ): List<String> {
         val lemmas = lemmaRep.findExistingLemmas(words)
         lemmas.forEach { lemma ->
-            addValidatedDomain(lemma, emptyList(), posMap, output)
+            val count = frequencies[lemma] ?: 1
+            addValidatedDomain(lemma, emptyList(), posMap, output, count)
         }
         val processed = lemmas.toSet()
         return words.filter { it !in processed }
     }
 
+    // Stage 3: Direct Lexicon lookup
     private suspend fun processLexiconWords(
         words: List<String>,
         posMap: Map<String, LexiconDto>,
-        output: MutableList<WordDomain>
+        output: MutableList<WordDomain>,
+        frequencies: Map<String, Int>
     ): List<String> {
         val existing = lexiconRepository.getExistingWords(words)
         existing.forEach { word ->
-            addValidatedDomain(word, emptyList(), posMap, output)
+            val count = frequencies[word] ?: 1
+            addValidatedDomain(word, emptyList(), posMap, output, count)
         }
         val processed = existing.toSet()
         return words.filter { it !in processed }
     }
 
+    // Stage 4: Everything else (Unknowns)
     private fun processRemainingUnknowns(
         words: List<String>,
         posMap: Map<String, LexiconDto>,
-        output: MutableList<WordDomain>
+        output: MutableList<WordDomain>,
+        frequencies: Map<String, Int>
     ) {
-        words.forEach { addValidatedDomain(it, emptyList(), posMap, output) }
+        words.forEach { word ->
+            val count = frequencies[word] ?: 1
+            addValidatedDomain(word, emptyList(), posMap, output, count)
+        }
     }
 
     private fun addValidatedDomain(
         lemma: String,
         forms: List<String>,
-        lexiconMap: Map<String, LexiconDto>, // Updated parameter
-        output: MutableList<WordDomain>
+        lexiconMap: Map<String, LexiconDto>,
+        output: MutableList<WordDomain>,
+        count: Int
     ) {
         val dto = lexiconMap[lemma]
-
         WordDomain.create(
             lemma = lemma,
             forms = forms,
-            // Convert String from DTO to Domain Enum
             partOfSpeech = dto?.type?.toPartOfSpeech ?: PartOfSpeech.UNKNOWN,
-            // Add definition from DTO, or empty if it doesn't exist
-            definition = dto?.definition ?: ""
+            definition = dto?.definition ?: "",
+            countInTheTexts = count
         ).fold(
             onSuccess = { output.add(it) },
             onError = { logger.d("Validation failed for $lemma: $it") }

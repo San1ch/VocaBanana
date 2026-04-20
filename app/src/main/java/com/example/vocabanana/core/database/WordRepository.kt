@@ -37,5 +37,5 @@ interface WordRepository {
     // --- Delete ---
     suspend fun deleteWord(word: WordDomain)
     suspend fun deleteById(id: Int)
-    suspend fun deleteAll(): Int
+    suspend fun deleteAllWords(): Int
 }

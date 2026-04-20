@@ -6,8 +6,8 @@ import com.example.vocabanana.core.presentation.BaseViewModel
 import com.example.vocabanana.core.presentation.asUiState
 import com.example.vocabanana.core.presentation.uistate.UiState
 import com.example.vocabanana.core.utilities.logs.Logger
-import com.example.vocabanana.feature.text.presentation.data.toUi
 import com.example.vocabanana.core.word.domain.model.WordState
+import com.example.vocabanana.feature.text.presentation.data.toUi
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
@@ -24,6 +24,7 @@ class NewWordListScreenViewModel @Inject constructor(
 
     val newWords = wordRepository.getWordByStates(listOf(WordState.NEW))
         .map { list -> list.map { it.toUi() } }
+        .map { list -> list.sortedBy { it.countInTheTexts }.reversed() }
         .asUiState()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), UiState.Loading)
 

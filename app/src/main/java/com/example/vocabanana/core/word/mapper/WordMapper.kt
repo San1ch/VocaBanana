@@ -2,19 +2,20 @@ package com.example.vocabanana.core.word.mapper
 
 import com.example.vocabanana.R
 import com.example.vocabanana.core.presentation.UiText
-import com.example.vocabanana.feature.database.word.local.WordEntity
-import com.example.vocabanana.feature.database.word.local.WordWithForms
 import com.example.vocabanana.core.word.domain.model.WordDomain
 import com.example.vocabanana.core.word.domain.model.WordValidateError
 import com.example.vocabanana.core.word.domain.model.toInt
 import com.example.vocabanana.core.word.domain.model.toPartOfSpeech
 import com.example.vocabanana.core.word.domain.model.toWordState
+import com.example.vocabanana.feature.database.word.local.WordEntity
+import com.example.vocabanana.feature.database.word.local.WordWithForms
 
 
 // WordMapper.kt
 fun WordDomain.toWordEntity() = WordEntity(
     id = id,
     lemma = lemma,
+    countInTheTexts = countInTheTexts,
     state = state.toInt(),
     whenAdded = whenAdded,
     partOfSpeech = partOfSpeech.toInt(),
@@ -28,7 +29,8 @@ fun WordWithForms.toDomain() = WordDomain.createUnsafe(
     state = word.state.toWordState(),
     partOfSpeech = word.partOfSpeech.toPartOfSpeech(),
     forms = forms.map { it.form },
-    definition = word.definition
+    definition = word.definition,
+    countInTheTexts = word.countInTheTexts
 )
 
 fun WordValidateError.toUiText() = when (this) {
