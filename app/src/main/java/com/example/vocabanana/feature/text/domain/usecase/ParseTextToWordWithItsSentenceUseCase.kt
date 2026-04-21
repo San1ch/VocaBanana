@@ -50,25 +50,36 @@ class TextProcessingService @Inject constructor(
             .dropLastWhile { !it.isLetter() }
     }
 
-    fun prepareText(text: String): Map<String, Int> { // Changed return type
+    fun prepareText(text: String): Map<String, Int> {
+        // 1. Normalize quotes to a single format
         val normalized = text.replace('’', '\'').replace('`', '\'')
+
+        // 2. Split by anything that isn't a letter or an internal apostrophe
         val words = normalized.split(Regex("[^a-zA-Z']+"))
 
         return words.asSequence()
             .filter { it.isNotBlank() }
             .flatMap { word ->
                 val w = word.lowercase()
-                // ... your existing expansion logic (n't, 're, etc) ...
+                // 3. Expand contractions so they are counted as base words
                 when {
-                    w.endsWith("n't") -> if (w == "can't") listOf(
-                        "can",
-                        "not"
-                    ) else listOf(w.removeSuffix("n't"), "not")
-                    // ... rest of when block ...
+                    w.endsWith("n't") -> {
+                        if (w == "can't") listOf("can", "not")
+                        else listOf(w.removeSuffix("n't"), "not")
+                    }
+
+                    w.endsWith("'re") -> listOf(w.removeSuffix("'re"), "are")
+                    w.endsWith("'ve") -> listOf(w.removeSuffix("'ve"), "have")
+                    w.endsWith("'ll") -> listOf(w.removeSuffix("'ll"), "will")
+                    w.endsWith("'m") -> listOf(w.removeSuffix("'m"), "am")
+                    // Strips possessive 's or remnants like 'd, 't
+                    w.contains("'") -> listOf(w.substringBefore("'"))
                     else -> listOf(w)
                 }
             }
+            // 4. Filter out stop words, trash (links/numbers), and empty strings
             .filter { it.isNotEmpty() && !isTrash(it) && !stopWords.contains(it) }
+            // 5. Create the frequency map: { "apple" to 5, "banana" to 2 }
             .groupingBy { it }
             .eachCount()
     }

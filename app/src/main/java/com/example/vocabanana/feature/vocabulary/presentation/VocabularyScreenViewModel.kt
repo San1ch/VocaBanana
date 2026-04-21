@@ -13,12 +13,14 @@ import com.example.vocabanana.core.word.mapper.toUiText
 import com.example.vocabanana.feature.text.presentation.data.WordUi
 import com.example.vocabanana.feature.text.presentation.data.toDomain
 import com.example.vocabanana.feature.text.presentation.data.toUi
+import com.example.vocabanana.feature.vocabulary.data.VocabularyStats
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -32,6 +34,20 @@ class VocabularyScreenViewModel @Inject constructor(
     // Word selection
     private val _selectedWordId = MutableStateFlow<Int?>(null)
     val selectedWordId = _selectedWordId.asStateFlow()
+
+    val stats = wordRepository.getAllLemmas()
+        .map { list ->
+            val validWords = list.filter { it.state != WordState.NEW }
+
+            VocabularyStats(
+                totalLemmas = validWords.size,
+                known = validWords.count { it.state == WordState.KNOWN },
+                learning = validWords.count { it.state == WordState.LEARNING },
+                notKnown = validWords.count { it.state == WordState.NOT_KNOWN },
+                ignored = validWords.count { it.state == WordState.IGNORED }
+            )
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), VocabularyStats())
+
 
     // UI Settings flows
     private val _sortType = MutableStateFlow(SortType.ALPHABETIC)

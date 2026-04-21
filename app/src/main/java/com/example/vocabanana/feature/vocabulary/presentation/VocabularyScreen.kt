@@ -1,5 +1,7 @@
 package com.example.vocabanana.feature.vocabulary.presentation
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -16,11 +18,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AddCircleOutline
@@ -29,7 +33,6 @@ import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Card
@@ -50,6 +53,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -65,12 +69,18 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import co.yml.charts.common.model.PlotType
+import co.yml.charts.ui.piechart.charts.DonutPieChart
+import co.yml.charts.ui.piechart.models.PieChartConfig
+import co.yml.charts.ui.piechart.models.PieChartData
 import com.example.vocabanana.R
 import com.example.vocabanana.core.navigation.AppDestination
 import com.example.vocabanana.core.presentation.StateObserver
 import com.example.vocabanana.core.word.domain.model.PartOfSpeech
 import com.example.vocabanana.core.word.domain.model.WordState
 import com.example.vocabanana.feature.text.presentation.data.WordUi
+import com.example.vocabanana.feature.vocabulary.data.VocabMilestone
+import com.example.vocabanana.feature.vocabulary.data.VocabularyStats
 import com.example.vocabanana.ui.composable.CollectUiEvents
 import com.example.vocabanana.ui.composable.DeleteConfirmDialog
 import com.example.vocabanana.ui.theme.AppColor
@@ -108,30 +118,29 @@ fun VocabularyScreen(
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
-    val wordsState by viewModel.words.collectAsState()
+    val words by viewModel.words.collectAsState()
     val selectedId by viewModel.selectedWordId.collectAsState()
     val newWordsCount by viewModel.newWordsCount.collectAsState()
 
     val sortType by viewModel.sortType.collectAsState()
     val isAscending by viewModel.isAscending.collectAsState()
 
+    val stats by viewModel.stats.collectAsState()
+
     val pagerState = rememberPagerState(pageCount = { 2 })
 
-    // Wrap everything in the Drawer
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
-            ModalDrawerSheet {
-                VocabularyDrawerContent(
-                    currentSort = sortType,
-                    isAscending = isAscending,
-                    onIntent = { viewModel.onIntent(it) },
-                    onClose = { scope.launch { drawerState.close() } }
-                )
-            }
+            VocabularyDrawerContent(
+                currentSort = sortType,
+                isAscending = isAscending,
+                onIntent = { viewModel.onIntent(it) },
+                onClose = { scope.launch { drawerState.close() } }
+            )
         }
     ) {
-        StateObserver(wordsState) { words ->
+        StateObserver(words) { words ->
             val selectedWord = words.find { it.id == selectedId }
 
             HorizontalPager(
@@ -142,15 +151,99 @@ fun VocabularyScreen(
                 when (page) {
                     0 -> VocabularyListContent(
                         words = words,
+                        stats = stats,
                         newWordsCount = newWordsCount,
-                        onIntent = { viewModel.onIntent(it) },
+                        onIntent = { intent ->
+                            viewModel.onIntent(intent)
+                            if (intent is VocabularyIntent.SelectWord) {
+                                scope.launch {
+                                    pagerState.animateScrollToPage(1)
+                                }
+                            }
+                        },
                         onMenuClick = { scope.launch { drawerState.open() } },
                     )
 
-                    1 -> WordDetailContent(word = selectedWord, onBack = {
-                        scope.launch { pagerState.animateScrollToPage(0) }
-                    })
+                    1 -> WordDetailContent(
+                        word = selectedWord,
+                        onBack = {
+                            scope.launch { pagerState.animateScrollToPage(0) }
+                        }
+                    )
                 }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun VocabularyListContent(
+    words: List<WordUi>,
+    stats: VocabularyStats,
+    newWordsCount: Int,
+    onIntent: (VocabularyIntent) -> Unit,
+    onMenuClick: () -> Unit
+) {
+    var wordToDelete by remember { mutableStateOf<WordUi?>(null) }
+    // Pick a surface color for the "Connected" look
+    val containerColor = MaterialTheme.colorScheme.surface
+
+    DeleteConfirmDialog(
+        item = wordToDelete,
+        onDismiss = { wordToDelete = null },
+        onConfirm = {
+            onIntent(VocabularyIntent.DeleteWord(it.id))
+            wordToDelete = null
+        }
+    )
+
+    Scaffold(
+        topBar = {
+            // Stack the AppBar and Stats together to make them look like one unit
+            Column(modifier = Modifier.background(containerColor)) {
+                TopAppBar(
+                    title = { Text(stringResource(R.string.vocabulary)) },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = containerColor // Same color as column
+                    ),
+                    navigationIcon = {
+                        IconButton(onClick = onMenuClick) {
+                            Icon(Icons.Default.Menu, contentDescription = "Menu")
+                        }
+                    },
+                    actions = {
+                        NewWordsBadgeButton(
+                            count = newWordsCount,
+                            onClick = { onIntent(VocabularyIntent.NavigateToNewWords) }
+                        )
+                        /*IconButton(onClick = {  }) {
+                            Icon(Icons.Default.MoreVert, contentDescription = "More")
+                        }*/
+                    }
+                )
+
+                // The stats header now sits right under the title with NO gaps
+                VocabularyStatsHeader(stats = stats, backgroundColor = containerColor)
+
+                // Subtle line to separate the header from the scrolling list
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+            }
+        }
+    ) { padding ->
+        // LazyColumn fills the rest of the screen
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding), // This padding now starts AFTER the combined header
+            contentPadding = PaddingValues(bottom = 80.dp)
+        ) {
+            items(words, key = { it.id }) { word ->
+                WordListItem(
+                    word = word,
+                    onClick = { onIntent(VocabularyIntent.SelectWord(word.id)) },
+                    onDelete = { wordToDelete = word }
+                )
             }
         }
     }
@@ -223,6 +316,149 @@ fun VocabularyDrawerContent(
 }
 
 @Composable
+fun VocabularyStatsHeader(
+    stats: VocabularyStats,
+    backgroundColor: Color = Color.Transparent // Pass the surface color here
+) {
+    var isExpanded by remember { mutableStateOf(false) }
+    val nextMilestone = VocabMilestone.getNext(stats.totalLemmas)
+    val progress = stats.known.toFloat() / nextMilestone.threshold.toFloat()
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(backgroundColor)
+            .clickable { isExpanded = !isExpanded }
+            .padding(horizontal = 16.dp, vertical = 4.dp) // Very small vertical padding
+            .animateContentSize()
+    ) {
+        // Compact Progress Row
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.height(32.dp) // Fixed short height for the "closed" state
+        ) {
+            Text(
+                text = "${stats.known}",
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+
+            // Thinner Progress Bar
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = 12.dp)
+                    .height(6.dp) // Decreased height from 8.dp to 6.dp
+                    .background(
+                        MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f),
+                        CircleShape
+                    )
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(progress.coerceIn(0f, 1f))
+                        .fillMaxHeight()
+                        .background(nextMilestone.color, CircleShape)
+                )
+            }
+
+            Text(
+                text = "${nextMilestone.threshold}",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.outline
+            )
+
+            Icon(
+                imageVector = if (isExpanded) Icons.Default.ArrowUpward else Icons.Default.ArrowDownward,
+                contentDescription = null,
+                modifier = Modifier
+                    .padding(start = 8.dp)
+                    .size(16.dp),
+                tint = MaterialTheme.colorScheme.outline
+            )
+        }
+
+        // Expanded content (The Donut Chart and specific stats)
+        AnimatedVisibility(visible = isExpanded) {
+            Column(
+                modifier = Modifier.padding(top = 8.dp, bottom = 12.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "${nextMilestone.label}: ${nextMilestone.threshold - stats.known} more to go",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Medium
+                )
+
+                Spacer(Modifier.height(12.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    // Smaller Donut Chart
+                    Box(modifier = Modifier.size(110.dp)) { // Shorter chart
+                        val donutChartData = PieChartData(
+                            slices = listOf(
+                                PieChartData.Slice("Known", stats.known.toFloat(), AppColor.Known),
+                                PieChartData.Slice(
+                                    "Learning",
+                                    stats.learning.toFloat(),
+                                    AppColor.Learn
+                                ),
+                                PieChartData.Slice(
+                                    "Not Known",
+                                    stats.notKnown.toFloat(),
+                                    AppColor.NotKnow
+                                ),
+                            ),
+                            plotType = PlotType.Donut
+                        )
+                        DonutPieChart(
+                            modifier = Modifier.fillMaxSize(),
+                            pieChartData = donutChartData,
+                            pieChartConfig = PieChartConfig(
+                                isAnimationEnable = true,
+                                showSliceLabels = false,
+                                backgroundColor = Color.Transparent,
+                                strokeWidth = 20f // Thinner donut ring
+                            )
+                        )
+                    }
+
+                    // Legend
+                    Column(modifier = Modifier.padding(start = 24.dp)) {
+                        StatRow(AppColor.Known, "Known", stats.known)
+                        StatRow(AppColor.Learn, "Learning", stats.learning)
+                        StatRow(AppColor.NotKnow, "Not Known", stats.notKnown)
+                        StatRow(AppColor.Ignore, "Ignored", stats.ignored)
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun StatRow(color: Color, label: String, count: Int) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.padding(vertical = 2.dp)
+    ) {
+        Box(
+            Modifier
+                .size(8.dp)
+                .background(color, CircleShape)
+        )
+        Spacer(Modifier.width(8.dp))
+        Text("$label: $count", style = MaterialTheme.typography.bodySmall)
+    }
+}
+
+@Composable
 fun SortOption(label: String, selected: Boolean, onClick: () -> Unit) {
     NavigationDrawerItem(
         label = { Text(label) },
@@ -230,63 +466,6 @@ fun SortOption(label: String, selected: Boolean, onClick: () -> Unit) {
         onClick = onClick,
         modifier = Modifier.padding(vertical = 2.dp)
     )
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun VocabularyListContent(
-    words: List<WordUi>,
-    newWordsCount: Int,
-    onIntent: (VocabularyIntent) -> Unit,
-    onMenuClick: () -> Unit
-) {
-    var wordToDelete by remember { mutableStateOf<WordUi?>(null) }
-
-    DeleteConfirmDialog(
-        item = wordToDelete,
-        onDismiss = { wordToDelete = null },
-        onConfirm = {
-            onIntent(VocabularyIntent.DeleteWord(it.id))
-            wordToDelete = null
-        }
-    )
-
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.vocabulary)) },
-                navigationIcon = {
-                    IconButton(onClick = onMenuClick) {
-                        Icon(Icons.Default.Menu, contentDescription = "Menu")
-                    }
-                },
-                actions = {
-                    NewWordsBadgeButton(
-                        count = newWordsCount,
-                        onClick = { onIntent(VocabularyIntent.NavigateToNewWords) }
-                    )
-                    IconButton(onClick = { onIntent(VocabularyIntent.NavigateToNewWords) }) {
-                        Icon(Icons.Default.MoreVert, contentDescription = "More")
-                    }
-                }
-            )
-        }
-    ) { padding ->
-        LazyColumn(
-            modifier = Modifier
-                .padding(padding)
-                .fillMaxSize(),
-            contentPadding = PaddingValues(bottom = 80.dp)
-        ) {
-            items(words, key = { it.id }) { word ->
-                WordListItem(
-                    word = word,
-                    onClick = { onIntent(VocabularyIntent.SelectWord(word.id)) },
-                    onDelete = { wordToDelete = word }
-                )
-            }
-        }
-    }
 }
 
 @Composable

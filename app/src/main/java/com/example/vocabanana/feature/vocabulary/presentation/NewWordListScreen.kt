@@ -138,64 +138,97 @@ fun NewWordItem(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp)
+            .padding(vertical = 6.dp)
             .animateContentSize(),
         onClick = { expanded = !expanded }
     ) {
-        // Outer Row has NO horizontal padding so the selector can touch the edge
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(80.dp), // Fixed height for a uniform look
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Left: Word Info with specific padding
-            Column(
+        Column {
+            Row(
                 modifier = Modifier
-                    .weight(1f)
-                    .padding(start = 16.dp), // Only pad the left side
-                verticalArrangement = Arrangement.Center
+                    .fillMaxWidth()
+                    .height(80.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = word.lemma,
-                    style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
+                // Main Info Section
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = 16.dp),
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = word.lemma,
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
 
-                Box(modifier = Modifier.height(20.dp)) {
-                    if (word.partOfSpeech.isNotBlank()) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        if (word.partOfSpeech.isNotBlank()) {
+                            Text(
+                                text = word.partOfSpeech,
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            Text(" • ", color = MaterialTheme.colorScheme.outline)
+                        }
                         Text(
-                            text = word.partOfSpeech,
+                            text = "Found ${word.countInTheTexts} times",
                             style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.primary
+                            color = MaterialTheme.colorScheme.outline
                         )
                     }
                 }
+
+                // The State Selector (Windows Style)
+                WindowsStyleSelector(
+                    currentState = word.state,
+                    onStateSelected = onStateSelected,
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .width(80.dp)
+                )
             }
 
-            Text(text = "In Texts: ${word.countInTheTexts}")
-            // Right: The Selector - No right/top/bottom padding
-            // It fills the height of the Row (80.dp)
-            Spacer(modifier = Modifier.width(16.dp))
-            WindowsStyleSelector(
-                currentState = word.state,
-                onStateSelected = onStateSelected,
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .width(80.dp)
-            )
-        }
+            // Expanded Details Section
+            AnimatedVisibility(visible = expanded) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
 
-        AnimatedVisibility(visible = expanded) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-                Text(
-                    "Forms: ${word.forms.joinToString(", ")}",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-                if (word.definition.isNotBlank()) {
-                    Spacer(Modifier.height(4.dp))
-                    Text(word.definition, style = MaterialTheme.typography.bodySmall)
+                    // Forms Section
+                    Column {
+                        Text(
+                            text = "FORMS",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+                        Text(
+                            text = word.forms.joinToString(", ").ifEmpty { "No other forms" },
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+
+                    // Definition Section
+                    if (word.definition.isNotBlank()) {
+                        Column {
+                            Text(
+                                text = "DEFINITION",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.secondary
+                            )
+                            Text(
+                                text = word.definition,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -249,16 +282,16 @@ fun RowScope.LogoQuadrant(
         modifier = Modifier
             .weight(1f)
             .fillMaxHeight()
-            .background(color)
+            .background(if (isSelected) color else color.copy(alpha = 0.7f))
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
         if (isSelected) {
             Icon(
-                Icons.Default.Check,
-                null,
+                imageVector = Icons.Default.Check,
+                contentDescription = null,
                 tint = Color.White,
-                modifier = Modifier.size(24.dp)
+                modifier = Modifier.size(20.dp)
             )
         }
     }

@@ -101,6 +101,13 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 
+sealed class WordInfoState {
+    object Hidden : WordInfoState()
+    object Loading : WordInfoState()
+    data class Found(val word: WordUi) : WordInfoState()
+    data class NotFound(val word: String) : WordInfoState()
+}
+
 @Composable
 fun TextListScreen(
     viewModel: TextListScreenViewModel = hiltViewModel(),
@@ -523,6 +530,15 @@ private fun GeneratingWordStatus(state: GenerateWordsFromTextUiState?) {
             CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
         }
     }
+
+
+    /* TODO
+    *   1. Fix main menu buttons in the light theme (something like in the vocab screen items
+    *   2. Add text visual settings size, font and other
+    *   3. Fix problem with top status bar in the light theme
+    *   4. Add new word count in the new word screen
+    *   5. Change style for text list screen and general light theme and its the TopAppBar problem
+    * */
 }
 
 @Composable
@@ -705,9 +721,3 @@ fun OxfordButton(word: String, onClick: (String) -> Unit) {
     }
 }
 
-sealed class WordInfoState {
-    object Hidden : WordInfoState()
-    object Loading : WordInfoState()
-    data class Found(val word: WordUi) : WordInfoState()
-    data class NotFound(val word: String) : WordInfoState()
-}

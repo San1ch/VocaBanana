@@ -1,20 +1,17 @@
 package com.example.vocabanana.feature.text.presentation
 
 import androidx.lifecycle.viewModelScope
+import com.example.vocabanana.core.database.TextRepository
+import com.example.vocabanana.core.database.WordRepository
 import com.example.vocabanana.core.presentation.BaseViewModel
 import com.example.vocabanana.core.presentation.asUiState
 import com.example.vocabanana.core.presentation.uistate.UiState
-import com.example.vocabanana.core.database.TextRepository
-import com.example.vocabanana.core.database.WordRepository
-import com.example.vocabanana.core.presentation.UiText
-import com.example.vocabanana.feature.text.domain.GenerateWordsFromTextState
 import com.example.vocabanana.feature.text.domain.GenerateWordsFromTextUseCase
 import com.example.vocabanana.feature.text.presentation.data.GenerateWordsFromTextUiState
 import com.example.vocabanana.feature.text.presentation.data.TextUi
 import com.example.vocabanana.feature.text.presentation.data.toPreview
 import com.example.vocabanana.feature.text.presentation.data.toUi
 import com.example.vocabanana.feature.text.presentation.data.toUiState
-import com.example.vocabanana.feature.text.presentation.data.toUiText
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -59,7 +56,7 @@ class TextListScreenViewModel @Inject constructor(
         val cleanWord = word.trim().lowercase()
         _wordInfoState.value = WordInfoState.Loading
 
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch() {
             // Replace this with your actual DB call
             val wordDomain = wordRepository.getWordByWord(cleanWord)
 

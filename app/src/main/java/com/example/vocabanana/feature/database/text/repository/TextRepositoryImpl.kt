@@ -1,7 +1,7 @@
 package com.example.vocabanana.feature.database.text.repository
 
-import com.example.vocabanana.core.io.storage.FileStorage
 import com.example.vocabanana.core.database.TextRepository
+import com.example.vocabanana.core.io.storage.FileStorage
 import com.example.vocabanana.feature.database.text.local.TextDao
 import com.example.vocabanana.feature.database.text.local.TextEntity
 import com.example.vocabanana.feature.text.domain.model.TextDomain
@@ -23,8 +23,7 @@ class TextRepositoryImpl @Inject constructor(
         }
 
 
-
-    override fun getTextById(id: Int): TextDomain {
+    override suspend fun getTextById(id: Int): TextDomain {
         val result = dao.getTextById(id)
         return result.toDomainUnsafe(fileStorage.loadText(result.contentPath))
     }

@@ -84,6 +84,7 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.text)
     implementation(libs.androidx.compose.foundation)
+    implementation(libs.androidx.compose.foundation.layout)
     ksp(libs.hilt.compiler)
     implementation(libs.hilt.compose)
 
@@ -113,6 +114,9 @@ dependencies {
 
     // Entity Extraction
     implementation(libs.entity.extraction)
+
+    // YCharts
+    implementation(libs.ycharts)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

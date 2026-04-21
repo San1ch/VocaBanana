@@ -27,3 +27,11 @@ object AppColor {
     val Known = Color(0xFFA8E4AD)
     val Ignore = Color(0xFF696969)
 }
+
+object MileStoneColor {
+    val Novice = Color(0xFFF53844)
+    val Learner = Color(0xFFEC9F05)
+    val Fluent = Color(0xFF20BF55)
+    val Professional = Color(0xFF5F0A87)
+    val Mastery = Color(0xFFFFD700)
+}

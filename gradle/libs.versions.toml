@@ -48,6 +48,9 @@ entity-extraction = "16.0.0-beta5"
 uiGraphics = "1.10.6"
 uiText = "1.10.6"
 foundation = "1.10.6"
+foundationLayout = "1.10.6"
+
+ycharts = "2.1.0"
 
 [libraries]
 #Navigation
@@ -80,6 +83,8 @@ timber = { module = "com.jakewharton.timber:timber", version.ref = "timber" }
 #Google
 entity-extraction = { module = "com.google.mlkit:entity-extraction", version.ref = "entity-extraction" }
 
+ycharts = { group = "co.yml", name = "ycharts", version.ref = "ycharts" }
+
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
@@ -106,6 +111,7 @@ generativeai = { group = "com.google.ai.client.generativeai", name = "generative
 androidx-compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics", version.ref = "uiGraphics" }
 androidx-compose-ui-text = { group = "androidx.compose.ui", name = "ui-text", version.ref = "uiText" }
 androidx-compose-foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "foundation" }
+androidx-compose-foundation-layout = { group = "androidx.compose.foundation", name = "foundation-layout", version.ref = "foundationLayout" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
