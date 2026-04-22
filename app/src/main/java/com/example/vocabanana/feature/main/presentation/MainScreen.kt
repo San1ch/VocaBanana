@@ -1,6 +1,9 @@
 package com.example.vocabanana.feature.main.presentation
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,8 +21,8 @@ import androidx.compose.material.icons.automirrored.filled.FormatListBulleted
 import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -28,9 +31,11 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -68,9 +73,15 @@ fun MainContent(
     onTextsClick: () -> Unit,
 ) {
     Scaffold(
+        // The Scaffold now uses the slightly darker background color
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
                 title = { Text("VocaBanana", fontWeight = FontWeight.Bold) },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface, // TopBar stays White
+                    titleContentColor = MaterialTheme.colorScheme.onSurface
+                ),
                 actions = {
                     if (BuildConfig.DEBUG) {
                         IconButton(onClick = onDebugClick) {
@@ -90,16 +101,16 @@ fun MainContent(
                 .padding(paddingValues)
                 .padding(16.dp)
         ) {
-
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 item {
                     MenuCard(
                         title = "Vocabulary",
                         icon = Icons.AutoMirrored.Filled.FormatListBulleted,
+                        accentColor = MaterialTheme.colorScheme.primary,
                         onClick = onVocabClick
                     )
                 }
@@ -107,6 +118,7 @@ fun MainContent(
                     MenuCard(
                         title = "Texts",
                         icon = Icons.Default.MenuBook,
+                        accentColor = MaterialTheme.colorScheme.secondary,
                         onClick = onTextsClick
                     )
                 }
@@ -119,54 +131,75 @@ fun MainContent(
 fun MenuCard(
     title: String,
     icon: ImageVector,
+    accentColor: Color,
     onClick: () -> Unit
 ) {
-    ElevatedCard(
+    Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(140.dp)
+            .height(130.dp) // Slightly taller feels more "premium"
             .clickable { onClick() },
-        // This line removes the "blue/grey" tint by forcing the surface color
-        colors = CardDefaults.elevatedCardColors(
-            containerColor = MaterialTheme.colorScheme.surface,
-            contentColor = MaterialTheme.colorScheme.onSurface
+        shape = MaterialTheme.shapes.large, // Rounder corners for menu
+        colors = CardDefaults.cardColors(
+            containerColor = if (isSystemInDarkTheme())
+                MaterialTheme.colorScheme.surface
+            else Color.White
         ),
-        elevation = CardDefaults.elevatedCardElevation(
-            defaultElevation = 2.dp
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        border = BorderStroke(
+            width = 1.dp,
+            color = accentColor.copy(alpha = 0.2f) // Tinted border
         )
     ) {
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            // Circle background for the icon to make it pop
+        Box(modifier = Modifier.fillMaxSize()) {
+            // 1. The Accent Element: A decorative "pill" at the bottom
             Surface(
-                modifier = Modifier.size(60.dp),
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth(0.4f) // Only 40% width
+                    .height(4.dp)
+                    .padding(bottom = 8.dp),
                 shape = CircleShape,
-                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
+                color = accentColor
+            ) {}
+
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Box(contentAlignment = Alignment.Center) {
+                // 2. The Icon: Put it in a soft "ghost" background
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .background(
+                            color = accentColor.copy(alpha = 0.1f),
+                            shape = CircleShape
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
                     Icon(
                         imageVector = icon,
                         contentDescription = null,
-                        modifier = Modifier.size(32.dp),
-                        tint = MaterialTheme.colorScheme.primary
+                        modifier = Modifier.size(24.dp),
+                        tint = accentColor
                     )
                 }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.ExtraBold, // Stronger weight
+                    color = MaterialTheme.colorScheme.onSurface
+                )
             }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
         }
     }
 }
-
 @Preview(showBackground = true)
 @Composable
 fun MainScreenPreview() {

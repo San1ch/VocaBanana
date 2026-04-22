@@ -1,5 +1,6 @@
 package com.example.vocabanana.ui.theme
 
+import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
@@ -8,8 +9,12 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
+import androidx.core.view.WindowCompat
 
 private val DarkColorScheme = darkColorScheme(
     primary = BananaPrimaryDark,
@@ -32,20 +37,18 @@ private val LightColorScheme = lightColorScheme(
     primaryContainer = Color(0xFFFFE135),
     onPrimaryContainer = Color(0xFF221B00),
 
-    background = Color(0xFFFFFBFF), // Slightly warm white
+    background = Color(0xFFF6F3ED),
     surface = Color(0xFFFFFBFF),
+
     onBackground = Color(0xFF1D1B16),
     onSurface = Color(0xFF1D1B16),
 
-    secondary = Color(0xFF645E44),
-    onSecondary = Color(0xFFFFFFFF)
+    outlineVariant = Color(0xFFE6E2D9)
 )
 
 @Composable
 fun VocabBananaTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-
-
     dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
@@ -57,6 +60,18 @@ fun VocabBananaTheme(
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
     }
+
+    // --- ADD THIS SECTION TO FIX THE STATUS BAR ---
+    val view = LocalView.current
+    if (!view.isInEditMode) {
+        SideEffect {
+            val window = (view.context as Activity).window
+            window.statusBarColor = colorScheme.surface.toArgb()
+
+            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
+        }
+    }
+    // ----------------------------------------------
 
     MaterialTheme(
         colorScheme = colorScheme,

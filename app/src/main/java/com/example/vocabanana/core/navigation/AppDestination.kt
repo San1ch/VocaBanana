@@ -34,7 +34,7 @@ sealed class AppDestination(val route: String) {
     object Settings : AppDestination(AppScreens.SETTINGS_SCREEN)
     object Vocabulary : AppDestination(AppScreens.VOCABULARY_SCREEN)
     object TextList : AppDestination(AppScreens.TEXT_LIST_SCREEN)
-    object TextCreate : AppDestination(AppScreens.TEXT_CREATE_SCREEN)
+    object AddText : AppDestination(AppScreens.TEXT_CREATE_SCREEN)
     object Debug : AppDestination(AppScreens.DEBUG_SCREEN)
     object NewWordList : AppDestination(AppScreens.NEW_WORD_LIST_SCREEN)
 
@@ -55,7 +55,7 @@ class AppNavigationActions(private val navController: NavHostController) {
             AppDestination.Init -> navigateToInit()
             AppDestination.Main -> navigateToMain()
             AppDestination.Settings -> navigateToSettings()
-            AppDestination.TextCreate -> navigateToCreateText()
+            AppDestination.AddText -> navigateToCreateText()
             AppDestination.TextList -> navigateToTextList()
             AppDestination.Vocabulary -> navigateToVocabulary()
             AppDestination.NewWordList -> navigateToNewWordList()
@@ -106,7 +106,7 @@ class AppNavigationActions(private val navController: NavHostController) {
         }
     }
     private fun navigateToCreateText() {
-        navController.navigate(AppDestination.TextCreate.route) {
+        navController.navigate(AppDestination.AddText.route) {
 
         }
     }
