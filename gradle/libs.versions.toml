@@ -51,6 +51,7 @@ foundation = "1.10.6"
 foundationLayout = "1.10.6"
 
 ycharts = "2.1.0"
+animationVersion = "1.11.0"
 
 [libraries]
 #Navigation
@@ -112,6 +113,7 @@ androidx-compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graph
 androidx-compose-ui-text = { group = "androidx.compose.ui", name = "ui-text", version.ref = "uiText" }
 androidx-compose-foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "foundation" }
 androidx-compose-foundation-layout = { group = "androidx.compose.foundation", name = "foundation-layout", version.ref = "foundationLayout" }
+androidx-animation = { group = "androidx.compose.animation", name = "animation", version.ref = "animationVersion" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

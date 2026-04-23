@@ -10,8 +10,10 @@ import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
@@ -47,10 +49,24 @@ import androidx.compose.ui.unit.dp
 import com.example.vocabanana.feature.text.presentation.TextListUiIntent
 import com.example.vocabanana.feature.text.presentation.TextListUiState
 import com.example.vocabanana.ui.composable.AnimatedTitle
+import com.example.vocabanana.ui.composable.DeleteConfirmDialog
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 
+enum class TextListScreenPage(val index: Int) {
+    MyTexts(0),
+    TextReader(1),
+    Settings(2);
+
+    companion object {
+        fun fromIndex(index: Int) = when (index) {
+            0 -> MyTexts
+            1 -> TextReader
+            else -> Settings
+        }
+    }
+}
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -58,80 +74,110 @@ fun TextListContent(
     state: TextListUiState,
     onIntent: (TextListUiIntent) -> Unit
 ) {
-    val pagerState = rememberPagerState(pageCount = { 3 })
+    val pagerState = rememberPagerState(pageCount = { TextListScreenPage.entries.size })
     val coroutineScope = rememberCoroutineScope()
 
-    // Sync Pager with State
+    val currentPage = remember(pagerState.currentPage) {
+        TextListScreenPage.fromIndex(pagerState.currentPage)
+    }
+
     LaunchedEffect(pagerState.currentPage) {
         onIntent(TextListUiIntent.PageChanged(pagerState.currentPage))
     }
 
-    // Effect for the "Red Flash" on the lock
     SetupSwipeLockEffects(state.isSwipeAttempted) {
         onIntent(TextListUiIntent.ResetSwipeAttempt)
     }
 
-    CustomTouchSlopProvider {
-        Scaffold(
-            topBar = {
-                TopAppBar(
-                    title = {
-                        val title = when (state.pagerPage) {
-                            0 -> "My Texts"
-                            1 -> state.selectedText?.title ?: "Loading..."
-                            else -> "Settings"
-                        }
-                        AnimatedTitle(title)
-                    },
-                    actions = {
-                        TopBarActions(
-                            currentPage = state.pagerPage,
-                            isLocked = state.isLocked,
-                            isSwipeAttempted = state.isSwipeAttempted,
-                            onLockClick = { onIntent(TextListUiIntent.ToggleLock) },
-                            onSettingsClick = {
-                                if (state.isLocked) onIntent(TextListUiIntent.NotifySwipeBlocked)
-                                else coroutineScope.launch { pagerState.animateScrollToPage(2) }
-                            }
-                        )
-                    }
-                )
-            },
-            floatingActionButton = {
-                FabAnimated(
-                    visible = state.pagerPage == 0,
-                    onClick = { onIntent(TextListUiIntent.NavigateToAddText) }
-                )
-            }
-        ) { paddingValues ->
-            HorizontalPager(
-                state = pagerState,
-                modifier = Modifier
-                    .padding(paddingValues)
-                    .pointerInput(state.isLocked) {
-                        if (state.isLocked) detectDragGestures { change, dragAmount ->
-                            if (abs(dragAmount.x) > abs(dragAmount.y)) {
-                                onIntent(TextListUiIntent.NotifySwipeBlocked)
-                                change.consume()
-                            }
-                        }
-                    },
-                userScrollEnabled = state.selectedText != null && !state.isLocked
-            ) { page ->
-                when (page) {
-                    0 -> TextListPage(
-                        items = state.textItems,
-                        onIntent = onIntent,
-                        onNavigateToReader = {
-                            coroutineScope.launch { pagerState.animateScrollToPage(1) }
-                        })
+    Box(modifier = Modifier.fillMaxSize()) {
+        CustomTouchSlopProvider {
+            Scaffold(
+                topBar = {
+                    TopAppBar(
+                        title = {
+                            val title = when (currentPage) {
+                                TextListScreenPage.MyTexts -> "My Texts"
+                                TextListScreenPage.TextReader -> state.selectedText?.title
+                                    ?: "Loading..."
 
-                    1 -> TextReaderPage(state.selectedText, onIntent)
-                    2 -> TextSettingsPage(state.generatingState, onIntent)
+                                TextListScreenPage.Settings -> "Settings"
+                            }
+                            AnimatedTitle(title)
+                        },
+                        actions = {
+                            TopBarActions(
+                                currentPage = state.pagerPage,
+                                isLocked = state.isLocked,
+                                isSwipeAttempted = state.isSwipeAttempted,
+                                onLockClick = { onIntent(TextListUiIntent.ToggleLock) },
+                                onPageSettings = {
+                                    onIntent(TextListUiIntent.ShowRenderSettings)
+                                }
+                            )
+                        }
+                    )
+                },
+                floatingActionButton = {
+                    FabAnimated(
+                        visible = state.pagerPage == 0,
+                        onClick = { onIntent(TextListUiIntent.NavigateToAddText) }
+                    )
+                }
+            ) { paddingValues ->
+                HorizontalPager(
+                    state = pagerState,
+                    modifier = Modifier
+                        .padding(paddingValues)
+                        .pointerInput(state.isLocked) {
+                            if (state.isLocked) detectDragGestures { change, dragAmount ->
+                                if (abs(dragAmount.x) > abs(dragAmount.y)) {
+                                    onIntent(TextListUiIntent.NotifySwipeBlocked)
+                                    change.consume()
+                                }
+                            }
+                        },
+                    userScrollEnabled = state.selectedText != null && !state.isLocked
+                ) { pageIndex ->
+                    when (TextListScreenPage.fromIndex(pageIndex)) {
+                        TextListScreenPage.MyTexts ->
+                            TextListPage(
+                                items = state.textItems,
+                                onIntent = onIntent,
+                                onNavigateToReader = {
+                                    coroutineScope.launch { pagerState.animateScrollToPage(1) }
+                                })
+
+                        TextListScreenPage.TextReader ->
+                            TextReaderPage(state.selectedText, state.readerSettings, onIntent)
+
+                        TextListScreenPage.Settings ->
+                            TextSettingsPage(state.generatingState, onIntent)
+                    }
                 }
             }
         }
+
+        DeleteConfirmDialog(
+            item = state.selectedTextIdToDelete,
+            onDismiss = { onIntent(TextListUiIntent.ClearTextIdToDelete) },
+            onConfirm = { text ->
+                onIntent(TextListUiIntent.DeleteText)
+            }
+        )
+
+        WordInfoPopup(
+            state = state.wordInfoState,
+            onDismiss = { onIntent(TextListUiIntent.CloseWordInfo) },
+            onOxfordClick = { onIntent(TextListUiIntent.OxfordMoreInfo(it)) }
+        )
+
+        ReaderSettingsPanel(
+            visibility = state.showSettings,
+            settings = state.readerSettings,
+            onIntent = onIntent
+        )
     }
+
 }
 
 @Composable
@@ -140,7 +186,7 @@ private fun TopBarActions(
     isLocked: Boolean,
     isSwipeAttempted: Boolean,
     onLockClick: () -> Unit,
-    onSettingsClick: () -> Unit
+    onPageSettings: () -> Unit
 ) {
     Row {
         AnimatedVisibility(visible = currentPage == 1, enter = fadeIn(), exit = fadeOut()) {
@@ -149,7 +195,7 @@ private fun TopBarActions(
             }
         }
         AnimatedVisibility(visible = currentPage == 1, enter = fadeIn(), exit = fadeOut()) {
-            IconButton(onClick = onSettingsClick) {
+            IconButton(onClick = onPageSettings) {
                 Icon(Icons.Default.Settings, contentDescription = "Settings")
             }
         }

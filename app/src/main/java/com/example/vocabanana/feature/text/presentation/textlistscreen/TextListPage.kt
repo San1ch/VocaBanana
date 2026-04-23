@@ -63,7 +63,7 @@ fun TextListPage(
                         onNavigateToReader()
                     },
                     onDelete = {
-                        onIntent(TextListUiIntent.DeleteText(item))
+                        onIntent(TextListUiIntent.SelectTextToDelete(item.id))
                     }
                 )
             }

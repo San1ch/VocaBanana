@@ -1,27 +1,39 @@
 package com.example.vocabanana.feature.text.presentation.textlistscreen
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
-import androidx.compose.animation.scaleIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -42,55 +54,120 @@ fun TextSettingsPage(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(24.dp),
+            .padding(20.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        verticalArrangement = Arrangement.Top // Move to top for better reachability
     ) {
         Card(
             modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(28.dp),
             colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(2.dp)
             )
         ) {
             Column(
-                modifier = Modifier.padding(16.dp),
+                modifier = Modifier.padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
-                Text(
-                    text = "Vocabulary Generator",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold
-                )
+                // Icon & Title Header
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Icon(
+                        imageVector = Icons.Default.AutoAwesome,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(40.dp)
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        text = "Vocabulary Generator",
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = "Extract and save new words from this text to your local dictionary.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(horizontal = 12.dp)
+                    )
+                }
 
                 Button(
                     onClick = { onIntent(TextListUiIntent.GenerateWords) },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = MaterialTheme.shapes.medium,
-                    enabled = generatingState !is GenerateWordsFromTextUiState.Loading
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    enabled = generatingState !is GenerateWordsFromTextUiState.Loading,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary
+                    )
                 ) {
-                    Icon(Icons.Default.Add, contentDescription = null)
-                    Text("Generate Words", modifier = Modifier.padding(start = 8.dp))
+                    if (generatingState is GenerateWordsFromTextUiState.Loading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp),
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Icon(Icons.Default.Add, contentDescription = null)
+                        Spacer(Modifier.width(8.dp))
+                        Text("Start Analysis", fontWeight = FontWeight.Bold)
+                    }
+                }
+
+                // Inline Status
+                AnimatedVisibility(
+                    visible = generatingState != null,
+                    enter = expandVertically() + fadeIn(),
+                    exit = shrinkVertically() + fadeOut()
+                ) {
+                    GeneratingWordStatus(generatingState)
                 }
             }
-        }
-
-        AnimatedVisibility(
-            visible = generatingState != null,
-            enter = fadeIn() + scaleIn(),
-            modifier = Modifier.padding(top = 24.dp)
-        ) {
-            GeneratingWordStatus(generatingState)
         }
     }
 }
 
-
 @Composable
 private fun GeneratingWordStatus(state: GenerateWordsFromTextUiState?) {
     if (state == null) return
-
     val context = LocalContext.current
+
+    // Determine visual styling based on state
+    val (color, icon, bg) = when (state) {
+        is GenerateWordsFromTextUiState.Success -> Triple(
+            Color(0xFF4CAF50),
+            Icons.Default.CheckCircle,
+            Color(0xFF4CAF50).copy(0.1f)
+        )
+
+        is GenerateWordsFromTextUiState.PartialSuccess -> Triple(
+            Color(0xFFFF9800),
+            Icons.Default.Warning,
+            Color(0xFFFF9800).copy(0.1f)
+        )
+
+        is GenerateWordsFromTextUiState.Error -> Triple(
+            MaterialTheme.colorScheme.error,
+            Icons.Default.Error,
+            MaterialTheme.colorScheme.error.copy(0.1f)
+        )
+
+        is GenerateWordsFromTextUiState.Loading -> Triple(
+            MaterialTheme.colorScheme.primary,
+            Icons.Default.Sync,
+            MaterialTheme.colorScheme.primary.copy(0.1f)
+        )
+
+        is GenerateWordsFromTextUiState.AllExist -> Triple(
+            MaterialTheme.colorScheme.secondary,
+            Icons.Default.Info,
+            MaterialTheme.colorScheme.secondary.copy(0.1f)
+        )
+    }
 
     val message = when (state) {
         is GenerateWordsFromTextUiState.Loading -> state.message.asString(context)
@@ -100,34 +177,30 @@ private fun GeneratingWordStatus(state: GenerateWordsFromTextUiState?) {
         is GenerateWordsFromTextUiState.PartialSuccess -> state.message.asString(context)
     }
 
-    val (color, icon) = when (state) {
-        is GenerateWordsFromTextUiState.Success -> Color(0xFF4CAF50) to Icons.Default.CheckCircle
-        is GenerateWordsFromTextUiState.PartialSuccess -> Color(0xFFFF9800) to Icons.Default.Warning
-        is GenerateWordsFromTextUiState.Error -> MaterialTheme.colorScheme.error to Icons.Default.Warning
-        is GenerateWordsFromTextUiState.Loading -> MaterialTheme.colorScheme.primary to Icons.Default.Refresh
-        is GenerateWordsFromTextUiState.AllExist -> MaterialTheme.colorScheme.secondary to Icons.Default.Info
-    }
-
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-        modifier = Modifier.padding(24.dp)
+    // A nice "Status Box" inside the card
+    Surface(
+        color = bg,
+        shape = RoundedCornerShape(16.dp),
+        modifier = Modifier.fillMaxWidth()
     ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = color,
-            modifier = Modifier.size(48.dp)
-        )
-        Text(
-            text = message,
-            style = MaterialTheme.typography.titleMedium,
-            color = color,
-            textAlign = TextAlign.Center
-        )
-
-        if (state is GenerateWordsFromTextUiState.Loading) {
-            CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = color,
+                modifier = Modifier.size(24.dp)
+            )
+            Text(
+                text = message,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Medium,
+                color = color,
+                modifier = Modifier.weight(1f)
+            )
         }
     }
 }
