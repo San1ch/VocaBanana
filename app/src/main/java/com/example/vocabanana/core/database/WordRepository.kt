@@ -11,7 +11,6 @@ interface WordRepository {
     fun getWordExceptStates(states: List<WordState>): Flow<List<WordDomain>>
     fun getCountByStates(states: List<WordState>): Flow<Int>
     fun getCountExceptStates(states: List<WordState>): Flow<Int>
-
     // --- Create / Add ---
     suspend fun addWords(words: List<WordDomain>)
 
@@ -29,6 +28,7 @@ interface WordRepository {
     suspend fun syncWordWithDatabase(word: WordDomain)
 
     // --- Get (Single or Static List) ---
+    suspend fun changeState(wordId: Int, state: WordState)
     suspend fun getWordByWord(word: String): WordDomain?
     suspend fun getWordById(id: Int): WordDomain?
     suspend fun getAllLemmasAndForms(): List<String>

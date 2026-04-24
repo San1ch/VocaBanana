@@ -33,6 +33,7 @@ import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Card
@@ -78,11 +79,13 @@ import com.example.vocabanana.core.navigation.AppDestination
 import com.example.vocabanana.core.presentation.StateObserver
 import com.example.vocabanana.core.word.domain.model.PartOfSpeech
 import com.example.vocabanana.core.word.domain.model.WordState
+import com.example.vocabanana.feature.text.presentation.data.WordFilter
 import com.example.vocabanana.feature.text.presentation.data.WordUi
 import com.example.vocabanana.feature.vocabulary.data.VocabMilestone
 import com.example.vocabanana.feature.vocabulary.data.VocabularyStats
 import com.example.vocabanana.ui.composable.CollectUiEvents
 import com.example.vocabanana.ui.composable.DeleteConfirmDialog
+import com.example.vocabanana.ui.composable.SearchBarField
 import com.example.vocabanana.ui.theme.AppColor
 import kotlinx.coroutines.launch
 
@@ -97,6 +100,7 @@ sealed interface VocabularyIntent {
     data class SelectWord(val id: Int) : VocabularyIntent
     data class DeleteWord(val id: Int) : VocabularyIntent
     data class ChangeSortType(val sortType: SortType) : VocabularyIntent
+    data class UpdateSearchQuery(val searchQuery: String) : VocabularyIntent
     data object ToggleSortOrder : VocabularyIntent
     data object NavigateToNewWords : VocabularyIntent
 }
@@ -121,10 +125,7 @@ fun VocabularyScreen(
     val words by viewModel.words.collectAsState()
     val selectedId by viewModel.selectedWordId.collectAsState()
     val newWordsCount by viewModel.newWordsCount.collectAsState()
-
-    val sortType by viewModel.sortType.collectAsState()
-    val isAscending by viewModel.isAscending.collectAsState()
-
+    val wordFilter by viewModel.wordFilter.collectAsState()
     val stats by viewModel.stats.collectAsState()
 
     val pagerState = rememberPagerState(pageCount = { 2 })
@@ -133,8 +134,7 @@ fun VocabularyScreen(
         drawerState = drawerState,
         drawerContent = {
             VocabularyDrawerContent(
-                currentSort = sortType,
-                isAscending = isAscending,
+                wordFilter = wordFilter,
                 onIntent = { viewModel.onIntent(it) },
                 onClose = { scope.launch { drawerState.close() } }
             )
@@ -161,6 +161,7 @@ fun VocabularyScreen(
                                 }
                             }
                         },
+                        wordFilter = wordFilter,
                         onMenuClick = { scope.launch { drawerState.open() } },
                     )
 
@@ -182,12 +183,15 @@ fun VocabularyListContent(
     words: List<WordUi>,
     stats: VocabularyStats,
     newWordsCount: Int,
+    wordFilter: WordFilter,
     onIntent: (VocabularyIntent) -> Unit,
     onMenuClick: () -> Unit
 ) {
     var wordToDelete by remember { mutableStateOf<WordUi?>(null) }
     // Pick a surface color for the "Connected" look
     val containerColor = MaterialTheme.colorScheme.surface
+
+    var isSearchVisible by remember { mutableStateOf(false) }
 
     DeleteConfirmDialog(
         item = wordToDelete,
@@ -217,12 +221,20 @@ fun VocabularyListContent(
                             count = newWordsCount,
                             onClick = { onIntent(VocabularyIntent.NavigateToNewWords) }
                         )
-                        /*IconButton(onClick = {  }) {
-                            Icon(Icons.Default.MoreVert, contentDescription = "More")
-                        }*/
+                        IconButton(onClick = { isSearchVisible = !isSearchVisible }) {
+                            Icon(
+                                imageVector = if (isSearchVisible) Icons.Default.FilterList else Icons.Default.Search,
+                                contentDescription = "Toggle Search"
+                            )
+                        }
                     }
                 )
 
+                SearchBarField(
+                    query = wordFilter.searchQuery,
+                    onQueryChange = { onIntent(VocabularyIntent.UpdateSearchQuery(it)) },
+                    isVisible = isSearchVisible
+                )
                 // The stats header now sits right under the title with NO gaps
                 VocabularyStatsHeader(stats = stats, backgroundColor = containerColor)
 
@@ -251,15 +263,16 @@ fun VocabularyListContent(
 
 @Composable
 fun VocabularyDrawerContent(
-    currentSort: SortType,
-    isAscending: Boolean,
+    wordFilter: WordFilter,
     onIntent: (VocabularyIntent) -> Unit,
     onClose: () -> Unit
 ) {
     ModalDrawerSheet {
-        Column(modifier = Modifier
-            .padding(16.dp)
-            .fillMaxHeight()) {
+        Column(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxHeight()
+        ) {
             Text("Vocabulary Settings", style = MaterialTheme.typography.headlineSmall)
 
             Spacer(Modifier.height(24.dp))
@@ -284,7 +297,7 @@ fun VocabularyDrawerContent(
                 Text("Sort By", style = MaterialTheme.typography.labelLarge)
                 IconButton(onClick = { onIntent(VocabularyIntent.ToggleSortOrder) }) {
                     Icon(
-                        imageVector = if (isAscending) Icons.Default.ArrowUpward else Icons.Default.ArrowDownward,
+                        imageVector = if (wordFilter.isAscending) Icons.Default.ArrowUpward else Icons.Default.ArrowDownward,
                         contentDescription = "Toggle Order",
                         tint = MaterialTheme.colorScheme.primary
                     )
@@ -293,22 +306,22 @@ fun VocabularyDrawerContent(
 
             SortOption(
                 label = "Alphabet",
-                selected = currentSort == SortType.ALPHABETIC,
+                selected = wordFilter.sortType == SortType.ALPHABETIC,
                 onClick = { onIntent(VocabularyIntent.ChangeSortType(SortType.ALPHABETIC)); onClose() }
             )
             SortOption(
                 label = "Status/State",
-                selected = currentSort == SortType.STATE,
+                selected = wordFilter.sortType == SortType.STATE,
                 onClick = { onIntent(VocabularyIntent.ChangeSortType(SortType.STATE)); onClose() }
             )
             SortOption(
                 label = "Recently Added",
-                selected = currentSort == SortType.DATE,
+                selected = wordFilter.sortType == SortType.DATE,
                 onClick = { onIntent(VocabularyIntent.ChangeSortType(SortType.DATE)); onClose() }
             )
             SortOption(
                 label = "Count in Texts",
-                selected = currentSort == SortType.COUNT,
+                selected = wordFilter.sortType == SortType.COUNT,
                 onClick = { onIntent(VocabularyIntent.ChangeSortType(SortType.COUNT)); onClose() }
             )
         }
@@ -507,14 +520,18 @@ fun WordListItem(
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Status bar
-            Box(modifier = Modifier
-                .width(6.dp)
-                .fillMaxHeight()
-                .background(stateColor))
+            Box(
+                modifier = Modifier
+                    .width(6.dp)
+                    .fillMaxHeight()
+                    .background(stateColor)
+            )
 
-            Column(modifier = Modifier
-                .weight(1f)
-                .padding(16.dp)) {
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(16.dp)
+            ) {
                 Text(
                     text = word.lemma,
                     style = MaterialTheme.typography.titleLarge,

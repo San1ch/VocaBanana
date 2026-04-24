@@ -5,6 +5,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,11 +24,16 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -38,17 +44,21 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.vocabanana.R
 import com.example.vocabanana.core.navigation.AppDestination
 import com.example.vocabanana.core.presentation.StateObserver
 import com.example.vocabanana.core.word.domain.model.WordState
 import com.example.vocabanana.feature.text.presentation.data.WordUi
 import com.example.vocabanana.ui.composable.CollectUiEvents
+import com.example.vocabanana.ui.composable.SearchBarField
 import com.example.vocabanana.ui.theme.AppColor
 
 
@@ -61,15 +71,16 @@ fun NewWordListScreen(
     CollectUiEvents(
         events = viewModel.events,
         navigateBack = navigateBack,
-        navigateTo = { navigateTo(it) })
+        navigateTo = { navigateTo(it) }
+    )
 
-    val wordsState by viewModel.newWords.collectAsState()
+    val state by viewModel.uiState.collectAsState()
 
-    StateObserver(wordsState) { words ->
+    StateObserver(state.words) { words ->
         NewWordListContent(
+            state = state,
             words = words,
-            onBack = navigateBack,
-            onStateChange = { id, state -> viewModel.updateWordState(id, state) }
+            onIntent = viewModel::onIntent
         )
     }
 }
@@ -77,43 +88,87 @@ fun NewWordListScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NewWordListContent(
+    state: NewWordListState,
     words: List<WordUi>,
-    onBack: () -> Unit,
-    onStateChange: (Int, WordState) -> Unit
+    onIntent: (NewWordListIntent) -> Unit
 ) {
+    var isSearchVisible by rememberSaveable { mutableStateOf(false) }
+
+    // FIX: Local state keeps the keyboard snappy despite the ViewModel debounce
+    var localSearchQuery by rememberSaveable { mutableStateOf(state.filter.searchQuery) }
+
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("New Words") })
+            Column(
+                modifier = Modifier
+                    .animateContentSize()
+                    .background(MaterialTheme.colorScheme.surface)
+            ) {
+                TopAppBar(
+                    title = { Text(stringResource(R.string.new_words_title)) },
+                    navigationIcon = {
+                        IconButton(onClick = { onIntent(NewWordListIntent.NavigateBack) }) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
+                        }
+                    },
+                    actions = {
+                        IconButton(onClick = { isSearchVisible = !isSearchVisible }) {
+                            Icon(
+                                imageVector = if (isSearchVisible) Icons.Default.FilterList else Icons.Default.Search,
+                                contentDescription = "Toggle Search"
+                            )
+                        }
+                        Text("${words.size}", style = MaterialTheme.typography.labelLarge)
+                        Spacer(Modifier.width(16.dp))
+                    }
+                )
+
+                SearchBarField(
+                    query = localSearchQuery,
+                    onQueryChange = { newText ->
+                        localSearchQuery = newText
+                        onIntent(NewWordListIntent.UpdateSearchQuery(newText))
+                    },
+                    isVisible = isSearchVisible
+                )
+
+                LegendHeader()
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+            }
         }
     ) { padding ->
-        Column(modifier = Modifier.padding(padding)) {
-            // Legend with the new "Ignore" state
-            Surface(
-                color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Row(
-                    modifier = Modifier.padding(12.dp),
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    LegendItem(AppColor.NotKnow, "Not known")
-                    LegendItem(AppColor.Learn, "Learn")
-                    LegendItem(AppColor.Known, "Known")
-                    LegendItem(AppColor.Ignore, "Ignore")
-                }
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding),
+            contentPadding = PaddingValues(12.dp)
+        ) {
+            items(words, key = { it.id }) { word ->
+                NewWordItem(
+                    word = word,
+                    onStateSelected = { newState ->
+                        onIntent(NewWordListIntent.ChangeWordState(word.id, newState))
+                    }
+                )
             }
+        }
+    }
+}
 
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(12.dp)
-            ) {
-                items(words, key = { it.id }) { word ->
-                    NewWordItem(
-                        word = word,
-                        onStateSelected = { newState -> onStateChange(word.id, newState) }
-                    )
-                }
-            }
+@Composable
+fun LegendHeader() {
+    Surface(
+        color = if (isSystemInDarkTheme()) MaterialTheme.colorScheme.surface else Color.White,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier.padding(12.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            LegendItem(AppColor.NotKnow, stringResource(R.string.word_state_not_known))
+            LegendItem(AppColor.Learn, stringResource(R.string.word_state_learn))
+            LegendItem(AppColor.Known, stringResource(R.string.word_state_known))
+            LegendItem(AppColor.Ignore, stringResource(R.string.word_state_ignore))
         }
     }
 }
@@ -121,26 +176,33 @@ fun NewWordListContent(
 @Composable
 fun LegendItem(color: Color, label: String) {
     Row(verticalAlignment = Alignment.CenterVertically) {
-        Box(Modifier
-            .size(12.dp)
-            .background(color, CircleShape))
+        Box(
+            Modifier
+                .size(12.dp)
+                .background(color, CircleShape)
+        )
         Spacer(Modifier.width(4.dp))
         Text(label, style = MaterialTheme.typography.bodySmall)
     }
 }
+
 @Composable
-fun NewWordItem(
-    word: WordUi,
-    onStateSelected: (WordState) -> Unit
-) {
+fun NewWordItem(word: WordUi, onStateSelected: (WordState) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
+
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 6.dp)
             .animateContentSize(),
-        onClick = { expanded = !expanded }
+        onClick = { expanded = !expanded },
+        colors = CardDefaults.cardColors(
+            // If it's light theme, we use pure white. If dark, a slightly lighter gray than background.
+            containerColor = if (isSystemInDarkTheme())
+                MaterialTheme.colorScheme.surface
+            else Color.White
+        ),
     ) {
         Column {
             Row(
@@ -149,37 +211,20 @@ fun NewWordItem(
                     .height(80.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Main Info Section
                 Column(
                     modifier = Modifier
                         .weight(1f)
                         .padding(start = 16.dp),
                     verticalArrangement = Arrangement.Center
                 ) {
+                    Text(text = word.lemma, style = MaterialTheme.typography.titleLarge)
                     Text(
-                        text = word.lemma,
-                        style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.onSurface
+                        text = "${word.partOfSpeech} • Found ${word.countInTheTexts} times",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.outline
                     )
-
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        if (word.partOfSpeech.isNotBlank()) {
-                            Text(
-                                text = word.partOfSpeech,
-                                style = MaterialTheme.typography.labelMedium,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                            Text(" • ", color = MaterialTheme.colorScheme.outline)
-                        }
-                        Text(
-                            text = "Found ${word.countInTheTexts} times",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.outline
-                        )
-                    }
                 }
 
-                // The State Selector (Windows Style)
                 WindowsStyleSelector(
                     currentState = word.state,
                     onStateSelected = onStateSelected,
@@ -189,49 +234,34 @@ fun NewWordItem(
                 )
             }
 
-            // Expanded Details Section
             AnimatedVisibility(visible = expanded) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
-                        .padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-
-                    // Forms Section
-                    Column {
-                        Text(
-                            text = "FORMS",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.secondary
-                        )
-                        Text(
-                            text = word.forms.joinToString(", ").ifEmpty { "No other forms" },
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-
-                    // Definition Section
+                Column(modifier = Modifier.padding(16.dp)) {
+                    HorizontalDivider(Modifier.padding(bottom = 12.dp))
+                    DetailSection(
+                        stringResource(R.string.forms_uppercase),
+                        word.forms.joinToString(", ")
+                    )
                     if (word.definition.isNotBlank()) {
-                        Column {
-                            Text(
-                                text = "DEFINITION",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.secondary
-                            )
-                            Text(
-                                text = word.definition,
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
+                        DetailSection(
+                            stringResource(R.string.definition_uppercase),
+                            word.definition
+                        )
                     }
                 }
             }
         }
+    }
+}
+
+@Composable
+fun DetailSection(label: String, content: String) {
+    Column(Modifier.padding(bottom = 8.dp)) {
+        Text(
+            label,
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.secondary
+        )
+        Text(content, style = MaterialTheme.typography.bodyMedium)
     }
 }
 
@@ -241,34 +271,47 @@ fun WindowsStyleSelector(
     onStateSelected: (WordState) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Column(
-        modifier = modifier.background(Color.Black.copy(alpha = 0.05f)),
-        verticalArrangement = Arrangement.spacedBy(0.dp) // Removed spacing for "Full" look
-    ) {
-        Row(modifier = Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(0.dp)) {
-            LogoQuadrant(AppColor.NotKnow, currentState == WordState.NOT_KNOWN) {
+    Column(modifier.background(Color.Black.copy(alpha = 0.05f))) {
+        Row(Modifier.weight(1f)) {
+            Quadrant(AppColor.NotKnow, currentState == WordState.NOT_KNOWN) {
                 onStateSelected(
                     WordState.NOT_KNOWN
                 )
             }
-            LogoQuadrant(AppColor.Learn, currentState == WordState.LEARNING) {
-                onStateSelected(
-                    WordState.LEARNING
-                )
-            }
+            Quadrant(
+                AppColor.Learn,
+                currentState == WordState.LEARNING
+            ) { onStateSelected(WordState.LEARNING) }
         }
-        Row(modifier = Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(0.dp)) {
-            LogoQuadrant(AppColor.Known, currentState == WordState.KNOWN) {
-                onStateSelected(
-                    WordState.KNOWN
-                )
-            }
-            LogoQuadrant(AppColor.Ignore, currentState == WordState.IGNORED) {
-                onStateSelected(
-                    WordState.IGNORED
-                )
-            }
+        Row(Modifier.weight(1f)) {
+            Quadrant(
+                AppColor.Known,
+                currentState == WordState.KNOWN
+            ) { onStateSelected(WordState.KNOWN) }
+            Quadrant(
+                AppColor.Ignore,
+                currentState == WordState.IGNORED
+            ) { onStateSelected(WordState.IGNORED) }
         }
+    }
+}
+
+@Composable
+private fun RowScope.Quadrant(color: Color, isSelected: Boolean, onClick: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .weight(1f)
+            .fillMaxHeight()
+            .background(if (isSelected) color else color.copy(alpha = 0.2f))
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center
+    ) {
+        if (isSelected) Icon(
+            Icons.Default.Check,
+            null,
+            tint = Color.White,
+            modifier = Modifier.size(20.dp)
+        )
     }
 }
 

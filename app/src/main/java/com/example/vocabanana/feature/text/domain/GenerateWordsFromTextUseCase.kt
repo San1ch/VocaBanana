@@ -79,14 +79,14 @@ class GenerateWordsFromTextUseCase @Inject constructor(
     // Stage 2: Words that are already lemmas
     private suspend fun processExistingLemmas(
         words: List<String>,
-        posMap: Map<String, LexiconDto>,
+        lexiconMap: Map<String, LexiconDto>,
         output: MutableList<WordDomain>,
         frequencies: Map<String, Int>
     ): List<String> {
         val lemmas = lemmaRep.findExistingLemmas(words)
         lemmas.forEach { lemma ->
             val count = frequencies[lemma] ?: 1
-            addValidatedDomain(lemma, emptyList(), posMap, output, count)
+            addValidatedDomain(lemma, emptyList(), lexiconMap, output, count)
         }
         val processed = lemmas.toSet()
         return words.filter { it !in processed }
@@ -99,6 +99,7 @@ class GenerateWordsFromTextUseCase @Inject constructor(
         output: MutableList<WordDomain>,
         frequencies: Map<String, Int>
     ): List<String> {
+
         val existing = lexiconRepository.getExistingWords(words)
         existing.forEach { word ->
             val count = frequencies[word] ?: 1
@@ -128,6 +129,7 @@ class GenerateWordsFromTextUseCase @Inject constructor(
         output: MutableList<WordDomain>,
         count: Int
     ) {
+
         val dto = lexiconMap[lemma]
         WordDomain.create(
             lemma = lemma,
@@ -147,6 +149,7 @@ class GenerateWordsFromTextUseCase @Inject constructor(
 sealed class GenerateWordsFromTextState {
     // We use data object for simple stages
     sealed class Loading : GenerateWordsFromTextState() {
+
         data object PreparingText : Loading()
         data object AnalyzingLexicon : Loading()
         data object SavingWords : Loading()

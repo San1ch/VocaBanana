@@ -14,6 +14,7 @@ import com.example.vocabanana.core.presentation.uistate.toUiText
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
 
 
 @Composable
@@ -51,6 +52,8 @@ fun <T> Flow<T>.asUiState(): Flow<UiState<T>> {
     return this
         .map<T, UiState<T>> { data ->
             UiState.Success(data)
+        }.onStart {
+            emit(UiState.Loading)
         }
         .catch { e ->
             val errorText = UiStateError.Unknown(e.message ?: "Unknown error").toUiText()

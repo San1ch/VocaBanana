@@ -72,7 +72,17 @@ fun AddTextScreen(
         contract = ActivityResultContracts.GetContent()
     ) { uri ->
         uri?.let { selectedUri ->
-            fileName = selectedUri.lastPathSegment ?: "Selected file"
+            // --- Fix starts here ---
+            val cursor = context.contentResolver.query(selectedUri, null, null, null, null)
+            cursor?.use {
+                val nameIndex = it.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
+                if (it.moveToFirst()) {
+                    fileName = it.getString(nameIndex)
+                }
+            } ?: run {
+                fileName = "Selected file"
+            }
+            // --- Fix ends here ---
 
             scope.launch(Dispatchers.IO) {
                 val text = context.contentResolver.openInputStream(selectedUri)
@@ -171,7 +181,9 @@ fun AddTextContent(
 
             if (fileName != null) {
                 Surface(
-                    modifier = Modifier.fillMaxWidth().weight(1f),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
                     color = MaterialTheme.colorScheme.secondaryContainer,
                     shape = MaterialTheme.shapes.medium
                 ) {
@@ -184,7 +196,9 @@ fun AddTextContent(
                     value = content,
                     onValueChange = onContentChange,
                     label = { Text("Paste your text here") },
-                    modifier = Modifier.fillMaxWidth().weight(1f)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
                 )
             }
 

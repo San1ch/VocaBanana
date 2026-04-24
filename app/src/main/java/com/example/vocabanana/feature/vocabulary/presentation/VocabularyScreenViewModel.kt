@@ -10,7 +10,9 @@ import com.example.vocabanana.core.presentation.asUiState
 import com.example.vocabanana.core.presentation.uistate.UiState
 import com.example.vocabanana.core.word.domain.model.WordState
 import com.example.vocabanana.core.word.mapper.toUiText
+import com.example.vocabanana.feature.text.presentation.data.WordFilter
 import com.example.vocabanana.feature.text.presentation.data.WordUi
+import com.example.vocabanana.feature.text.presentation.data.filterAndSort
 import com.example.vocabanana.feature.text.presentation.data.toDomain
 import com.example.vocabanana.feature.text.presentation.data.toUi
 import com.example.vocabanana.feature.vocabulary.data.VocabularyStats
@@ -20,6 +22,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -49,33 +52,19 @@ class VocabularyScreenViewModel @Inject constructor(
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), VocabularyStats())
 
 
-    // UI Settings flows
-    private val _sortType = MutableStateFlow(SortType.ALPHABETIC)
-    val sortType = _sortType.asStateFlow()
-
-    // Sorting order
-    private val _isAscending = MutableStateFlow(true)
-    val isAscending = _isAscending.asStateFlow()
+    // Filter flow
+    private val _wordFilter = MutableStateFlow(WordFilter())
+    val wordFilter = _wordFilter.asStateFlow()
 
     // Combining Database words with UI Sorting logic
     val words = combine(
         wordRepository.getAllLemmas(),
-        _sortType,
-        _isAscending
-    ) { rawList, sort, ascending ->
+        wordFilter.debounce(1000)
+    ) { rawList, filterData ->
         rawList
             .filter { it.state != WordState.NEW }
             .map { it.toUi() }
-            .let { list ->
-                val sortedList = when (sort) {
-                    SortType.ALPHABETIC -> list.sortedBy { it.lemma }
-                    SortType.STATE -> list.sortedBy { it.state.ordinal }
-                    SortType.COUNT -> list.sortedBy { it.countInTheTexts }
-                    SortType.DATE -> list.sortedBy { it.whenAdded }
-                }
-
-                if (ascending) sortedList else sortedList.reversed()
-            }
+            .filterAndSort(filterData)
     }
         .asUiState()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), UiState.Loading)
@@ -84,11 +73,26 @@ class VocabularyScreenViewModel @Inject constructor(
         when (intent) {
             is VocabularyIntent.SelectWord -> _selectedWordId.update { intent.id }
             is VocabularyIntent.DeleteWord -> viewModelScope.launch(Dispatchers.IO) {
-                wordRepository.deleteById(intent.id)
+                wordRepository.changeState(intent.id, WordState.IGNORED)
             }
 
-            is VocabularyIntent.ChangeSortType -> _sortType.update { intent.sortType }
-            VocabularyIntent.ToggleSortOrder -> _isAscending.update { !it }
+            is VocabularyIntent.ChangeSortType -> _wordFilter.update {
+                _wordFilter.value.copy(
+                    sortType = intent.sortType
+                )
+            }
+
+            VocabularyIntent.ToggleSortOrder -> _wordFilter.update {
+                _wordFilter.value.copy(
+                    isAscending = !_wordFilter.value.isAscending
+                )
+            }
+
+            is VocabularyIntent.UpdateSearchQuery -> _wordFilter.update {
+                _wordFilter.value.copy(
+                    searchQuery = intent.searchQuery
+                )
+            }
             VocabularyIntent.NavigateToNewWords -> sendEvent(UiEvent.NavigateTo(AppDestination.NewWordList))
         }
     }

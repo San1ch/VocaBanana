@@ -80,6 +80,13 @@ class WordRepositoryRoomImpl @Inject constructor(
             wordDao.insertWordWithForms(word.toWordEntity(), word.forms)
         }
     }
+    override suspend fun changeState(wordId: Int, state: WordState) {
+        val word = wordDao.getWordWithFormsById(wordId)
+        word?.let {
+            val updatedWord = it.toDomain().withState(state)
+            wordDao.insertWord(updatedWord.toWordEntity())
+        }
+    }
 
     override suspend fun addWords(words: List<WordDomain>) {
         val databaseWordsMap = wordDao.getAllWordsList().associateBy { it.word.lemma }

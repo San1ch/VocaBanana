@@ -32,19 +32,6 @@ class TextProcessingService @Inject constructor(
         "not", "no", "yes", "too", "very", "just", "only", "well", "even", "now", "then", "there", "here"
     )
 
-    fun isTrash(word: String): Boolean {
-        if (word.length <= 2 && word !in listOf("is", "am", "at")) return true
-        if (word.firstOrNull()?.isDigit() == true) return true
-
-        val w = word.lowercase()
-        return w.contains("http")
-                || w.contains("com")
-                || w.contains("www")
-                || w.contains("the")
-                || w.contains("a")
-                || w.contains("an")
-    }
-
     fun String.removeSurroundingPunctuation(): String {
         return this.dropWhile { !it.isLetter() }
             .dropLastWhile { !it.isLetter() }
@@ -78,7 +65,7 @@ class TextProcessingService @Inject constructor(
                 }
             }
             // 4. Filter out stop words, trash (links/numbers), and empty strings
-            .filter { it.isNotEmpty() && !isTrash(it) && !stopWords.contains(it) }
+            .filter { it.isNotEmpty() && !stopWords.contains(it) }
             // 5. Create the frequency map: { "apple" to 5, "banana" to 2 }
             .groupingBy { it }
             .eachCount()
