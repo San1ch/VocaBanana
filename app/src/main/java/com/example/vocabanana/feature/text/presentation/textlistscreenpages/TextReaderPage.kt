@@ -1,4 +1,4 @@
-package com.example.vocabanana.feature.text.presentation.textlistscreen
+package com.example.vocabanana.feature.text.presentation.textlistscreenpages
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
@@ -124,10 +124,9 @@ fun TextReaderPage(
                 items(text.paragraphs) { paragraph ->
                     ParagraphViewItem(
                         paragraph = paragraph,
-                        settings = settings, // Pass settings down
+                        settings = settings,
                         onWordClick = { word -> onIntent(TextListUiIntent.WordClicked(word)) }
                     )
-                    // Dynamic space between paragraphs
                     Spacer(modifier = Modifier.height(settings.paragraphSpacing.dp))
                 }
             }

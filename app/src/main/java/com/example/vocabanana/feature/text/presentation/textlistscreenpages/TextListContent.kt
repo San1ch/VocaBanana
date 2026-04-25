@@ -1,4 +1,4 @@
-package com.example.vocabanana.feature.text.presentation.textlistscreen
+package com.example.vocabanana.feature.text.presentation.textlistscreenpages
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState

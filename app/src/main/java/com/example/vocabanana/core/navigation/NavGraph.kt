@@ -17,9 +17,9 @@ import com.example.vocabanana.feature.init.InitScreen
 import com.example.vocabanana.feature.main.presentation.MainScreen
 import com.example.vocabanana.feature.settings.presentation.SettingsScreen
 import com.example.vocabanana.feature.text.presentation.AddTextScreen
-import com.example.vocabanana.feature.text.presentation.textlistscreen.TextListScreen
+import com.example.vocabanana.feature.text.presentation.textlistscreenpages.TextListScreen
 import com.example.vocabanana.feature.vocabulary.presentation.NewWordListScreen
-import com.example.vocabanana.feature.vocabulary.presentation.VocabularyScreen
+import com.example.vocabanana.feature.vocabulary.presentation.vocabularyscreenpages.VocabularyScreen
 
 
 @Composable

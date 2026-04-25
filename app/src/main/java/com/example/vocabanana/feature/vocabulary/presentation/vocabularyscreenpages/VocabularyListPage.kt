@@ -1,4 +1,4 @@
-package com.example.vocabanana.feature.vocabulary.presentation
+package com.example.vocabanana.feature.vocabulary.presentation.vocabularyscreenpages
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
@@ -22,11 +22,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AddCircleOutline
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
@@ -38,30 +35,21 @@ import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.DrawerValue
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
-import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -69,117 +57,26 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import co.yml.charts.common.model.PlotType
 import co.yml.charts.ui.piechart.charts.DonutPieChart
 import co.yml.charts.ui.piechart.models.PieChartConfig
 import co.yml.charts.ui.piechart.models.PieChartData
 import com.example.vocabanana.R
-import com.example.vocabanana.core.navigation.AppDestination
-import com.example.vocabanana.core.presentation.StateObserver
-import com.example.vocabanana.core.word.domain.model.PartOfSpeech
 import com.example.vocabanana.core.word.domain.model.WordState
+import com.example.vocabanana.feature.text.presentation.data.SortType
 import com.example.vocabanana.feature.text.presentation.data.WordFilter
 import com.example.vocabanana.feature.text.presentation.data.WordUi
 import com.example.vocabanana.feature.vocabulary.data.VocabMilestone
 import com.example.vocabanana.feature.vocabulary.data.VocabularyStats
-import com.example.vocabanana.ui.composable.CollectUiEvents
+import com.example.vocabanana.feature.vocabulary.presentation.VocabularyIntent
 import com.example.vocabanana.ui.composable.DeleteConfirmDialog
 import com.example.vocabanana.ui.composable.SearchBarField
 import com.example.vocabanana.ui.theme.AppColor
-import kotlinx.coroutines.launch
 
-enum class SortType {
-    ALPHABETIC,
-    STATE,
-    COUNT,
-    DATE
-}
-
-sealed interface VocabularyIntent {
-    data class SelectWord(val id: Int) : VocabularyIntent
-    data class DeleteWord(val id: Int) : VocabularyIntent
-    data class ChangeSortType(val sortType: SortType) : VocabularyIntent
-    data class UpdateSearchQuery(val searchQuery: String) : VocabularyIntent
-    data object ToggleSortOrder : VocabularyIntent
-    data object NavigateToNewWords : VocabularyIntent
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun VocabularyScreen(
-    viewModel: VocabularyScreenViewModel = hiltViewModel(),
-    navigateTo: (AppDestination) -> Unit,
-    navigateBack: () -> Unit
-) {
-
-    CollectUiEvents(
-        viewModel.events,
-        navigateBack = navigateBack,
-        navigateTo = navigateTo,
-    )
-
-    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
-    val scope = rememberCoroutineScope()
-
-    val words by viewModel.words.collectAsState()
-    val selectedId by viewModel.selectedWordId.collectAsState()
-    val newWordsCount by viewModel.newWordsCount.collectAsState()
-    val wordFilter by viewModel.wordFilter.collectAsState()
-    val stats by viewModel.stats.collectAsState()
-
-    val pagerState = rememberPagerState(pageCount = { 2 })
-
-    ModalNavigationDrawer(
-        drawerState = drawerState,
-        drawerContent = {
-            VocabularyDrawerContent(
-                wordFilter = wordFilter,
-                onIntent = { viewModel.onIntent(it) },
-                onClose = { scope.launch { drawerState.close() } }
-            )
-        }
-    ) {
-        StateObserver(words) { words ->
-            val selectedWord = words.find { it.id == selectedId }
-
-            HorizontalPager(
-                state = pagerState,
-                userScrollEnabled = selectedWord != null,
-                modifier = Modifier.fillMaxSize()
-            ) { page ->
-                when (page) {
-                    0 -> VocabularyListContent(
-                        words = words,
-                        stats = stats,
-                        newWordsCount = newWordsCount,
-                        onIntent = { intent ->
-                            viewModel.onIntent(intent)
-                            if (intent is VocabularyIntent.SelectWord) {
-                                scope.launch {
-                                    pagerState.animateScrollToPage(1)
-                                }
-                            }
-                        },
-                        wordFilter = wordFilter,
-                        onMenuClick = { scope.launch { drawerState.open() } },
-                    )
-
-                    1 -> WordDetailContent(
-                        word = selectedWord,
-                        onBack = {
-                            scope.launch { pagerState.animateScrollToPage(0) }
-                        }
-                    )
-                }
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun VocabularyListContent(
+fun VocabularyListPage(
     words: List<WordUi>,
     stats: VocabularyStats,
     newWordsCount: Int,
@@ -557,54 +454,6 @@ fun WordListItem(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun WordDetailContent(
-    word: WordUi?,
-    onBack: () -> Unit,
-) {
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(word?.lemma ?: "Details") },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
-                    }
-                }
-            )
-        }
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(16.dp)
-        ) {
-            if (word != null) {
-                Text("Lemma: ${word.lemma}", style = MaterialTheme.typography.headlineMedium)
-                Text(
-                    "POS: ${word.partOfSpeech}",
-                    style = MaterialTheme.typography.bodyLarge
-                )
-
-                Spacer(Modifier.height(16.dp))
-
-                Text("Forms:", style = MaterialTheme.typography.titleMedium)
-                word.forms.forEach { form ->
-                    Text("• $form", style = MaterialTheme.typography.bodyMedium)
-                }
-
-
-            } else {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("Select a word to see details")
-                }
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
 fun NewWordsBadgeButton(
     count: Int,
     onClick: () -> Unit
@@ -634,109 +483,3 @@ fun NewWordsBadgeButton(
         }
     }
 }
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun WordEditContent(
-    word: WordUi?,
-    onBack: () -> Unit,
-    onSave: (WordUi) -> Unit
-) {
-    // Local state for editing
-    var definition by remember(word) { mutableStateOf(word?.definition ?: "") }
-    var selectedPos by remember(word) { mutableStateOf(word?.partOfSpeech ?: "UNKNOWN") }
-    var expanded by remember { mutableStateOf(false) }
-
-
-
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Edit ${word?.lemma}") },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Cancel")
-                    }
-                },
-                actions = {
-                    TextButton(onClick = {
-                        word?.let {
-                            onSave(
-                                it.copy(
-                                    definition = definition,
-                                    partOfSpeech = selectedPos
-                                )
-                            )
-                        }
-                    }) {
-                        Text("SAVE")
-                    }
-                }
-            )
-        }
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .padding(padding)
-                .padding(16.dp)
-        ) {
-            Text("Lemma: ${word?.lemma}", style = MaterialTheme.typography.labelLarge)
-            Text("You cannot change the lemma.", style = MaterialTheme.typography.bodySmall)
-
-            Spacer(Modifier.height(16.dp))
-
-            Text("Part of Speech", style = MaterialTheme.typography.titleMedium)
-            Box {
-                OutlinedTextField(
-                    value = selectedPos,
-                    onValueChange = {},
-                    readOnly = true, // User must pick from menu
-                    trailingIcon = { Icon(Icons.Default.FilterList, null) },
-                    modifier = Modifier
-                        .clickable { expanded = true }
-                        .fillMaxWidth()
-                )
-                DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                    PartOfSpeech.entries.forEach { pos ->
-                        DropdownMenuItem(
-                            text = { Text(pos.name) },
-                            onClick = {
-                                selectedPos = pos.name
-                                expanded = false
-                            }
-                        )
-                    }
-                }
-            }
-
-            Spacer(Modifier.height(16.dp))
-
-            // Definition Field
-            OutlinedTextField(
-                value = definition,
-                onValueChange = { definition = it },
-                label = { Text("Definition / Meaning") },
-                modifier = Modifier.fillMaxWidth(),
-                minLines = 3
-            )
-        }
-    }
-}
-/*
-
-@Preview
-@Composable
-fun WordListItemPreview() {
-    WordListItem(
-        word = WordUi(
-            id = 0,
-            lemma = "Test 2",
-            whenAdded = 231239213L,
-            state = WordState.LEARNING,
-            definition = "",
-            partOfSpeech = PartOfSpeech.ADJECTIVE.shortName,
-            forms = listOf("Test Form 2")
-        ),
-        onClick = { }
-    ) { }
-}*/

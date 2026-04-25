@@ -3,6 +3,7 @@ package com.example.vocabanana.feature.text.presentation
 import androidx.lifecycle.viewModelScope
 import com.example.vocabanana.core.database.TextRepository
 import com.example.vocabanana.core.database.WordRepository
+import com.example.vocabanana.core.io.preference.SettingsRepository
 import com.example.vocabanana.core.navigation.AppDestination
 import com.example.vocabanana.core.presentation.BaseViewModel
 import com.example.vocabanana.core.presentation.UiEvent.NavigateTo
@@ -15,7 +16,7 @@ import com.example.vocabanana.feature.text.presentation.data.WordUi
 import com.example.vocabanana.feature.text.presentation.data.toPreview
 import com.example.vocabanana.feature.text.presentation.data.toUi
 import com.example.vocabanana.feature.text.presentation.data.toUiState
-import com.example.vocabanana.feature.text.presentation.textlistscreen.ReaderSettings
+import com.example.vocabanana.feature.text.presentation.textlistscreenpages.ReaderSettings
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -30,10 +31,12 @@ import javax.inject.Inject
 class TextListScreenViewModel @Inject constructor(
     private val textRepository: TextRepository,
     private val wordRepository: WordRepository,
-    private val generateWordsFromText: GenerateWordsFromTextUseCase
+    private val generateWordsFromText: GenerateWordsFromTextUseCase,
+    private val settingsRepository: SettingsRepository
 ) : BaseViewModel() {
 
     // 1. Single source of truth for the UI
+
     private val _uiState = MutableStateFlow(TextListUiState())
     val uiState = _uiState.asStateFlow()
 
@@ -41,7 +44,18 @@ class TextListScreenViewModel @Inject constructor(
 
     init {
         observeTexts()
+        observeSettings()
     }
+
+    private fun observeSettings() {
+        viewModelScope.launch {
+            // 3. Collect from DataStore and update UI state automatically
+            settingsRepository.readerSettingsFlow.collect { settings ->
+                _uiState.update { it.copy(readerSettings = settings) }
+            }
+        }
+    }
+
 
     // 2. The single entry point for all UI actions
     fun onIntent(intent: TextListUiIntent) {
@@ -67,6 +81,7 @@ class TextListScreenViewModel @Inject constructor(
             is TextListUiIntent.CloseReaderSettings -> setRenderSettingsVisibility(false)
             is TextListUiIntent.ChangePageSettings -> {
                 _uiState.update { it.copy(readerSettings = intent.settings) }
+                saveReaderSettings(intent.settings)
             }
 
             // --- Deletion Logic ---
@@ -177,7 +192,11 @@ class TextListScreenViewModel @Inject constructor(
             clearTextIdToDelete()
         }
     }
-
+    private fun saveReaderSettings(settings: ReaderSettings) {
+        viewModelScope.launch {
+            settingsRepository.saveReaderSettings(settings)
+        }
+    }
     // --- Swipe Feedback ---
     private fun notifySwipeBlocked() {
         _uiState.update { it.copy(isSwipeAttempted = true) }

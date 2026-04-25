@@ -5,11 +5,12 @@ import com.example.vocabanana.core.database.WordRepository
 import com.example.vocabanana.core.domain.model.fold
 import com.example.vocabanana.core.navigation.AppDestination
 import com.example.vocabanana.core.presentation.BaseViewModel
-import com.example.vocabanana.core.presentation.UiEvent
-import com.example.vocabanana.core.presentation.asUiState
+import com.example.vocabanana.core.presentation.UiEvent.NavigateTo
+import com.example.vocabanana.core.presentation.UiEvent.ShowToast
 import com.example.vocabanana.core.presentation.uistate.UiState
 import com.example.vocabanana.core.word.domain.model.WordState
 import com.example.vocabanana.core.word.mapper.toUiText
+import com.example.vocabanana.feature.text.presentation.data.SortType
 import com.example.vocabanana.feature.text.presentation.data.WordFilter
 import com.example.vocabanana.feature.text.presentation.data.WordUi
 import com.example.vocabanana.feature.text.presentation.data.filterAndSort
@@ -20,10 +21,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -34,91 +32,82 @@ class VocabularyScreenViewModel @Inject constructor(
     private val wordRepository: WordRepository,
 ) : BaseViewModel() {
 
-    // Word selection
-    private val _selectedWordId = MutableStateFlow<Int?>(null)
-    val selectedWordId = _selectedWordId.asStateFlow()
-
-    val stats = wordRepository.getAllLemmas()
-        .map { list ->
-            val validWords = list.filter { it.state != WordState.NEW }
-
-            VocabularyStats(
-                totalLemmas = validWords.size,
-                known = validWords.count { it.state == WordState.KNOWN },
-                learning = validWords.count { it.state == WordState.LEARNING },
-                notKnown = validWords.count { it.state == WordState.NOT_KNOWN },
-                ignored = validWords.count { it.state == WordState.IGNORED }
-            )
-        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), VocabularyStats())
-
-
-    // Filter flow
     private val _wordFilter = MutableStateFlow(WordFilter())
-    val wordFilter = _wordFilter.asStateFlow()
+    private val _selectedWordId = MutableStateFlow<Int?>(null)
 
-    // Combining Database words with UI Sorting logic
-    val words = combine(
+    // The single stream of state for the entire screen
+    val uiState = combine(
         wordRepository.getAllLemmas(),
-        wordFilter.debounce(1000)
-    ) { rawList, filterData ->
-        rawList
-            .filter { it.state != WordState.NEW }
-            .map { it.toUi() }
-            .filterAndSort(filterData)
-    }
-        .asUiState()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), UiState.Loading)
+        wordRepository.getCountByStates(listOf(WordState.NEW)),
+        _wordFilter,
+        _selectedWordId
+    ) { allLemmas, newCount, filter, selectedId ->
+
+        val validLemmas = allLemmas.filter { it.state != WordState.NEW }
+
+        VocabularyUiState(
+            wordsState = UiState.Success(
+                validLemmas.map { it.toUi() }.filterAndSort(filter)
+            ),
+            stats = VocabularyStats(
+                totalLemmas = validLemmas.size,
+                known = validLemmas.count { it.state == WordState.KNOWN },
+                learning = validLemmas.count { it.state == WordState.LEARNING },
+                notKnown = validLemmas.count { it.state == WordState.NOT_KNOWN },
+                ignored = validLemmas.count { it.state == WordState.IGNORED }
+            ),
+            wordFilter = filter,
+            selectedWordId = selectedId,
+            newWordsCount = newCount
+        )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = VocabularyUiState()
+    )
 
     fun onIntent(intent: VocabularyIntent) {
         when (intent) {
-            is VocabularyIntent.SelectWord -> _selectedWordId.update { intent.id }
-            is VocabularyIntent.DeleteWord -> viewModelScope.launch(Dispatchers.IO) {
-                wordRepository.changeState(intent.id, WordState.IGNORED)
-            }
-
-            is VocabularyIntent.ChangeSortType -> _wordFilter.update {
-                _wordFilter.value.copy(
-                    sortType = intent.sortType
-                )
-            }
-
-            VocabularyIntent.ToggleSortOrder -> _wordFilter.update {
-                _wordFilter.value.copy(
-                    isAscending = !_wordFilter.value.isAscending
-                )
-            }
-
-            is VocabularyIntent.UpdateSearchQuery -> _wordFilter.update {
-                _wordFilter.value.copy(
-                    searchQuery = intent.searchQuery
-                )
-            }
-            VocabularyIntent.NavigateToNewWords -> sendEvent(UiEvent.NavigateTo(AppDestination.NewWordList))
+            is VocabularyIntent.SelectWord -> _selectedWordId.value = intent.id
+            is VocabularyIntent.UpdateWord -> updateWord(intent.word)
+            is VocabularyIntent.DeleteWord -> deleteWord(intent.id)
+            is VocabularyIntent.UpdateSearchQuery -> _wordFilter.update { it.copy(searchQuery = intent.searchQuery) }
+            is VocabularyIntent.ChangeSortType -> _wordFilter.update { it.copy(sortType = intent.sortType) }
+            VocabularyIntent.ToggleSortOrder -> _wordFilter.update { it.copy(isAscending = !it.isAscending) }
+            VocabularyIntent.NavigateToNewWords -> sendEvent(NavigateTo(AppDestination.NewWordList))
+            VocabularyIntent.DeselectWord -> _selectedWordId.value = null
         }
     }
 
-
-    val newWordsCount = wordRepository.getCountByStates(listOf(WordState.NEW))
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
-
-    fun selectWord(id: Int) = _selectedWordId.update { id }
-
-    fun deleteWord(id: Int) = viewModelScope.launch(Dispatchers.IO) {
-        wordRepository.deleteById(id)
+    private fun deleteWord(id: Int) {
+        viewModelScope.launch(Dispatchers.IO) {
+            wordRepository.changeState(id, WordState.IGNORED)
+        }
     }
 
-    fun updateWord(word: WordUi): Boolean {
-        return word.toDomain().fold(
-            onSuccess = {
-                viewModelScope.launch(Dispatchers.IO) {
-                    wordRepository.updateWord(it)
-                }
-                return@fold true
-            },
-            onError = {
-                sendEvent(UiEvent.ShowToast(it.toUiText()))
-                return@fold false
-            }
+    private fun updateWord(word: WordUi) {
+        word.toDomain().fold(
+            onSuccess = { viewModelScope.launch(Dispatchers.IO) { wordRepository.updateWord(it) } },
+            onError = { sendEvent(ShowToast(it.toUiText())) }
         )
     }
+}
+
+data class VocabularyUiState(
+    val wordsState: UiState<List<WordUi>> = UiState.Loading,
+    val stats: VocabularyStats = VocabularyStats(),
+    val wordFilter: WordFilter = WordFilter(),
+    val selectedWordId: Int? = null,
+    val newWordsCount: Int = 0
+)
+
+sealed interface VocabularyIntent {
+    data class SelectWord(val id: Int) : VocabularyIntent
+    object DeselectWord : VocabularyIntent
+    data class DeleteWord(val id: Int) : VocabularyIntent
+    data class ChangeSortType(val sortType: SortType) : VocabularyIntent
+    data class UpdateSearchQuery(val searchQuery: String) : VocabularyIntent
+    data object ToggleSortOrder : VocabularyIntent
+    data object NavigateToNewWords : VocabularyIntent
+    data class UpdateWord(val word: WordUi) : VocabularyIntent
 }

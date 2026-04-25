@@ -4,7 +4,6 @@ import com.example.vocabanana.core.word.domain.model.PartOfSpeech
 import com.example.vocabanana.core.word.domain.model.WordDomain
 import com.example.vocabanana.core.word.domain.model.WordState
 import com.example.vocabanana.core.word.domain.model.toPartOfSpeech
-import com.example.vocabanana.feature.vocabulary.presentation.SortType
 
 data class WordUi(
     val id: Int,
@@ -39,6 +38,7 @@ fun WordUi.toDomain() = WordDomain.create(
     id = id,
     lemma = lemma,
     whenAdded = whenAdded,
+    countInTheTexts = countInTheTexts,
     forms = forms,
     partOfSpeech = partOfSpeech.toPartOfSpeech(),
     state = state,
@@ -94,4 +94,11 @@ private fun isFuzzyMatch(text: String, query: String): Boolean {
 
     // If we reached the end of the query, all letters were found in order
     return queryIndex == query.length
+}
+
+enum class SortType {
+    ALPHABETIC,
+    STATE,
+    COUNT,
+    DATE
 }

@@ -1,6 +1,6 @@
 @file:Suppress("DEPRECATION")
 
-package com.example.vocabanana.feature.text.presentation.textlistscreen
+package com.example.vocabanana.feature.text.presentation.textlistscreenpages
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
