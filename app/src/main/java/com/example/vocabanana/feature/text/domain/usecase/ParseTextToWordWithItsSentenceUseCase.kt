@@ -6,6 +6,7 @@ import javax.inject.Inject
 class TextProcessingService @Inject constructor(
     private val wordRepository: WordRepository,
 ) {
+
     val stopWords = setOf(
         // Articles & Conjunctions
         "the", "a", "an", "and", "or", "but", "if", "then", "else", "when",

@@ -11,7 +11,6 @@ import com.example.vocabanana.core.word.domain.model.WordConstants.WORD_REGEX
 data class WordDomain private constructor(
     val id: Int,
     val lemma: String,
-    val countInTheTexts: Int,
     val partOfSpeech: PartOfSpeech,
     val definition: String,
     val forms: List<String>,
@@ -21,9 +20,6 @@ data class WordDomain private constructor(
 
     fun withState(newState: WordState): WordDomain {
         return this.copy(state = newState)
-    }
-    fun withCount(newCount: Int): WordDomain {
-        return this.copy(countInTheTexts = newCount)
     }
     fun withDefinition(newDefinition: String): WordDomain {
         return this.copy(definition = newDefinition)
@@ -47,7 +43,6 @@ data class WordDomain private constructor(
         fun create(
             id: Int = 0,
             lemma: String,
-            countInTheTexts: Int = 0,
             whenAdded: Long = System.currentTimeMillis(),
             forms: List<String> = emptyList(),
             partOfSpeech: PartOfSpeech,
@@ -58,7 +53,6 @@ data class WordDomain private constructor(
                 WordDomain(
                     id = id,
                     lemma = validLemma,
-                    countInTheTexts = countInTheTexts,
                     whenAdded = whenAdded,
                     state = state,
                     partOfSpeech = partOfSpeech,
@@ -76,7 +70,6 @@ data class WordDomain private constructor(
         fun createUnsafe(
             id: Int,
             lemma: String,
-            countInTheTexts: Int,
             whenAdded: Long,
             state: WordState,
             forms: List<String>,
@@ -86,7 +79,6 @@ data class WordDomain private constructor(
             return WordDomain(
                 id = id,
                 lemma = lemma,
-                countInTheTexts = countInTheTexts,
                 whenAdded = whenAdded,
                 state = state,
                 partOfSpeech = partOfSpeech,

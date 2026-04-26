@@ -11,6 +11,4 @@ interface TextRepository {
     suspend fun deleteText(textId: Int)
     suspend fun updateProgress(id: Int, position: Float, time: Long)
     fun isTextNameUnique(name: String): Boolean
-
-
 }

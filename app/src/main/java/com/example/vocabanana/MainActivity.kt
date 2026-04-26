@@ -20,7 +20,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         setContent {
-            val viewModel: MainViewModel = hiltViewModel()
+            val viewModel: MainActivityViewModel = hiltViewModel()
             val themeState by viewModel.currentTheme.collectAsState()
 
             StateObserver(state = themeState) { state ->

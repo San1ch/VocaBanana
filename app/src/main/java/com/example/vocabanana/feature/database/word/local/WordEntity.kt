@@ -13,8 +13,6 @@ data class WordEntity(
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "id")
     val id: Int = 0,
-    @ColumnInfo(name = "count_in_texts")
-    val countInTheTexts: Int,
     val lemma: String,
     val state: Int,
     @ColumnInfo(name = "when_added") val whenAdded: Long,

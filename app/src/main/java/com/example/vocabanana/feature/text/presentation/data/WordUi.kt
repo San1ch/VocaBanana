@@ -8,7 +8,6 @@ import com.example.vocabanana.core.word.domain.model.toPartOfSpeech
 data class WordUi(
     val id: Int,
     val lemma: String,
-    val countInTheTexts: Int,
     val whenAdded: Long,
     val state: WordState,
     val definition: String,
@@ -26,7 +25,6 @@ fun PartOfSpeech.toUi(): String = when (this) {
 fun WordDomain.toUi() = WordUi(
     id = id,
     lemma = lemma,
-    countInTheTexts = countInTheTexts,
     whenAdded = whenAdded,
     partOfSpeech = partOfSpeech.toUi(),
     forms = forms,
@@ -38,7 +36,6 @@ fun WordUi.toDomain() = WordDomain.create(
     id = id,
     lemma = lemma,
     whenAdded = whenAdded,
-    countInTheTexts = countInTheTexts,
     forms = forms,
     partOfSpeech = partOfSpeech.toPartOfSpeech(),
     state = state,
@@ -48,7 +45,7 @@ fun WordUi.toDomain() = WordDomain.create(
 
 data class WordFilter(
     val searchQuery: String = "",
-    val sortType: SortType = SortType.COUNT,
+    val sortType: SortType = SortType.STATE,
     val isAscending: Boolean = false
 )
 
@@ -68,7 +65,6 @@ fun List<WordUi>.filterAndSort(filter: WordFilter): List<WordUi> {
     val sortedList = when (filter.sortType) {
         SortType.ALPHABETIC -> filteredBySearch.sortedBy { it.lemma }
         SortType.STATE -> filteredBySearch.sortedBy { it.state.ordinal }
-        SortType.COUNT -> filteredBySearch.sortedBy { it.countInTheTexts }
         SortType.DATE -> filteredBySearch.sortedBy { it.whenAdded }
     }
 
@@ -99,6 +95,5 @@ private fun isFuzzyMatch(text: String, query: String): Boolean {
 enum class SortType {
     ALPHABETIC,
     STATE,
-    COUNT,
     DATE
 }

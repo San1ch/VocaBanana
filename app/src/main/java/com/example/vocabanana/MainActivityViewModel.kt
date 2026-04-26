@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
 @HiltViewModel
-class MainViewModel @Inject constructor(
+class MainActivityViewModel @Inject constructor(
     settingsRepository: SettingsRepository
 ) : ViewModel() {
     val currentTheme = settingsRepository.themeFlow.asUiState().stateIn(

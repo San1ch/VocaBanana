@@ -15,7 +15,6 @@ import com.example.vocabanana.feature.database.word.local.WordWithForms
 fun WordDomain.toWordEntity() = WordEntity(
     id = id,
     lemma = lemma,
-    countInTheTexts = countInTheTexts,
     state = state.toInt(),
     whenAdded = whenAdded,
     partOfSpeech = partOfSpeech.toInt(),
@@ -30,7 +29,6 @@ fun WordWithForms.toDomain() = WordDomain.createUnsafe(
     partOfSpeech = word.partOfSpeech.toPartOfSpeech(),
     forms = forms.map { it.form },
     definition = word.definition,
-    countInTheTexts = word.countInTheTexts
 )
 
 fun WordValidateError.toUiText() = when (this) {

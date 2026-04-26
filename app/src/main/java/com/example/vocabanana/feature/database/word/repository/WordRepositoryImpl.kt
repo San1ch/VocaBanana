@@ -101,10 +101,6 @@ class WordRepositoryRoomImpl @Inject constructor(
                 // MERGE LOGIC: Add forms AND sum the counts
                 processingMap[newWord.lemma] = existingEntry
                     .addForms(newWord.forms)
-                    .withCount(
-                        // This is the crucial part!
-                        newCount = existingEntry.countInTheTexts + newWord.countInTheTexts
-                    )
             } else {
                 // New word entirely
                 processingMap[newWord.lemma] = newWord

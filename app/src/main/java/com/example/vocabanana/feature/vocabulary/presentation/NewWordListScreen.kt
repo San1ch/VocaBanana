@@ -219,7 +219,7 @@ fun NewWordItem(word: WordUi, onStateSelected: (WordState) -> Unit) {
                 ) {
                     Text(text = word.lemma, style = MaterialTheme.typography.titleLarge)
                     Text(
-                        text = "${word.partOfSpeech} • Found ${word.countInTheTexts} times",
+                        text = word.partOfSpeech,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.outline
                     )

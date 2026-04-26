@@ -216,11 +216,6 @@ fun VocabularyDrawerContent(
                 selected = wordFilter.sortType == SortType.DATE,
                 onClick = { onIntent(VocabularyIntent.ChangeSortType(SortType.DATE)); onClose() }
             )
-            SortOption(
-                label = "Count in Texts",
-                selected = wordFilter.sortType == SortType.COUNT,
-                onClick = { onIntent(VocabularyIntent.ChangeSortType(SortType.COUNT)); onClose() }
-            )
         }
     }
 }

@@ -144,7 +144,6 @@ fun WordDetailsAndEditPage(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    InfoRow("Seen in texts", "${word.countInTheTexts} times")
                     InfoRow("Added", SimpleDateFormat("MMM dd, yyyy").format(word.whenAdded))
                 }
             }
