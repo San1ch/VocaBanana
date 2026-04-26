@@ -34,7 +34,8 @@ fun NavGraph(
     val state by viewModel.startDestination.collectAsState()
     StateObserver(state = state) { isInit ->
 
-        val destination = if (isInit) AppDestination.Init.route else AppDestination.Main.route
+        // val destination = if (isInit) AppDestination.Init.route else AppDestination.Main.route
+        val destination = AppDestination.Main.route
         NavHost(
             navController = navController, startDestination = destination, modifier = modifier
         ) {
