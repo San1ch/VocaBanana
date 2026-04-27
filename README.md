@@ -59,9 +59,33 @@ Download the app from the **Releases** section on GitHub and install it on your 
 
 ## Tech Stack
 
-- Android (Kotlin)  
-- (add your architecture or libraries if needed)
+### Core
+- Kotlin
+- Coroutines
+- Flow
 
+### UI
+- Jetpack Compose
+- Material 3
+
+### Architecture
+- MVVM / MVI 
+- Clean Architecture
+
+### Jetpack Components
+- ViewModel
+- Navigation (Compose)
+- Room
+- DataStore
+
+### Dependency Injection
+- Hilt
+
+### Tools
+- Git
+- Gradle
+- Android Studio
+- Logcat
 ---
 
 ## Project Status
@@ -99,4 +123,4 @@ This is currently a personal project. Contributions are not accepted.
 
 ## Contact
 
-GitHub: (your profile link)
+GitHub: https://github.com/San1ch
