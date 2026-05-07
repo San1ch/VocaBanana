@@ -11,7 +11,6 @@ plugins {
     id("org.jetbrains.kotlin.plugin.serialization")
 }
 
-
 android {
     compileSdk = Const.TargetSdk
     defaultConfig {
@@ -51,4 +50,7 @@ android {
         compose = true
         buildConfig = true
     }
+}
+
+dependencies {
 }

@@ -22,6 +22,9 @@ android {
     }
 }
 dependencies {
+    implementation(project(":templates:android-library"))
+    implementation(project(":templates:kotlin-library"))
+
 
     // Navigation
     implementation(libs.nav.compose)
