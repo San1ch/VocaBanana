@@ -1,16 +1,7 @@
 import java.util.Properties
 
 plugins {
-    alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.compose)
-
-    //DI
-    alias(libs.plugins.hilt)
-    alias(libs.plugins.ksp)
-
-    //Json
-    alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.custom.android.application)
 }
 
 val localProperties = Properties().apply {
@@ -22,51 +13,12 @@ val localProperties = Properties().apply {
 
 android {
     namespace = "com.example.vocabanana"
-    compileSdk = 36
 
 
     defaultConfig {
         applicationId = "com.example.vocabanana"
-        minSdk = 26
-        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-
-
-        val apiKey = localProperties.getProperty("GROQ_API_KEY") ?: ""
-        buildConfigField("String", "GROQ_API_KEY", "\"$apiKey\"")
-    }
-
-    buildTypes {
-        release {
-            isMinifyEnabled = true
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-
-                "proguard-rules.pro"
-            )
-        }
-        debug {
-            applicationIdSuffix = ".debug"
-            resValue("string", "app_name", "Vocab (Debug)")
-        }
-    }
-
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.10"
-    }
-
-    kotlinOptions {
-        jvmTarget = "11"
-    }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
-    }
-    buildFeatures {
-        compose = true
-        buildConfig = true
     }
 }
 dependencies {
@@ -85,7 +37,6 @@ dependencies {
     implementation(libs.androidx.compose.ui.text)
     implementation(libs.androidx.compose.foundation)
     implementation(libs.androidx.compose.foundation.layout)
-    implementation(libs.androidx.animation)
     ksp(libs.hilt.compiler)
     implementation(libs.hilt.compose)
 

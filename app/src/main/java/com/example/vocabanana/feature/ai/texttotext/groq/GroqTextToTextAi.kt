@@ -1,8 +1,7 @@
 package com.example.vocabanana.feature.ai.texttotext.groq
 
-import com.example.vocabanana.BuildConfig
-import com.example.vocabanana.feature.ai.texttotext.TextToTextAi
 import com.example.vocabanana.core.utilities.logs.Logger
+import com.example.vocabanana.feature.ai.texttotext.TextToTextAi
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -17,7 +16,7 @@ class GroqTextToTextAi @Inject constructor(
     private val logger: Logger
 ): TextToTextAi {
 
-    private val apiKey = BuildConfig.GROQ_API_KEY
+    private val apiKey = ""
     private val baseUrl = "https://api.groq.com/openai/"
 
     private val api: LlamaApiService by lazy {
