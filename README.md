@@ -34,6 +34,13 @@ Learning is based on your own texts, not pre-made content.
 
 ---
 
+## Architecture Overview
+
+The project is built using **Clean Architecture** principles and is fully **multi-modular**. It is strictly decoupled into independent layers to ensure high scalability, separation of concerns, and build optimization.
+
+[Read the detailed Technical & Architecture Documentation here](./ARCHITECTURE.md)
+
+---
 ## Usage
 
 1. Go to the **Texts** section  
@@ -98,7 +105,6 @@ The app is already usable, but the UX is still basic and will be improved.
 
 ## Roadmap
 
-- Improved architecture for easier development  
 - Text analysis (word frequency)  
 - Learning tools:
   - fast translation exercises  
