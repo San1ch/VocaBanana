@@ -7,9 +7,9 @@
         <compositeConfiguration>
           <compositeBuild compositeDefinitionSource="SCRIPT">
             <builds>
-              <build path="$PROJECT_DIR$/buildSrc" name="buildSrc">
+              <build path="$PROJECT_DIR$/build-logic" name="build-logic">
                 <projects>
-                  <project path="$PROJECT_DIR$/buildSrc" />
+                  <project path="$PROJECT_DIR$/build-logic" />
                 </projects>
               </build>
             </builds>
@@ -17,18 +17,41 @@
         </compositeConfiguration>
         <option name="testRunner" value="CHOOSE_PER_TEST" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
-        <option name="gradleJvm" value="jbr-21" />
+        <option name="gradleJvm" value="#GRADLE_LOCAL_JAVA_HOME" />
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/app" />
-            <option value="$PROJECT_DIR$/buildSrc" />
-            <option value="$PROJECT_DIR$/templates" />
-            <option value="$PROJECT_DIR$/templates/android-library" />
-            <option value="$PROJECT_DIR$/templates/feature" />
-            <option value="$PROJECT_DIR$/templates/feature/domain" />
-            <option value="$PROJECT_DIR$/templates/feature/presentation" />
-            <option value="$PROJECT_DIR$/templates/kotlin-library" />
+            <option value="$PROJECT_DIR$/build-logic" />
+            <option value="$PROJECT_DIR$/core" />
+            <option value="$PROJECT_DIR$/core/android" />
+            <option value="$PROJECT_DIR$/core/android/commonandroid" />
+            <option value="$PROJECT_DIR$/core/android/database" />
+            <option value="$PROJECT_DIR$/core/essentials" />
+            <option value="$PROJECT_DIR$/core/ui" />
+            <option value="$PROJECT_DIR$/feature" />
+            <option value="$PROJECT_DIR$/feature/debug" />
+            <option value="$PROJECT_DIR$/feature/debug/domain" />
+            <option value="$PROJECT_DIR$/feature/debug/presentation" />
+            <option value="$PROJECT_DIR$/feature/init" />
+            <option value="$PROJECT_DIR$/feature/init/domain" />
+            <option value="$PROJECT_DIR$/feature/init/presentation" />
+            <option value="$PROJECT_DIR$/feature/main" />
+            <option value="$PROJECT_DIR$/feature/main/domain" />
+            <option value="$PROJECT_DIR$/feature/main/presentation" />
+            <option value="$PROJECT_DIR$/feature/mainsettings" />
+            <option value="$PROJECT_DIR$/feature/mainsettings/domain" />
+            <option value="$PROJECT_DIR$/feature/mainsettings/presentation" />
+            <option value="$PROJECT_DIR$/feature/text" />
+            <option value="$PROJECT_DIR$/feature/text/domain" />
+            <option value="$PROJECT_DIR$/feature/text/presentation" />
+            <option value="$PROJECT_DIR$/feature/vocabulary" />
+            <option value="$PROJECT_DIR$/feature/vocabulary/domain" />
+            <option value="$PROJECT_DIR$/feature/vocabulary/presentation" />
+            <option value="$PROJECT_DIR$/feature/word" />
+            <option value="$PROJECT_DIR$/feature/word/domain" />
+            <option value="$PROJECT_DIR$/feature/word/presentation" />
+            <option value="$PROJECT_DIR$/navigation" />
           </set>
         </option>
       </GradleProjectSettings>

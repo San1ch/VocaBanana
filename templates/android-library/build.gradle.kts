@@ -1,15 +1,20 @@
 plugins {
     alias(libs.plugins.custom.android.library)
+    // __PLUGINS__
+
+
 }
 
 android {
-    namespace = "com.example.templates.android_library"
+    namespace = "_namespace_"
 }
 
 dependencies {
+    // __DEPENDENCIES__
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
-    implementation(libs.material)
+    implementation(libs.google.android.material)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

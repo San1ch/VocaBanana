@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="unknown_error">Unknown error</string>
+    <string name="there_is_no_data_by_request">There is no data by request</string>
+</resources>
