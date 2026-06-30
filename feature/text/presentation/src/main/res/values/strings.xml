@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="validate_empty_name">Text name is empty</string>
+    <string name="validate_empty_text">Text is empty</string>
+    <string name="validate_name_too_long">Text name is too long. (max: %d)</string>
+    <string name="validate_name_has_invalid_char">Text name contains invalid char. ( %s )</string>
+    <string name="validate_name_already_exists">Text name already exists</string>
+    <string name="add_text_title">Add Text</string>
+    <string name="gen_words_network_error">Network error occurred</string>
+    <string name="gen_words_invalid_api_key">Invalid API key</string>
+    <string name="gen_words_rate_limit_exceeded">Rate limit exceeded</string>
+    <string name="gen_words_server_error">Server error occurred</string>
+    <string name="gen_words_text_not_found">Text not found</string>
+    <string name="gen_words_partial">Not all words were added. Added %1$d of %2$d</string>
+    <string name="gen_words_unknown">Unknown error: %1$s</string>
+    <string name="gen_words_success">Words generated successfully</string>
+    <string name="gen_words_all_exists">All words already exist</string>
+    <string name="gen_words_preparing_text">Preparing text</string>
+    <string name="gen_words_analyzing_lexicon">Analyzing lexicon</string>
+    <string name="gen_words_saving_words">Saving words</string>
+</resources>

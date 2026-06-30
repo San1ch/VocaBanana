@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="word_empty">Word is empty</string>
+    <string name="word_too_long">Word is too long. (max: %d)</string>
+    <string name="word_invalid_lemma_char">Word contains invalid characters. ( %s )</string>
+</resources>

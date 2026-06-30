@@ -1,3 +1,7 @@
+includeBuild("build-logic")
+
+enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
+
 pluginManagement {
     repositories {
         google {
@@ -19,9 +23,30 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "VocabBanana"
+rootProject.name = "VocaBanana"
 include(":app")
-include(":templates:android-library")
-include(":templates:kotlin-library")
-include(":templates:feature:domain")
-include(":templates:feature:presentation")
+include(":navigation")
+
+include(":core:ui")
+include(":core:essentials")
+
+include(":core:android:database")
+include(":core:android:commonandroid")
+
+include(":feature:init:domain")
+include(":feature:init:presentation")
+
+include(":feature:text:domain")
+include(":feature:text:presentation")
+
+include(":feature:main:domain")
+include(":feature:main:presentation")
+
+include(":feature:debug:domain")
+include(":feature:debug:presentation")
+include(":feature:mainsettings:domain")
+include(":feature:mainsettings:presentation")
+include(":feature:vocabulary:domain")
+include(":feature:vocabulary:presentation")
+include(":feature:word:domain")
+include(":feature:word:presentation")

@@ -1,3 +1,7 @@
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
-plugins {
+allprojects {
+    configurations.all {
+        resolutionStrategy {
+            force("com.squareup:javapoet:1.13.0")
+        }
+    }
 }

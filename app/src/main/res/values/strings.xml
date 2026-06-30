@@ -45,19 +45,10 @@
 
 
     <!-- General UI Text -->
-    <string name="vocabulary">Vocabulary</string>
     <string name="add_word">Add Word</string>
     <string name="add">Add</string>
     <string name="cancel">Cancel</string>
-    <string name="add_text_title">Add Text</string>
     <string name="success">Success</string>
-    <string name="new_words_title">New Words</string>
-    <string name="word_state_not_known">Not known</string>
-    <string name="word_state_learn">Learn</string>
-    <string name="word_state_known">Known</string>
-    <string name="word_state_ignore">Ignore</string>
-    <string name="forms_uppercase">FORMS</string>
-    <string name="definition_uppercase">DEFINITION</string>
     <string name="no_other_forms">No other forms</string>
 
 </resources>
