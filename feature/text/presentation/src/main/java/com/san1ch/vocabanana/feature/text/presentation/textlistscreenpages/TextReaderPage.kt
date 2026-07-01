@@ -54,6 +54,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextLinkStyles
@@ -64,6 +65,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.san1ch.vocabanana.core.essentials.model.ReaderSettings
 import com.san1ch.vocabanana.core.ui.TextUi
+import com.san1ch.vocabanana.feature.text.presentation.R
 import com.san1ch.vocabanana.feature.text.presentation.TextListUiIntent
 import com.san1ch.vocabanana.feature.text.presentation.WordInfoState
 import com.san1ch.vocabanana.feature.text.presentation.data.TextToken
@@ -354,14 +356,14 @@ fun ReaderSettingsPanel(
                 verticalArrangement = Arrangement.spacedBy(8.dp) // Tighter vertical spacing
             ) {
                 Text(
-                    text = "Appearance",
+                    text = stringResource(R.string.appearance),
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onSecondaryContainer,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(start = 4.dp, bottom = 4.dp)
                 )
 
-                SettingRow("Font Size", settings.fontSize) {
+                SettingRow(stringResource(R.string.font_size), settings.fontSize) {
                     onIntent(
                         TextListUiIntent.ChangePageSettings(
                             settings.copy(
@@ -374,7 +376,7 @@ fun ReaderSettingsPanel(
                     )
                 }
 
-                SettingRow("Line Spacing", settings.paragraphSpacing) {
+                SettingRow(stringResource(R.string.line_spacing), settings.paragraphSpacing) {
                     onIntent(
                         TextListUiIntent.ChangePageSettings(
                             settings.copy(
@@ -387,7 +389,7 @@ fun ReaderSettingsPanel(
                     )
                 }
 
-                SettingRow("Side Margins", settings.horizontalPadding) {
+                SettingRow(stringResource(R.string.side_margins), settings.horizontalPadding) {
                     onIntent(
                         TextListUiIntent.ChangePageSettings(
                             settings.copy(

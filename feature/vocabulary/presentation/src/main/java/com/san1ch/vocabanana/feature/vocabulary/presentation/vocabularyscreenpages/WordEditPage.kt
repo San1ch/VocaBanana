@@ -1,5 +1,6 @@
 package com.san1ch.vocabanana.feature.vocabulary.presentation.vocabularyscreenpages
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -33,17 +34,20 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.san1ch.vocabanana.core.essentials.model.word.PartOfSpeech
 import com.san1ch.vocabanana.core.essentials.model.word.WordState
 import com.san1ch.vocabanana.core.ui.WordUi
+import com.san1ch.vocabanana.feature.vocabulary.presentation.R
 import com.san1ch.vocabanana.feature.vocabulary.presentation.VocabularyIntent
 import com.san1ch.vocabanana.feature.vocabulary.presentation.VocabularyScreenViewModel
 import java.text.SimpleDateFormat
 
 
+@SuppressLint("SimpleDateFormat")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun WordDetailsAndEditPage(
@@ -107,7 +111,7 @@ fun WordDetailsAndEditPage(
                         value = word.partOfSpeech.uppercase(),
                         onValueChange = {},
                         readOnly = true,
-                        label = { Text("Part of Speech") },
+                        label = { Text(stringResource(R.string.part_of_speech)) },
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = posExpanded) },
                         modifier = Modifier
                             .menuAnchor()
@@ -133,7 +137,7 @@ fun WordDetailsAndEditPage(
                 OutlinedTextField(
                     value = word.definition,
                     onValueChange = { onUpdateWord(word.copy(definition = it)) },
-                    label = { Text("Definition") },
+                    label = { Text(stringResource(R.string.definition)) },
                     modifier = Modifier.fillMaxWidth(),
                     minLines = 3
                 )

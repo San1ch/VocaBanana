@@ -45,9 +45,11 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalViewConfiguration
 import androidx.compose.ui.platform.ViewConfiguration
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.san1ch.vocabanana.core.ui.compose.AnimatedTitle
 import com.san1ch.vocabanana.core.ui.compose.DeleteConfirmDialog
+import com.san1ch.vocabanana.feature.text.presentation.R
 import com.san1ch.vocabanana.feature.text.presentation.TextListUiIntent
 import com.san1ch.vocabanana.feature.text.presentation.TextListUiState
 import kotlinx.coroutines.delay
@@ -126,7 +128,8 @@ fun TextListContent(
             ) { paddingValues ->
                 HorizontalPager(
                     state = pagerState,
-                    modifier = Modifier.padding(paddingValues)
+                    modifier = Modifier
+                        .padding(paddingValues)
                         .pointerInput(state.isLocked) {
                             if (state.isLocked) detectDragGestures { change, dragAmount ->
                                 if (abs(dragAmount.x) > (abs(dragAmount.y))) {
@@ -209,7 +212,7 @@ private fun AnimatedLockIcon(isLocked: Boolean, isSwipeAttempted: Boolean) {
         else -> MaterialTheme.colorScheme.onSurfaceVariant
     }
 
-    val animatedColor by animateColorAsState(targetValue = targetColor, label = "LockColor")
+    val animatedColor by animateColorAsState(targetValue = targetColor, label = stringResource(R.string.lockcolor))
     val iconPainter =
         rememberVectorPainter(if (isLocked) Icons.Default.Lock else Icons.Default.LockOpen)
 

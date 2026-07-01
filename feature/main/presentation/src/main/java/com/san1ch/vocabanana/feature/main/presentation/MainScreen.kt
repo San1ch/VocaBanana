@@ -39,6 +39,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -96,7 +97,7 @@ fun MainContent(
             ) {
                 item {
                     MenuCard(
-                        title = "Vocabulary",
+                        title = stringResource(R.string.vocabulary),
                         icon = Icons.AutoMirrored.Filled.FormatListBulleted,
                         accentColor = MaterialTheme.colorScheme.primary,
                         onClick = { onIntent(MainUiIntent.NavigateToVocabulary) }
@@ -104,7 +105,7 @@ fun MainContent(
                 }
                 item {
                     MenuCard(
-                        title = "Texts",
+                        title = stringResource(R.string.texts),
                         icon = Icons.AutoMirrored.Filled.MenuBook,
                         accentColor = MaterialTheme.colorScheme.secondary,
                         onClick = { onIntent(MainUiIntent.NavigateToTexts) }

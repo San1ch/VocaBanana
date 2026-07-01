@@ -35,6 +35,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -87,10 +88,10 @@ fun SettingsContent(
                 .padding(padding)
                 .verticalScroll(rememberScrollState())
         ) {
-            SettingsSectionTitle(title = "Appearance")
+            SettingsSectionTitle(title = stringResource(R.string.appearance))
 
             SettingsDropdownItem(
-                label = "App Theme",
+                label = stringResource(R.string.app_theme),
                 currentValue = state.currentTheme.label,
                 options = AppThemeMode.entries.map { it.label },
                 onOptionSelected = { label ->
