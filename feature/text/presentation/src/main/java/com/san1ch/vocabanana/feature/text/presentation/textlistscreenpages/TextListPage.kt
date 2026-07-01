@@ -52,7 +52,7 @@ fun TextListPage(
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        items(items, key = { it }) { item ->
+        items(items, key = { it.id }) { item ->
             Box(
                 modifier = Modifier.animateItem(
                     placementSpec = spring(dampingRatio = 0.6f, stiffness = 800f)
