@@ -1,9 +1,9 @@
 package com.san1ch.vocabanana.core.ui
 
-import com.san1ch.vocabanana.core.essentials.database.model.word.PartOfSpeech
-import com.san1ch.vocabanana.core.essentials.database.model.word.WordDomain
-import com.san1ch.vocabanana.core.essentials.database.model.word.WordState
-import com.san1ch.vocabanana.core.essentials.database.model.word.toPartOfSpeech
+import com.san1ch.vocabanana.core.essentials.model.word.PartOfSpeech
+import com.san1ch.vocabanana.core.essentials.model.word.WordDomain
+import com.san1ch.vocabanana.core.essentials.model.word.WordState
+import com.san1ch.vocabanana.core.essentials.model.word.toPartOfSpeech
 
 
 data class WordUi(

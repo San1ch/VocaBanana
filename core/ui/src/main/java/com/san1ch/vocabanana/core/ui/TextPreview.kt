@@ -1,6 +1,6 @@
 package com.san1ch.vocabanana.core.ui
 
-import com.san1ch.vocabanana.core.essentials.database.model.text.TextDomain
+import com.san1ch.vocabanana.core.essentials.model.text.TextDomain
 
 data class TextPreview(
     val id: Int,

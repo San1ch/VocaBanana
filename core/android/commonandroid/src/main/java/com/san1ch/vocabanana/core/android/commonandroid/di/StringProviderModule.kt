@@ -1,6 +1,6 @@
 package com.san1ch.vocabanana.core.android.commonandroid.di
 
-import com.san1ch.vocabanana.core.essentials.database.resources.StringProvider
+import com.san1ch.vocabanana.core.essentials.resources.StringProvider
 import dagger.MapKey
 import dagger.Module
 import dagger.hilt.InstallIn

@@ -1,10 +1,10 @@
 package com.san1ch.vocabanana.feature.text.domain.usecase
 
-import com.san1ch.vocabanana.core.essentials.database.exceptions.AppException
-import com.san1ch.vocabanana.core.essentials.database.model.ValidateResult
-import com.san1ch.vocabanana.core.essentials.database.model.text.TextDomain
-import com.san1ch.vocabanana.core.essentials.database.model.text.exception.TextValidateNameAlreadyExistsException
-import com.san1ch.vocabanana.core.essentials.database.repositories.TextRepository
+import com.san1ch.vocabanana.core.essentials.exceptions.AppException
+import com.san1ch.vocabanana.core.essentials.model.ValidateResult
+import com.san1ch.vocabanana.core.essentials.model.text.TextDomain
+import com.san1ch.vocabanana.core.essentials.model.text.exception.TextValidateNameAlreadyExistsException
+import com.san1ch.vocabanana.core.essentials.repositories.TextRepository
 import javax.inject.Inject
 
 

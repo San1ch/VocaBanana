@@ -20,7 +20,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.FormatListBulleted
 import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.BugReport
-import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -34,10 +33,13 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -48,19 +50,23 @@ fun MainScreen(
     viewModel: MainScreenViewModel = hiltViewModel()
 ) {
     CollectUiEvents(events = viewModel.events)
-    MainContent(onIntent = viewModel::onIntent)
+
+    val state by viewModel.uiState.collectAsState()
+
+    MainContent(onIntent = viewModel::onIntent, state = state)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainContent(
-    onIntent: (MainUiIntent) -> Unit
+    onIntent: (MainUiIntent) -> Unit,
+    state: MainUiState
 ) {
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
-                title = { Text("VocaBanana", fontWeight = FontWeight.Bold) },
+                title = { Text(state.appName, fontWeight = FontWeight.Bold) },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface,
                     titleContentColor = MaterialTheme.colorScheme.onSurface
@@ -91,7 +97,7 @@ fun MainContent(
             ) {
                 item {
                     MenuCard(
-                        title = "Vocabulary",
+                        title = stringResource(R.string.vocabulary),
                         icon = Icons.AutoMirrored.Filled.FormatListBulleted,
                         accentColor = MaterialTheme.colorScheme.primary,
                         onClick = { onIntent(MainUiIntent.NavigateToVocabulary) }
@@ -99,7 +105,7 @@ fun MainContent(
                 }
                 item {
                     MenuCard(
-                        title = "Texts",
+                        title = stringResource(R.string.texts),
                         icon = Icons.AutoMirrored.Filled.MenuBook,
                         accentColor = MaterialTheme.colorScheme.secondary,
                         onClick = { onIntent(MainUiIntent.NavigateToTexts) }

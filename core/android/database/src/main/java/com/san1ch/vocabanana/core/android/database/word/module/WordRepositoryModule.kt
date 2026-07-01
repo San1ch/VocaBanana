@@ -1,6 +1,6 @@
 package com.san1ch.vocabanana.core.android.database.word.module
 
-import com.san1ch.vocabanana.core.essentials.database.repositories.WordRepository
+import com.san1ch.vocabanana.core.essentials.repositories.WordRepository
 import com.san1ch.vocabanana.core.android.database.word.repository.WordRepositoryRoomImpl
 import dagger.Binds
 import dagger.Module

@@ -33,10 +33,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.san1ch.vocabanana.core.ui.TextPreview
 import com.san1ch.vocabanana.core.ui.toFormattedDate
+import com.san1ch.vocabanana.feature.text.presentation.R
 import com.san1ch.vocabanana.feature.text.presentation.TextListUiIntent
 
 @Composable
@@ -50,7 +52,7 @@ fun TextListPage(
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        items(items, key = { it }) { item ->
+        items(items, key = { it.id }) { item ->
             Box(
                 modifier = Modifier.animateItem(
                     placementSpec = spring(dampingRatio = 0.6f, stiffness = 800f)
@@ -123,7 +125,7 @@ private fun TextLazyItem(
 
                 // 2. Metadata: Labeling the date for better clarity
                 Text(
-                    text = "Last read: ${item.lastReadTime.toFormattedDate()}",
+                    text = stringResource(R.string.last_read, item.lastReadTime.toFormattedDate()),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

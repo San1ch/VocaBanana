@@ -1,8 +1,8 @@
 package com.san1ch.vocabanana.feature.mainsettings.presentation
 
 import androidx.lifecycle.viewModelScope
-import com.san1ch.vocabanana.core.essentials.database.model.AppThemeMode
-import com.san1ch.vocabanana.core.essentials.database.repositories.SettingsRepository
+import com.san1ch.vocabanana.core.essentials.model.AppThemeMode
+import com.san1ch.vocabanana.core.essentials.repositories.SettingsRepository
 import com.san1ch.vocabanana.core.ui.BaseViewModel
 import com.san1ch.vocabanana.core.ui.UiEvent
 import dagger.hilt.android.lifecycle.HiltViewModel

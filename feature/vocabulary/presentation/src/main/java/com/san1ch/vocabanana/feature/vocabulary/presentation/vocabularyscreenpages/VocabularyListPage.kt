@@ -61,7 +61,7 @@ import co.yml.charts.common.model.PlotType
 import co.yml.charts.ui.piechart.charts.DonutPieChart
 import co.yml.charts.ui.piechart.models.PieChartConfig
 import co.yml.charts.ui.piechart.models.PieChartData
-import com.san1ch.vocabanana.core.essentials.database.model.word.WordState
+import com.san1ch.vocabanana.core.essentials.model.word.WordState
 import com.san1ch.vocabanana.core.ui.SortType
 import com.san1ch.vocabanana.core.ui.WordFilter
 import com.san1ch.vocabanana.core.ui.WordUi
@@ -202,17 +202,17 @@ fun VocabularyDrawerContent(
             }
 
             SortOption(
-                label = "Alphabet",
+                label = stringResource(R.string.alphabet),
                 selected = wordFilter.sortType == SortType.ALPHABETIC,
                 onClick = { onIntent(VocabularyIntent.ChangeSortType(SortType.ALPHABETIC)); onClose() }
             )
             SortOption(
-                label = "Status/State",
+                label = stringResource(R.string.status_state),
                 selected = wordFilter.sortType == SortType.STATE,
                 onClick = { onIntent(VocabularyIntent.ChangeSortType(SortType.STATE)); onClose() }
             )
             SortOption(
-                label = "Recently Added",
+                label = stringResource(R.string.recently_added),
                 selected = wordFilter.sortType == SortType.DATE,
                 onClick = { onIntent(VocabularyIntent.ChangeSortType(SortType.DATE)); onClose() }
             )

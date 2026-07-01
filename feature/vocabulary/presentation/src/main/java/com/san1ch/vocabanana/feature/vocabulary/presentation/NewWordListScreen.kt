@@ -52,7 +52,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.san1ch.vocabanana.core.essentials.database.model.word.WordState
+import com.san1ch.vocabanana.core.essentials.model.word.WordState
 import com.san1ch.vocabanana.core.ui.StateObserver
 import com.san1ch.vocabanana.core.ui.WordUi
 import com.san1ch.vocabanana.core.ui.compose.CollectUiEvents

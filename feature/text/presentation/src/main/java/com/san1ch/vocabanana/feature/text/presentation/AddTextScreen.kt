@@ -40,7 +40,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.san1ch.vocabanana.core.essentials.database.model.constants.TextConstant
+import com.san1ch.vocabanana.core.essentials.model.constants.TextConstant
 import com.san1ch.vocabanana.core.ui.compose.CollectUiEvents
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -61,11 +61,11 @@ fun AddTextScreen(
         contract = ActivityResultContracts.GetContent()
     ) { uri ->
         uri?.let { selectedUri ->
-            // Повідомляємо ViewModel, що почалося завантаження (покажеться Loading)
+            
             viewModel.onIntent(AddTextUiIntent.StartLoadingFile)
 
             scope.launch(Dispatchers.IO) {
-                // 1. Читаємо ім'я файлу на фоновому потоці
+                
                 var name: String? = null
                 context.contentResolver.query(selectedUri, null, null, null, null)?.use { cursor ->
                     val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
@@ -75,12 +75,12 @@ fun AddTextScreen(
                 }
                 val finalName = name ?: "Selected file"
 
-                // 2. Читаємо контент файлу
+                
                 val text = context.contentResolver.openInputStream(selectedUri)
                     ?.bufferedReader()
                     ?.use { it.readText() } ?: ""
 
-                // 3. Віддаємо чисті дані у ViewModel
+                
                 viewModel.onIntent(AddTextUiIntent.FileLoaded(finalName, text))
             }
         }
@@ -116,7 +116,7 @@ fun AddTextContent(
 ) {
     val color by animateColorAsState(
         targetValue = if (state.isTitleTooLong) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.secondary,
-        label = "borderColor"
+        label = stringResource(R.string.bordercolor)
     )
 
     Scaffold(
@@ -141,7 +141,12 @@ fun AddTextContent(
             OutlinedTextField(
                 value = state.title,
                 onValueChange = { onIntent(AddTextUiIntent.TitleChanged(it)) },
-                label = { Text("Title: ${state.title.length}/${TextConstant.MAX_NAME_LENGTH}") },
+                label = { Text(
+                    stringResource(
+                        R.string.title,
+                        state.title.length,
+                        TextConstant.MAX_NAME_LENGTH
+                    )) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 isError = state.isTitleTooLong
@@ -163,7 +168,9 @@ fun AddTextContent(
                 OutlinedTextField(
                     value = state.content,
                     onValueChange = { onIntent(AddTextUiIntent.ContentChanged(it)) },
-                    label = { Text(if (state.isLoadingFile) "Loading file..." else "Paste your text here") },
+                    label = { Text(if (state.isLoadingFile) stringResource(R.string.loading_file) else stringResource(
+                        R.string.paste_your_text_here
+                    )) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f),
@@ -177,20 +184,20 @@ fun AddTextContent(
                     modifier = Modifier.weight(1f),
                     enabled = state.content.isNotBlank()
                 ) {
-                    Text("Copy")
+                    Text(stringResource(R.string.copy))
                 }
                 OutlinedButton(
                     onClick = onPasteClick,
                     modifier = Modifier.weight(1f),
                     enabled = !state.isLoadingFile
                 ) {
-                    Text("Paste")
+                    Text(stringResource(R.string.paste))
                 }
                 OutlinedButton(
                     onClick = { onIntent(AddTextUiIntent.ClearClicked) },
                     modifier = Modifier.weight(1f)
                 ) {
-                    Text("Clear")
+                    Text(stringResource(R.string.clear))
                 }
             }
 
@@ -202,14 +209,14 @@ fun AddTextContent(
                 ) {
                     Icon(Icons.Default.AttachFile, null)
                     Spacer(Modifier.width(8.dp))
-                    Text("Pick .txt")
+                    Text(stringResource(R.string.pick_txt))
                 }
                 Button(
                     onClick = { onIntent(AddTextUiIntent.AddTextClicked) },
                     modifier = Modifier.weight(1f),
                     enabled = state.content.isNotBlank() && !state.isTitleTooLong && !state.isLoadingFile
                 ) {
-                    Text("Add")
+                    Text(stringResource(R.string.add))
                 }
             }
         }

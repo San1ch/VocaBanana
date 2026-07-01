@@ -5,6 +5,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.san1ch.vocabanana.core.ui.R
 
 @Composable
 fun AppConfirmDialog(
@@ -35,7 +37,7 @@ fun AppConfirmDialog(
 @Composable
 fun <T> DeleteConfirmDialog(
     item: T?,
-    title: String = "Delete",
+    title: String = stringResource(R.string.delete),
     text: String = "Are you sure you want to delete this? This action is permanent.",
     onDismiss: () -> Unit,
     onConfirm: (T) -> Unit
@@ -44,7 +46,7 @@ fun <T> DeleteConfirmDialog(
         AppConfirmDialog(
             title = title,
             text = text,
-            confirmText = "Delete",
+            confirmText = stringResource(R.string.delete),
             onConfirm = { onConfirm(item) },
             onDismiss = onDismiss
         )

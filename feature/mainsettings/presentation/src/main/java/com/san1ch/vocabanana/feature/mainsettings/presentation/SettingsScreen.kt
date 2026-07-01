@@ -35,14 +35,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.san1ch.vocabanana.core.essentials.database.model.AppThemeMode
+import com.san1ch.vocabanana.core.essentials.model.AppThemeMode
 import com.san1ch.vocabanana.core.ui.compose.CollectUiEvents
-
-
 
 
 // The actions the user can take
@@ -87,10 +86,10 @@ fun SettingsContent(
                 .padding(padding)
                 .verticalScroll(rememberScrollState())
         ) {
-            SettingsSectionTitle(title = "Appearance")
+            SettingsSectionTitle(title = stringResource(R.string.appearance))
 
             SettingsDropdownItem(
-                label = "App Theme",
+                label = stringResource(R.string.app_theme),
                 currentValue = state.currentTheme.label,
                 options = AppThemeMode.entries.map { it.label },
                 onOptionSelected = { label ->
@@ -145,29 +144,33 @@ private fun SettingsDropdownItem(
 ) {
     var expanded by remember { mutableStateOf(false) }
 
-    Box {
-        SettingsClickableItem(
-            label = label,
-            onClick = { expanded = true },
-            control = {
+    SettingsClickableItem(
+        label = label,
+        onClick = { expanded = true },
+        control = {
+            Box(contentAlignment = Alignment.TopEnd) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(currentValue, color = MaterialTheme.colorScheme.outline)
                     Icon(Icons.Default.ArrowDropDown, contentDescription = null)
                 }
-            }
-        )
-        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            options.forEach { option ->
-                DropdownMenuItem(
-                    text = { Text(option) },
-                    onClick = {
-                        onOptionSelected(option)
-                        expanded = false
+
+                DropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false }
+                ) {
+                    options.forEach { option ->
+                        DropdownMenuItem(
+                            text = { Text(option) },
+                            onClick = {
+                                onOptionSelected(option)
+                                expanded = false
+                            }
+                        )
                     }
-                )
+                }
             }
         }
-    }
+    )
 }
 
 @Composable

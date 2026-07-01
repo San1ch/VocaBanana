@@ -11,4 +11,9 @@
     <string name="definition_uppercase">DEFINITION</string>
 
     <string name="vocabulary">Vocabulary</string>
+    <string name="alphabet">Alphabet</string>
+    <string name="status_state">Status/State</string>
+    <string name="recently_added">Recently Added</string>
+    <string name="part_of_speech">Part of Speech</string>
+    <string name="definition">Definition</string>
 </resources>

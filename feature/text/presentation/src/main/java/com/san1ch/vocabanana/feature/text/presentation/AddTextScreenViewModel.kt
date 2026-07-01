@@ -1,8 +1,8 @@
 package com.san1ch.vocabanana.feature.text.presentation
 
 import androidx.lifecycle.viewModelScope
-import com.san1ch.vocabanana.core.essentials.database.model.constants.TextConstant
-import com.san1ch.vocabanana.core.essentials.database.resources.CoreStringProvider
+import com.san1ch.vocabanana.core.essentials.model.constants.TextConstant
+import com.san1ch.vocabanana.core.essentials.resources.CoreStringProvider
 import com.san1ch.vocabanana.core.ui.BaseViewModel
 import com.san1ch.vocabanana.core.ui.UiEvent
 import com.san1ch.vocabanana.feature.text.domain.usecase.CreateTextUseCase

@@ -1,7 +1,7 @@
 package com.san1ch.vocabanana.core.android.commonandroid.filestorage
 
 import android.content.Context
-import com.san1ch.vocabanana.core.essentials.database.repositories.FileStorage
+import com.san1ch.vocabanana.core.essentials.repositories.FileStorage
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.File
 import javax.inject.Inject

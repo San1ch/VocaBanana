@@ -1,11 +1,11 @@
 package com.san1ch.vocabanana.core.android.database.text.repository
 
-import com.san1ch.vocabanana.core.essentials.database.repositories.FileStorage
-import com.san1ch.vocabanana.core.essentials.database.repositories.TextRepository
+import com.san1ch.vocabanana.core.essentials.repositories.FileStorage
+import com.san1ch.vocabanana.core.essentials.repositories.TextRepository
 import com.san1ch.vocabanana.core.android.database.text.local.TextDao
 import com.san1ch.vocabanana.core.android.database.text.local.TextEntity
 import com.san1ch.vocabanana.core.android.database.text.toDomainUnsafe
-import com.san1ch.vocabanana.core.essentials.database.model.text.TextDomain
+import com.san1ch.vocabanana.core.essentials.model.text.TextDomain
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject

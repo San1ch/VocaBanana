@@ -1,6 +1,6 @@
 package com.san1ch.vocabanana.feature.text.presentation.model
 
-import com.san1ch.vocabanana.core.essentials.database.model.word.WordDomain
+import com.san1ch.vocabanana.core.essentials.model.word.WordDomain
 
 sealed class GenerateWordsFromTextUiState {
 

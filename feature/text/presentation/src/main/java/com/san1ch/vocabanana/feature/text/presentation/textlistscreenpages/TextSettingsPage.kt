@@ -37,9 +37,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.san1ch.vocabanana.feature.text.presentation.R
 import com.san1ch.vocabanana.feature.text.presentation.TextListUiIntent
 import com.san1ch.vocabanana.feature.text.presentation.model.GenerateWordsFromTextUiState
 
@@ -78,13 +80,13 @@ fun TextSettingsPage(
                     )
                     Spacer(Modifier.height(8.dp))
                     Text(
-                        text = "Vocabulary Generator",
+                        text = stringResource(R.string.vocabulary_generator),
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.ExtraBold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
-                        text = "Extract and save new words from this text to your local dictionary.",
+                        text = stringResource(R.string.extract_and_save_new_words_from_this_text_to_your_local_dictionary),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center,
@@ -112,7 +114,7 @@ fun TextSettingsPage(
                     } else {
                         Icon(Icons.Default.Add, contentDescription = null)
                         Spacer(Modifier.width(8.dp))
-                        Text("Start Analysis", fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.start_analysis), fontWeight = FontWeight.Bold)
                     }
                 }
 

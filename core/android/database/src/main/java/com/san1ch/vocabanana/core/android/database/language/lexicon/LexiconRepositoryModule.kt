@@ -1,6 +1,6 @@
 package com.san1ch.vocabanana.core.android.database.language.lexicon
 
-import com.san1ch.vocabanana.core.essentials.database.repositories.LexiconRepository
+import com.san1ch.vocabanana.core.essentials.repositories.LexiconRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn

@@ -1,15 +1,15 @@
 package com.san1ch.vocabanana.feature.text.domain
 
-import com.san1ch.vocabanana.core.essentials.database.model.LexiconDto
-import com.san1ch.vocabanana.core.essentials.database.model.fold
-import com.san1ch.vocabanana.core.essentials.database.model.text.TextDomain
-import com.san1ch.vocabanana.core.essentials.database.model.word.PartOfSpeech
-import com.san1ch.vocabanana.core.essentials.database.model.word.WordDomain
-import com.san1ch.vocabanana.core.essentials.database.model.word.toPartOfSpeech
-import com.san1ch.vocabanana.core.essentials.database.repositories.LemmatizationRepository
-import com.san1ch.vocabanana.core.essentials.database.repositories.LexiconRepository
-import com.san1ch.vocabanana.core.essentials.database.repositories.TextRepository
-import com.san1ch.vocabanana.core.essentials.database.repositories.WordRepository
+import com.san1ch.vocabanana.core.essentials.model.LexiconDto
+import com.san1ch.vocabanana.core.essentials.model.fold
+import com.san1ch.vocabanana.core.essentials.model.text.TextDomain
+import com.san1ch.vocabanana.core.essentials.model.word.PartOfSpeech
+import com.san1ch.vocabanana.core.essentials.model.word.WordDomain
+import com.san1ch.vocabanana.core.essentials.model.word.toPartOfSpeech
+import com.san1ch.vocabanana.core.essentials.repositories.LemmatizationRepository
+import com.san1ch.vocabanana.core.essentials.repositories.LexiconRepository
+import com.san1ch.vocabanana.core.essentials.repositories.TextRepository
+import com.san1ch.vocabanana.core.essentials.repositories.WordRepository
 import com.san1ch.vocabanana.feature.text.domain.usecase.TextProcessingService
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow

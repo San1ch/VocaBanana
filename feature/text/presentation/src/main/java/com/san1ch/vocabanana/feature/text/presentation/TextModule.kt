@@ -1,6 +1,6 @@
 package com.san1ch.vocabanana.feature.text.presentation
 
-import com.san1ch.vocabanana.core.essentials.database.resources.featureproviders.TextStringProvider
+import com.san1ch.vocabanana.core.essentials.resources.featureproviders.TextStringProvider
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn

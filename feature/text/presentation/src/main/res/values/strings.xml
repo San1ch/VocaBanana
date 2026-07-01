@@ -18,4 +18,22 @@
     <string name="gen_words_preparing_text">Preparing text</string>
     <string name="gen_words_analyzing_lexicon">Analyzing lexicon</string>
     <string name="gen_words_saving_words">Saving words</string>
+    <string name="paste">Paste</string>
+    <string name="copy">Copy</string>
+    <string name="clear">Clear</string>
+    <string name="pick_txt">Pick .txt</string>
+    <string name="add">Add</string>
+    <string name="loading_file">Loading file...</string>
+    <string name="paste_your_text_here">Paste your text here</string>
+    <string name="title">Title: %1$d/%2$d</string>
+    <string name="last_read">Last read: %1$s</string>
+    <string name="appearance">Appearance</string>
+    <string name="font_size">Font Size</string>
+    <string name="line_spacing">Line Spacing</string>
+    <string name="side_margins">Side Margins</string>
+    <string name="vocabulary_generator">Vocabulary Generator</string>
+    <string name="extract_and_save_new_words_from_this_text_to_your_local_dictionary">Extract and save new words from this text to your local dictionary.</string>
+    <string name="start_analysis">Start Analysis</string>
+    <string name="bordercolor">borderColor</string>
+    <string name="lockcolor">LockColor</string>
 </resources>

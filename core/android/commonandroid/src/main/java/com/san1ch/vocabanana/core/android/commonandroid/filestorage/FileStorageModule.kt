@@ -1,6 +1,6 @@
 package com.san1ch.vocabanana.core.android.commonandroid.filestorage
 
-import com.san1ch.vocabanana.core.essentials.database.repositories.FileStorage
+import com.san1ch.vocabanana.core.essentials.repositories.FileStorage
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
