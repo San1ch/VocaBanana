@@ -44,8 +44,6 @@ import com.san1ch.vocabanana.core.essentials.model.AppThemeMode
 import com.san1ch.vocabanana.core.ui.compose.CollectUiEvents
 
 
-
-
 // The actions the user can take
 
 @Composable
@@ -146,29 +144,33 @@ private fun SettingsDropdownItem(
 ) {
     var expanded by remember { mutableStateOf(false) }
 
-    Box {
-        SettingsClickableItem(
-            label = label,
-            onClick = { expanded = true },
-            control = {
+    SettingsClickableItem(
+        label = label,
+        onClick = { expanded = true },
+        control = {
+            Box(contentAlignment = Alignment.TopEnd) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(currentValue, color = MaterialTheme.colorScheme.outline)
                     Icon(Icons.Default.ArrowDropDown, contentDescription = null)
                 }
-            }
-        )
-        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            options.forEach { option ->
-                DropdownMenuItem(
-                    text = { Text(option) },
-                    onClick = {
-                        onOptionSelected(option)
-                        expanded = false
+
+                DropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false }
+                ) {
+                    options.forEach { option ->
+                        DropdownMenuItem(
+                            text = { Text(option) },
+                            onClick = {
+                                onOptionSelected(option)
+                                expanded = false
+                            }
+                        )
                     }
-                )
+                }
             }
         }
-    }
+    )
 }
 
 @Composable

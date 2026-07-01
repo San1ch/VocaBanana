@@ -8,6 +8,6 @@ class SettingsRouterImpl @Inject constructor(
     private val appRouter: AppRouter
 ) : SettingsRouter {
     override fun navigateBack() {
-        navigateBack()
+        appRouter.navigateBack()
     }
 }

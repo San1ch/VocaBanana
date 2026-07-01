@@ -61,11 +61,11 @@ fun AddTextScreen(
         contract = ActivityResultContracts.GetContent()
     ) { uri ->
         uri?.let { selectedUri ->
-            // Повідомляємо ViewModel, що почалося завантаження (покажеться Loading)
+            
             viewModel.onIntent(AddTextUiIntent.StartLoadingFile)
 
             scope.launch(Dispatchers.IO) {
-                // 1. Читаємо ім'я файлу на фоновому потоці
+                
                 var name: String? = null
                 context.contentResolver.query(selectedUri, null, null, null, null)?.use { cursor ->
                     val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
@@ -75,12 +75,12 @@ fun AddTextScreen(
                 }
                 val finalName = name ?: "Selected file"
 
-                // 2. Читаємо контент файлу
+                
                 val text = context.contentResolver.openInputStream(selectedUri)
                     ?.bufferedReader()
                     ?.use { it.readText() } ?: ""
 
-                // 3. Віддаємо чисті дані у ViewModel
+                
                 viewModel.onIntent(AddTextUiIntent.FileLoaded(finalName, text))
             }
         }
