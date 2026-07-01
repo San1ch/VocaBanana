@@ -8,9 +8,9 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
-import com.san1ch.vocabanana.core.essentials.database.model.AppThemeMode
-import com.san1ch.vocabanana.core.essentials.database.model.ReaderSettings
-import com.san1ch.vocabanana.core.essentials.database.repositories.SettingsRepository
+import com.san1ch.vocabanana.core.essentials.model.AppThemeMode
+import com.san1ch.vocabanana.core.essentials.model.ReaderSettings
+import com.san1ch.vocabanana.core.essentials.repositories.SettingsRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject

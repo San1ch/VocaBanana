@@ -1,7 +1,7 @@
 package com.san1ch.vocabanana.feature.init.presentation
 
 import androidx.lifecycle.viewModelScope
-import com.san1ch.vocabanana.core.essentials.database.repositories.SettingsRepository
+import com.san1ch.vocabanana.core.essentials.repositories.SettingsRepository
 import com.san1ch.vocabanana.core.ui.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers

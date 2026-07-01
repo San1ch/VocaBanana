@@ -1,6 +1,6 @@
 package com.san1ch.vocabanana.feature.text.domain.usecase
 
-import com.san1ch.vocabanana.core.essentials.database.repositories.WordRepository
+import com.san1ch.vocabanana.core.essentials.repositories.WordRepository
 import javax.inject.Inject
 
 class TextProcessingService @Inject constructor(

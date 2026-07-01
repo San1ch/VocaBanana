@@ -36,8 +36,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.san1ch.vocabanana.core.essentials.database.model.word.PartOfSpeech
-import com.san1ch.vocabanana.core.essentials.database.model.word.WordState
+import com.san1ch.vocabanana.core.essentials.model.word.PartOfSpeech
+import com.san1ch.vocabanana.core.essentials.model.word.WordState
 import com.san1ch.vocabanana.core.ui.WordUi
 import com.san1ch.vocabanana.feature.vocabulary.presentation.VocabularyIntent
 import com.san1ch.vocabanana.feature.vocabulary.presentation.VocabularyScreenViewModel

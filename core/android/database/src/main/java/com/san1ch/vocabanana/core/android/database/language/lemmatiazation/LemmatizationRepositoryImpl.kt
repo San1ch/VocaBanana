@@ -1,6 +1,6 @@
 package com.san1ch.vocabanana.core.android.database.language.lemmatiazation
 
-import com.san1ch.vocabanana.core.essentials.database.repositories.LemmatizationRepository
+import com.san1ch.vocabanana.core.essentials.repositories.LemmatizationRepository
 import javax.inject.Inject
 
 class LemmatizationRepositoryImpl @Inject constructor(

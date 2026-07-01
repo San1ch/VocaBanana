@@ -61,7 +61,7 @@ import co.yml.charts.common.model.PlotType
 import co.yml.charts.ui.piechart.charts.DonutPieChart
 import co.yml.charts.ui.piechart.models.PieChartConfig
 import co.yml.charts.ui.piechart.models.PieChartData
-import com.san1ch.vocabanana.core.essentials.database.model.word.WordState
+import com.san1ch.vocabanana.core.essentials.model.word.WordState
 import com.san1ch.vocabanana.core.ui.SortType
 import com.san1ch.vocabanana.core.ui.WordFilter
 import com.san1ch.vocabanana.core.ui.WordUi

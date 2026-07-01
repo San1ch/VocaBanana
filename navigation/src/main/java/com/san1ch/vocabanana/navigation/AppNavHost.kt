@@ -17,8 +17,8 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.createGraph
-import com.san1ch.vocabanana.core.essentials.database.model.AppThemeMode
-import com.san1ch.vocabanana.core.essentials.database.repositories.SettingsRepository
+import com.san1ch.vocabanana.core.essentials.model.AppThemeMode
+import com.san1ch.vocabanana.core.essentials.repositories.SettingsRepository
 import com.san1ch.vocabanana.core.ui.theme.VocaBananaTheme
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted

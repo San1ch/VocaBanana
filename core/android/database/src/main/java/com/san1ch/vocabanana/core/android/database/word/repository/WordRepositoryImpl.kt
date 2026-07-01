@@ -2,10 +2,10 @@ package com.san1ch.vocabanana.core.android.database.word.repository
 
 import com.san1ch.vocabanana.core.android.database.word.toDomain
 import com.san1ch.vocabanana.core.android.database.word.toWordEntity
-import com.san1ch.vocabanana.core.essentials.database.exceptions.RepositoryNoDataByRequestException
-import com.san1ch.vocabanana.core.essentials.database.model.word.WordDomain
-import com.san1ch.vocabanana.core.essentials.database.model.word.WordState
-import com.san1ch.vocabanana.core.essentials.database.repositories.WordRepository
+import com.san1ch.vocabanana.core.essentials.exceptions.RepositoryNoDataByRequestException
+import com.san1ch.vocabanana.core.essentials.model.word.WordDomain
+import com.san1ch.vocabanana.core.essentials.model.word.WordState
+import com.san1ch.vocabanana.core.essentials.repositories.WordRepository
 import com.san1ch.vocabanana.feature.database.word.local.WordDao
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged

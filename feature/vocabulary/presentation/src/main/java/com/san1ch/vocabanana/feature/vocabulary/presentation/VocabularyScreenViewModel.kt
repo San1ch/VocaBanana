@@ -1,9 +1,9 @@
 package com.san1ch.vocabanana.feature.vocabulary.presentation
 
 import androidx.lifecycle.viewModelScope
-import com.san1ch.vocabanana.core.essentials.database.model.fold
-import com.san1ch.vocabanana.core.essentials.database.model.word.WordState
-import com.san1ch.vocabanana.core.essentials.database.repositories.WordRepository
+import com.san1ch.vocabanana.core.essentials.model.fold
+import com.san1ch.vocabanana.core.essentials.model.word.WordState
+import com.san1ch.vocabanana.core.essentials.repositories.WordRepository
 import com.san1ch.vocabanana.core.ui.BaseViewModel
 import com.san1ch.vocabanana.core.ui.SortType
 import com.san1ch.vocabanana.core.ui.UiEvent

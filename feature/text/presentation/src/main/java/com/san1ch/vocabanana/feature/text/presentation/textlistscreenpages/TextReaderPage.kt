@@ -62,7 +62,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.san1ch.vocabanana.core.essentials.database.model.ReaderSettings
+import com.san1ch.vocabanana.core.essentials.model.ReaderSettings
 import com.san1ch.vocabanana.core.ui.TextUi
 import com.san1ch.vocabanana.feature.text.presentation.TextListUiIntent
 import com.san1ch.vocabanana.feature.text.presentation.WordInfoState

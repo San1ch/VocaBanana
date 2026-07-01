@@ -1,8 +1,8 @@
 package com.san1ch.vocabanana.feature.debug.presentation
 
 import androidx.lifecycle.viewModelScope
-import com.san1ch.vocabanana.core.essentials.database.repositories.TextRepository
-import com.san1ch.vocabanana.core.essentials.database.repositories.WordRepository
+import com.san1ch.vocabanana.core.essentials.repositories.TextRepository
+import com.san1ch.vocabanana.core.essentials.repositories.WordRepository
 import com.san1ch.vocabanana.core.ui.BaseViewModel
 import com.san1ch.vocabanana.core.ui.UiState
 import com.san1ch.vocabanana.core.ui.asUiState

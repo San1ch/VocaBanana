@@ -2,7 +2,7 @@ package com.san1ch.vocabanana.core.android.database.language.lemmatiazation
 
 import androidx.room.Dao
 import androidx.room.Query
-import com.san1ch.vocabanana.core.essentials.database.model.WordLemmaDto
+import com.san1ch.vocabanana.core.essentials.model.WordLemmaDto
 
 @Dao
 interface LemmaDao {

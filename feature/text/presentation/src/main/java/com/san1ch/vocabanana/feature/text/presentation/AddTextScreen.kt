@@ -40,7 +40,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.san1ch.vocabanana.core.essentials.database.model.constants.TextConstant
+import com.san1ch.vocabanana.core.essentials.model.constants.TextConstant
 import com.san1ch.vocabanana.core.ui.compose.CollectUiEvents
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

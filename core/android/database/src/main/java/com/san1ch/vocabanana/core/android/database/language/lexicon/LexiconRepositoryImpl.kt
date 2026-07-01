@@ -1,8 +1,8 @@
 package com.san1ch.vocabanana.core.android.database.language.lexicon
 
-import com.san1ch.vocabanana.core.essentials.database.model.LexiconDto
-import com.san1ch.vocabanana.core.essentials.database.model.word.PartOfSpeech
-import com.san1ch.vocabanana.core.essentials.database.repositories.LexiconRepository
+import com.san1ch.vocabanana.core.essentials.model.LexiconDto
+import com.san1ch.vocabanana.core.essentials.model.word.PartOfSpeech
+import com.san1ch.vocabanana.core.essentials.repositories.LexiconRepository
 import com.san1ch.vocabanana.feature.database.language.lexicon.LexiconDao
 import javax.inject.Inject
 

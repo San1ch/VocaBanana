@@ -1,10 +1,10 @@
 package com.san1ch.vocabanana.feature.text.presentation
 
 import androidx.lifecycle.viewModelScope
-import com.san1ch.vocabanana.core.essentials.database.model.ReaderSettings
-import com.san1ch.vocabanana.core.essentials.database.repositories.SettingsRepository
-import com.san1ch.vocabanana.core.essentials.database.repositories.TextRepository
-import com.san1ch.vocabanana.core.essentials.database.repositories.WordRepository
+import com.san1ch.vocabanana.core.essentials.model.ReaderSettings
+import com.san1ch.vocabanana.core.essentials.repositories.SettingsRepository
+import com.san1ch.vocabanana.core.essentials.repositories.TextRepository
+import com.san1ch.vocabanana.core.essentials.repositories.WordRepository
 import com.san1ch.vocabanana.core.ui.BaseViewModel
 import com.san1ch.vocabanana.core.ui.UiEvent
 import com.san1ch.vocabanana.feature.text.domain.GenerateWordsFromTextUseCase

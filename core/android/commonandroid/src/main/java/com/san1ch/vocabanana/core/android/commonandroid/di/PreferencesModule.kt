@@ -5,7 +5,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import com.san1ch.vocabanana.core.android.commonandroid.datastore.DataStoreSettingsRepository
 import com.san1ch.vocabanana.core.android.commonandroid.datastore.dataStore
-import com.san1ch.vocabanana.core.essentials.database.repositories.SettingsRepository
+import com.san1ch.vocabanana.core.essentials.repositories.SettingsRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

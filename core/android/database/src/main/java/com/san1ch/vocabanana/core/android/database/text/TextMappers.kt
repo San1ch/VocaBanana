@@ -1,8 +1,8 @@
 package com.san1ch.vocabanana.core.android.database.text
 
 import com.san1ch.vocabanana.core.android.database.text.local.TextEntity
-import com.san1ch.vocabanana.core.essentials.database.model.fold
-import com.san1ch.vocabanana.core.essentials.database.model.text.TextDomain
+import com.san1ch.vocabanana.core.essentials.model.fold
+import com.san1ch.vocabanana.core.essentials.model.text.TextDomain
 
 
 fun TextEntity.toDomain(): TextDomain =

@@ -1,6 +1,6 @@
 package com.san1ch.vocabanana.feature.text.presentation.data
 
-import com.san1ch.vocabanana.core.essentials.database.model.text.TextDomain
+import com.san1ch.vocabanana.core.essentials.model.text.TextDomain
 
 
 
