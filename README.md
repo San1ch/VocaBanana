@@ -152,7 +152,7 @@ The project follows a feature-oriented, fully modular architecture designed for 
 
 
 
-For detailed technical documentation, see:
+For detailed technical documentation, see [there](https://github.com/San1ch/VocaBanana/blob/master/ARCHITECTURE.md)
 
 
 
