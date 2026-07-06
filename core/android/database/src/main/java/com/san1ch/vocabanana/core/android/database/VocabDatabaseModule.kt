@@ -7,8 +7,8 @@ import com.san1ch.vocabanana.core.android.database.language.lemmatiazation.Lemma
 import com.san1ch.vocabanana.feature.database.language.lexicon.LexiconDao
 import com.san1ch.vocabanana.core.android.database.language.lexicon.LexiconDatabase
 import com.san1ch.vocabanana.core.android.database.text.local.TextDao
-import com.san1ch.vocabanana.feature.database.AppDatabase
-import com.san1ch.vocabanana.feature.database.word.local.WordDao
+import com.san1ch.vocabanana.core.android.database.text.local.TextWordCountDao
+import com.san1ch.vocabanana.core.android.database.word.local.WordDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -72,6 +72,9 @@ object VocabDatabaseModule {
         return appDatabase.textDao()
     }
 
-
+    @Provides
+    fun provideTextWordCountDao(appDatabase: AppDatabase): TextWordCountDao {
+        return appDatabase.textWordCountDao()
+    }
 // [PROVIDES_END]
 }

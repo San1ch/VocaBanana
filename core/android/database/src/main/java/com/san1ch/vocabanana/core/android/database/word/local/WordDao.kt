@@ -1,6 +1,7 @@
-package com.san1ch.vocabanana.feature.database.word.local
+package com.san1ch.vocabanana.core.android.database.word.local
 
 import androidx.room.*
+import com.san1ch.vocabanana.core.android.database.word.model.WordToLemmaPair
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -38,12 +39,25 @@ interface WordDao {
     suspend fun getAllWordsList(): List<WordWithForms>
 
     @Transaction
+    @Query("SELECT * FROM words WHERE lemma IN (:lemmas)")
+    suspend fun getWordsByLemmas(lemmas: List<String>): List<WordWithForms>
+    @Transaction
     @Query("SELECT * FROM words WHERE id = :id")
     suspend fun getWordWithFormsById(id: Int): WordWithForms?
 
     @Transaction
     @Query("SELECT * FROM words WHERE lemma = :lemma")
     suspend fun getWordWithFormsByLemma(lemma: String): WordWithForms?
+
+    @Query("""
+    SELECT 'lemma' AS type, lemma AS word, lemma AS lemma FROM words WHERE lemma IN (:words)
+    UNION
+    SELECT 'form' AS type, form AS word, (SELECT lemma FROM words WHERE id = wordId) AS lemma FROM word_forms WHERE form IN (:words)
+""")
+    suspend fun getLemmasForWordsInternal(words: List<String>): List<WordToLemmaPair>
+    //need query
+    @Query("SELECT * FROM words WHERE lemma = :word")
+    fun getWordsWithCount(word: String): Flow<List<WordWithForms>>
 
     @Transaction
     @Query("""

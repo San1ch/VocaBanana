@@ -1,6 +1,8 @@
 package com.san1ch.vocabanana.core.essentials.repositories
 
 import com.san1ch.vocabanana.core.essentials.model.text.TextDomain
+import com.san1ch.vocabanana.core.essentials.model.text.TextWordCount
+import com.san1ch.vocabanana.core.essentials.model.text.WordWithCount
 import kotlinx.coroutines.flow.Flow
 
 interface TextRepository {
@@ -11,4 +13,6 @@ interface TextRepository {
     suspend fun deleteText(textId: Int)
     suspend fun updateProgress(id: Int, position: Float, time: Long)
     fun isTextNameUnique(name: String): Boolean
+    suspend fun saveTextWordCounts(textWordCounts: List<TextWordCount>)
+    suspend fun getTextWordCounts(wordIds: List<Int>): Map<Int, Int>
 }
