@@ -15,6 +15,7 @@ android {
 dependencies {
     implementation(projects.core.essentials)
     implementation(projects.core.ui)
+    implementation(projects.feature.vocabulary.domain)
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui)

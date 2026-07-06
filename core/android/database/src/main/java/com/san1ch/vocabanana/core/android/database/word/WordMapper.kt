@@ -4,8 +4,8 @@ import com.san1ch.vocabanana.core.essentials.model.word.WordDomain
 import com.san1ch.vocabanana.core.essentials.model.word.toInt
 import com.san1ch.vocabanana.core.essentials.model.word.toPartOfSpeech
 import com.san1ch.vocabanana.core.essentials.model.word.toWordState
-import com.san1ch.vocabanana.feature.database.word.local.WordEntity
-import com.san1ch.vocabanana.feature.database.word.local.WordWithForms
+import com.san1ch.vocabanana.core.android.database.word.local.WordEntity
+import com.san1ch.vocabanana.core.android.database.word.local.WordWithForms
 
 
 // WordMapper.kt

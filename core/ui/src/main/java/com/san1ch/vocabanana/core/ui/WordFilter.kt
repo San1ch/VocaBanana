@@ -11,5 +11,6 @@ data class WordFilter(
 enum class SortType {
     ALPHABETIC,
     STATE,
-    DATE
+    DATE,
+    COUNT
 }

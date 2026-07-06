@@ -3,6 +3,7 @@ package com.san1ch.vocabanana.feature.text.domain
 import com.san1ch.vocabanana.core.essentials.model.LexiconDto
 import com.san1ch.vocabanana.core.essentials.model.fold
 import com.san1ch.vocabanana.core.essentials.model.text.TextDomain
+import com.san1ch.vocabanana.core.essentials.model.text.TextWordCount
 import com.san1ch.vocabanana.core.essentials.model.word.PartOfSpeech
 import com.san1ch.vocabanana.core.essentials.model.word.WordDomain
 import com.san1ch.vocabanana.core.essentials.model.word.toPartOfSpeech
@@ -14,8 +15,6 @@ import com.san1ch.vocabanana.feature.text.domain.usecase.TextProcessingService
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
-import kotlin.collections.forEach
-import kotlin.collections.isNotEmpty
 
 class GenerateWordsFromTextUseCase @Inject constructor(
     private val textRepository: TextRepository,
@@ -29,64 +28,73 @@ class GenerateWordsFromTextUseCase @Inject constructor(
         val text: TextDomain = textRepository.getTextById(textId).fold(
             onSuccess = { it },
             onFailure = {
-                emit(
-                    GenerateWordsFromTextState.Error(GenerateWordsFromTextResult.Error.TextNotFound)
-                )
+                emit(GenerateWordsFromTextState.Error(GenerateWordsFromTextResult.Error.TextNotFound))
                 return@flow
             }
         )
         val wordFrequencies = tps.prepareText(text.content)
         val uniqueWords = wordFrequencies.keys.toList()
 
-        // Step 2: Sorter (Filter known words)
+        // Step 2: Sorter (Filter out words already known to the user for dictionary adding)
         emit(GenerateWordsFromTextState.Loading.AnalyzingLexicon)
         val wordsToProcess = generateService.filterByUserVocab(uniqueWords)
 
-        if (wordsToProcess.isEmpty()) {
-            emit(GenerateWordsFromTextState.Success(GenerateWordsFromTextResult.Success.AllWordsAlreadyExists))
-            return@flow
+        // Step 3: Builder (Generate dictionary domains for NEW words only)
+        val domainsToAdd = if (wordsToProcess.isNotEmpty()) {
+            generateService.generateDomains(wordsToProcess)
+        } else {
+            emptyList()
         }
 
-        // Step 3: Builder (The Dictionary Discovery)
-        val domainsToAdd = generateService.generateDomains(wordsToProcess)
-
-        // Step 4: Storage & Stats
+        // Step 4: Storage & Complete Stats
         emit(GenerateWordsFromTextState.Loading.SavingWords)
 
+        // 4a. Save new words to the dictionary if there are any
         if (domainsToAdd.isNotEmpty()) {
-            // 4a. Save the Words themselves (The "Dictionary")
             wordRepository.addWords(domainsToAdd)
+        }
 
-            // 4b. Handle the Counts (The "Statistics")
-            // Here you can call a separate repository to save the occurrences
-            // using the 'textId' and 'wordFrequencies'
-            saveWordStats(textId, domainsToAdd, wordFrequencies)
+        // 4b. Handle full text statistics (The "TextWordCount" entry)
+        // We pass ALL unique words from the text, ensuring even known words get counted!
+        if (uniqueWords.isNotEmpty()) {
+            saveWordStats(textId, uniqueWords, wordFrequencies)
+        }
 
-            emit(
-                GenerateWordsFromTextState.Success(
-                    GenerateWordsFromTextResult.Success.Words(
-                        domainsToAdd
-                    )
-                )
-            )
+        // Step 5: Finalize Emit
+        if (domainsToAdd.isNotEmpty()) {
+            emit(GenerateWordsFromTextState.Success(GenerateWordsFromTextResult.Success.Words(domainsToAdd)))
         } else {
-            emit(GenerateWordsFromTextState.Error(GenerateWordsFromTextResult.Error.Unknown("No words found")))
+            emit(GenerateWordsFromTextState.Success(GenerateWordsFromTextResult.Success.AllWordsAlreadyExists))
         }
     }
 
     private suspend fun saveWordStats(
         textId: Int,
-        domains: List<WordDomain>,
+        uniqueWords: List<String>,
         frequencies: Map<String, Int>
     ) {
-        // This is where you connect the Word to the Text.
-        // Sum of Lemma count + Form counts.
-        domains.forEach { domain ->
-            val totalCount = (frequencies[domain.lemma] ?: 0) +
-                    domain.forms.sumOf { frequencies[it] ?: 0 }
+        val wordToDomainMap: Map<String, WordDomain> = wordRepository.getWordDomainsForWords(uniqueWords)
 
-            // Example: wordRepository.saveOccurrence(textId, domain.lemma, totalCount)
+        val lemmaIdFrequencies = mutableMapOf<Int, Int>()
+
+        frequencies.forEach { (word, count) ->
+            val wordDomain = wordToDomainMap[word]
+
+            if (wordDomain != null) {
+                val lemmaId = wordDomain.id
+                lemmaIdFrequencies[lemmaId] = (lemmaIdFrequencies[lemmaId] ?: 0) + count
+            }
         }
+
+        val statsToSave = lemmaIdFrequencies.map { (lemmaId, totalCount) ->
+            TextWordCount(
+                textId = textId,
+                wordId = lemmaId,
+                count = totalCount
+            )
+        }
+
+        textRepository.saveTextWordCounts(statsToSave)
     }
 }
 

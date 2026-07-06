@@ -183,7 +183,6 @@ fun LegendItem(color: Color, label: String) {
 fun NewWordItem(word: WordUi, onStateSelected: (WordState) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
 
-
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -191,7 +190,6 @@ fun NewWordItem(word: WordUi, onStateSelected: (WordState) -> Unit) {
             .animateContentSize(),
         onClick = { expanded = !expanded },
         colors = CardDefaults.cardColors(
-            // If it's light theme, we use pure white. If dark, a slightly lighter gray than background.
             containerColor = if (isSystemInDarkTheme())
                 MaterialTheme.colorScheme.surface
             else Color.White
@@ -207,7 +205,7 @@ fun NewWordItem(word: WordUi, onStateSelected: (WordState) -> Unit) {
                 Column(
                     modifier = Modifier
                         .weight(1f)
-                        .padding(start = 16.dp),
+                        .padding(start = 16.dp, end = 8.dp),
                     verticalArrangement = Arrangement.Center
                 ) {
                     Text(text = word.lemma, style = MaterialTheme.typography.titleLarge)
@@ -215,6 +213,19 @@ fun NewWordItem(word: WordUi, onStateSelected: (WordState) -> Unit) {
                         text = word.partOfSpeech,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.outline
+                    )
+                }
+
+                Surface(
+                    shape = CircleShape,
+                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f),
+                    modifier = Modifier.padding(horizontal = 12.0.dp)
+                ) {
+                    Text(
+                        text = "×${word.count}",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
                     )
                 }
 

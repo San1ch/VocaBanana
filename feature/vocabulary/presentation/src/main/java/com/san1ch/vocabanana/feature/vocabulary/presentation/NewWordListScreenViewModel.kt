@@ -3,8 +3,9 @@ package com.san1ch.vocabanana.feature.vocabulary.presentation
 import androidx.lifecycle.viewModelScope
 import com.san1ch.vocabanana.core.essentials.model.word.WordState
 import com.san1ch.vocabanana.core.essentials.repositories.WordRepository
+import com.san1ch.vocabanana.core.essentials.usecases.GetNewWordWithCountByStateUseCase
 import com.san1ch.vocabanana.core.ui.BaseViewModel
-import com.san1ch.vocabanana.core.ui.UiEvent
+import com.san1ch.vocabanana.core.ui.SortType
 import com.san1ch.vocabanana.core.ui.UiState
 import com.san1ch.vocabanana.core.ui.WordFilter
 import com.san1ch.vocabanana.core.ui.WordUi
@@ -26,16 +27,17 @@ import javax.inject.Inject
 @HiltViewModel
 class NewWordListScreenViewModel @Inject constructor(
     private val wordRepository: WordRepository,
-    private val vocabularyRouter: VocabularyRouter
+    private val vocabularyRouter: VocabularyRouter,
+    private val getNewWordWithCountByStateUseCase: GetNewWordWithCountByStateUseCase
 ) : BaseViewModel() {
 
     // Internal UI State flows
-    private val _wordFilter = MutableStateFlow(WordFilter())
+    private val _wordFilter = MutableStateFlow(WordFilter(sortType = SortType.COUNT))
 
     // The Main State: Combined and Optimized
     @OptIn(kotlinx.coroutines.FlowPreview::class)
     val uiState = combine(
-        wordRepository.getWordByStates(listOf(WordState.NEW)),
+        getNewWordWithCountByStateUseCase(listOf(WordState.NEW)),
         _wordFilter.debounce(300)
     ) { rawList, filterData ->
         // Filter only NEW words, Transform to UI object and Filter
