@@ -1,5 +1,6 @@
 package com.san1ch.vocabanana.core.ui
 
+import com.san1ch.vocabanana.core.essentials.model.text.WordWithCount
 import com.san1ch.vocabanana.core.essentials.model.word.PartOfSpeech
 import com.san1ch.vocabanana.core.essentials.model.word.WordDomain
 import com.san1ch.vocabanana.core.essentials.model.word.WordState
@@ -13,7 +14,8 @@ data class WordUi(
     val state: WordState,
     val definition: String,
     val partOfSpeech: String,
-    val forms: List<String>
+    val forms: List<String>,
+    val count: Int? = null
 )
 
 fun PartOfSpeech.toUi(): String = when (this) {
@@ -32,7 +34,18 @@ fun WordDomain.toUi() = WordUi(
     partOfSpeech = partOfSpeech.toUi(),
     forms = forms,
     definition = definition,
-    state = state
+    state = state,
+)
+
+fun WordWithCount.toUi() = WordUi(
+    id = word.id,
+    lemma = word.lemma,
+    whenAdded = word.whenAdded,
+    state = word.state,
+    definition = word.definition,
+    partOfSpeech = word.partOfSpeech.toUi(),
+    forms = word.forms,
+    count = count
 )
 
 fun WordUi.toDomain() = WordDomain.create(
@@ -63,6 +76,7 @@ fun List<WordUi>.filterAndSort(filter: WordFilter): List<WordUi> {
         SortType.ALPHABETIC -> filteredBySearch.sortedBy { it.lemma }
         SortType.STATE -> filteredBySearch.sortedBy { it.state.ordinal }
         SortType.DATE -> filteredBySearch.sortedBy { it.whenAdded }
+        SortType.COUNT -> filteredBySearch.sortedBy { it.count }
     }
 
     return if (filter.isAscending) sortedList else sortedList.reversed()

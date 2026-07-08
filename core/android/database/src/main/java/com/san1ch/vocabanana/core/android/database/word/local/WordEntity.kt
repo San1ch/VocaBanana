@@ -1,4 +1,4 @@
-package com.san1ch.vocabanana.feature.database.word.local
+package com.san1ch.vocabanana.core.android.database.word.local
 
 import androidx.room.ColumnInfo
 import androidx.room.Embedded
@@ -6,6 +6,9 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 import androidx.room.Relation
+import com.san1ch.vocabanana.core.essentials.model.word.WordDomain
+import com.san1ch.vocabanana.core.essentials.model.word.toPartOfSpeech
+import com.san1ch.vocabanana.core.essentials.model.word.toWordState
 
 
 @Entity(tableName = "words")

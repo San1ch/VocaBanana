@@ -6,11 +6,13 @@ import com.san1ch.vocabanana.core.essentials.exceptions.RepositoryNoDataByReques
 import com.san1ch.vocabanana.core.essentials.model.word.WordDomain
 import com.san1ch.vocabanana.core.essentials.model.word.WordState
 import com.san1ch.vocabanana.core.essentials.repositories.WordRepository
-import com.san1ch.vocabanana.feature.database.word.local.WordDao
+import com.san1ch.vocabanana.core.android.database.word.local.WordDao
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
+import kotlin.collections.associate
+import com.san1ch.vocabanana.core.android.database.word.model.WordToLemmaPair
 
 class WordRepositoryRoomImpl @Inject constructor(
     private val wordDao: WordDao
@@ -26,7 +28,7 @@ class WordRepositoryRoomImpl @Inject constructor(
             .distinctUntilChanged()
             .map { list -> list.map { it.toDomain() } }
 
-    override fun getWordByStates(states: List<WordState>): Flow<List<WordDomain>> =
+    override fun getWordsByStates(states: List<WordState>): Flow<List<WordDomain>> =
         wordDao.getWordsByStates(states.toIntList())
             .distinctUntilChanged()
             .map { list -> list.map { it.toDomain() } }
@@ -126,6 +128,15 @@ class WordRepositoryRoomImpl @Inject constructor(
         }
     }
 
+    override suspend fun getLemmasForWords(words: List<String>): Map<String, String> {
+        if (words.isEmpty()) return emptyMap()
+
+        val databasePairs: List<WordToLemmaPair> = wordDao.getLemmasForWordsInternal(words)
+
+        return databasePairs.associate { pair -> pair.word to pair.lemma }
+    }
+
+
     // --- Metadata & Deletion ---
 
     override suspend fun getAllLemmasAndForms(): List<String> {
@@ -138,6 +149,12 @@ class WordRepositoryRoomImpl @Inject constructor(
         val lemmas = allData.map { it.word.lemma }.filter { it in words }
         val forms = allData.flatMap { it.forms.map { f -> f.form } }.filter { it in words }
         return (lemmas + forms).toSet()
+    }
+
+
+    override suspend fun getWordDomainsForWords(words: List<String>): Map<String, WordDomain> {
+        val words = wordDao.getWordsByLemmas(words).map{it.toDomain()}
+        return words.associateBy { it.lemma }
     }
 
     override suspend fun deleteWord(word: WordDomain) = wordDao.deleteWord(word.toWordEntity())

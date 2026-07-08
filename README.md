@@ -1,132 +1,417 @@
-## Vocabanana
+# VocaBanana
 
-**Vocabanana** is an English vocabulary management and learning assistant that helps you build your own dictionary, read texts in English, and track your learning progress.
 
-Learn vocabulary through your own texts, not pre-made lists.
+
+**VocaBanana** is an English vocabulary management and learning assistant that helps users build their own vocabulary database, learn through personal texts, and track learning progress over time.
+
+
+
+Unlike traditional vocabulary applications, VocaBanana focuses on learning through user-provided content rather than pre-built word lists.
+
+
 
 ---
+
+
 
 ## Core Idea
 
-Vocabanana gives you control over your vocabulary learning.
 
-Instead of random word lists, you can clearly see:
-- which words you already know  
-- which ones you are learning  
-- which ones you ignore  
 
-Learning is based on your own texts, not pre-made content.
+The main goal of the project is to provide full control over the vocabulary learning process.
+
+
+
+Instead of studying random collections of words, users can clearly distinguish:
+
+
+
+* words they already know;
+
+* words currently being learned;
+
+* words they want to ignore;
+
+* words extracted from their own reading materials.
+
+
+
+Learning is built around personal texts and individual vocabulary progression.
+
+
 
 ---
+
+
 
 ## Features
 
-- Read English texts inside the app  
-- Add your own texts (manually or via file)  
-- Automatically generate words from text  
-- Manage words with statuses:
-  - Known  
-  - Learning
-  - Don't known
-  - Ignored  
-- Track your vocabulary progress  
-- Tap a word in a text to view its data from your dictionary  
+
+
+### Text Reading
+
+
+
+* Read English texts directly inside the application;
+
+* Import texts manually or from files;
+
+* Save reading progress automatically;
+
+* Customize the reading experience.
+
+
+
+### Vocabulary Management
+
+
+
+* Generate vocabulary automatically from texts;
+
+* Manage words using custom learning statuses:
+
+
+
+  * Known
+
+  * Learning
+
+  * Unknown
+
+  * Ignored
+
+* Track vocabulary growth;
+
+* View word definitions and metadata.
+
+
+
+### Interactive Learning
+
+
+
+* Tap any word while reading;
+
+* View dictionary information instantly;
+
+* Open external dictionary resources when necessary;
+
+* Build a personal vocabulary database from real content.
+
+
 
 ---
+
+
 
 ## Architecture Overview
 
-The project is built using **Clean Architecture** principles and is fully **multi-modular**. It is strictly decoupled into independent layers to ensure high scalability, separation of concerns, and build optimization.
 
-[Read the detailed Technical & Architecture Documentation here](./ARCHITECTURE.md)
+
+The project follows a feature-oriented, fully modular architecture designed for scalability, maintainability, and build performance optimization.
+
+
+
+### Architectural Principles
+
+
+
+* Feature-oriented modular architecture;
+
+* Strict separation of concerns;
+
+* Dependency inversion via interfaces;
+
+* Convention-based Gradle build logic;
+
+* MVVM + MVI presentation architecture;
+
+* Single source of truth state management;
+
+* Platform-independent business logic where possible.
+
+
+
+### Technical Highlights
+
+
+
+* Multi-module Gradle architecture;
+
+* Custom Gradle Convention Plugins;
+
+* Gradle Composite Build (`build-logic`);
+
+* Feature-based navigation abstraction;
+
+* Custom Kotlin module generation system;
+
+* Reactive state management using Kotlin Flow;
+
+* Compile-time safe event processing.
+
+
+
+For detailed technical documentation, see [there](https://github.com/San1ch/VocaBanana/blob/master/ARCHITECTURE.md)
+
+
+
+**ARCHITECTURE.md**
+
+
 
 ---
+
+
+
+## Project Structure
+
+
+
+```text
+
+app
+
+navigation
+
+
+
+core
+
+ ├── essentials
+
+ ├── ui
+
+ └── android
+
+      ├── database
+
+      └── commonandroid
+
+
+
+feature
+
+ ├── init
+
+ ├── main
+
+ ├── text
+
+ ├── vocabulary
+
+ ├── word
+
+ └── ...
+
+```
+
+
+
+---
+
+
+
 ## Usage
 
-1. Go to the **Texts** section  
-2. Tap **"+"**  
-3. Add:
-   - title  
-   - text (manually or from a file)  
-4. Open the text → tap **Start Reading**  
-5. Tap **Generate words from text**  
-6. Get a list of words in your vocabulary  
-7. Mark words as:
-   - known / learning / don't known / ignored  
+
+
+1. Open the **Texts** section;
+
+2. Create a new text;
+
+3. Add content manually or import it from a file;
+
+4. Start reading;
+
+5. Generate vocabulary from the text;
+
+6. Review generated words;
+
+7. Assign learning statuses;
+
+8. Track your learning progress.
+
+
 
 ---
+
+
 
 ## Installation
 
-Download the app from the **Releases** section on GitHub and install it on your Android device.
 
-[Latest release](https://github.com/San1ch/VocaBanana/releases)
+
+Download the latest APK from the GitHub Releases page and install it on your Android device.
+
+
 
 ---
 
-## Tech Stack
 
-### Core
-- Kotlin
-- Coroutines
-- Flow
+
+## Technology Stack
+
+
+
+### Language & Concurrency
+
+
+
+* Kotlin
+
+* Coroutines
+
+* Flow
+
+
 
 ### UI
-- Jetpack Compose
-- Material 3
+
+
+
+* Jetpack Compose
+
+* Material 3
+
+
 
 ### Architecture
-- MVVM / MVI 
-- Clean Architecture
 
-### Jetpack Components
-- ViewModel
-- Navigation (Compose)
-- Room
-- DataStore
+
+
+* Clean Architecture
+
+* MVVM
+
+* MVI
+
+* Multi-Module Architecture
+
+
+
+### Android Components
+
+
+
+* ViewModel
+
+* Room
+
+* DataStore
+
+* Navigation Compose
+
+
 
 ### Dependency Injection
-- Hilt
 
-### Tools
-- Git
-- Gradle
-- Android Studio
-- Logcat
+
+
+* Hilt
+
+
+
+### Build System
+
+
+
+* Gradle
+
+* Composite Builds
+
+* Convention Plugins
+
+* Custom Module Generator
+
+
+
+### Development Tools
+
+
+
+* Android Studio
+
+* Git
+
+* Logcat
+
+
+
 ---
 
-## Project Status
 
-MVP / Active Development.
 
-The app is already usable, but the UX is still basic and will be improved.
+## Current Status
 
----
 
-## Roadmap
 
-- Text analysis (word frequency)  
-- Learning tools:
-  - fast translation exercises  
-  - sentence-based practice  
-- Exercise generation based on your vocabulary  
-- AI integration into your own lessons  
+The project is currently in active development.
+
+
+
+The core functionality is already implemented and usable, while the user experience and learning features continue to evolve.
+
+
 
 ---
 
-## Known Issues
 
-- UI is not fully optimized  
-- Some flows may feel non-intuitive  
+
+## Planned Features
+
+
+
+* Word frequency analysis;
+
+* Vocabulary statistics;
+
+* Translation exercises;
+
+* Sentence-based practice;
+
+* Vocabulary-based exercise generation;
+
+* AI-assisted learning tools;
+
+* Extended progress analytics.
+
+
 
 ---
+
+
+
+## Known Limitations
+
+
+
+* Some UI components require additional polish;
+
+* Several workflows are still being refined;
+
+* Performance optimization is ongoing.
+
+
+
+---
+
+
 
 ## Contributing
 
-This is currently a personal project. Contributions are not accepted.
+
+
+This project is currently maintained as a personal learning and portfolio project. External contributions are not being accepted at this time.
+
+
 
 ---
 
-## Contact
 
-GitHub: https://github.com/San1ch
+
+## Author
+
+
+
+GitHub: **San1ch**

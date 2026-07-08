@@ -3,6 +3,9 @@ plugins {
 }
 
 dependencies {
+    implementation(projects.core.essentials)
+
+    implementation(libs.kotlinx.coroutines.core)
 
     testImplementation(platform(libs.junit.bom))
     testImplementation(libs.junit.jupiter)
@@ -10,3 +13,4 @@ dependencies {
     testImplementation(libs.mockk)
     testImplementation(libs.kotlinx.coroutines.test)
 }
+

@@ -7,13 +7,13 @@ import kotlinx.coroutines.flow.Flow
 interface WordRepository {
     // --- Data Streams (Flows) ---
     fun getAllLemmas(): Flow<List<WordDomain>>
-    fun getWordByStates(states: List<WordState>): Flow<List<WordDomain>>
+    fun getWordsByStates(states: List<WordState>): Flow<List<WordDomain>>
     fun getWordExceptStates(states: List<WordState>): Flow<List<WordDomain>>
     fun getCountByStates(states: List<WordState>): Flow<Int>
     fun getCountExceptStates(states: List<WordState>): Flow<Int>
     // --- Create / Add ---
     suspend fun addWords(words: List<WordDomain>)
-
+    suspend fun getLemmasForWords(word: List<String>): Map<String, String>
     // --- Update ---
     /**
      * Lightweight update. Use this for changing simple properties like 'state'.
@@ -33,6 +33,7 @@ interface WordRepository {
     suspend fun getWordById(id: Int): Result<WordDomain>
     suspend fun getAllLemmasAndForms(): List<String>
     suspend fun getExistingWords(words: List<String>): Set<String>
+    suspend fun getWordDomainsForWords(words: List<String>): Map<String, WordDomain>
 
     // --- Delete ---
     suspend fun deleteWord(word: WordDomain)
