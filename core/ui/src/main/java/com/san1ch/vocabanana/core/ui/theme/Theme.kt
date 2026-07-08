@@ -14,6 +14,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
+import com.san1ch.vocabanana.core.ui.BananaBackgroundDark
+import com.san1ch.vocabanana.core.ui.BananaOnPrimaryDark
+import com.san1ch.vocabanana.core.ui.BananaPrimary
+import com.san1ch.vocabanana.core.ui.BananaPrimaryDark
+import com.san1ch.vocabanana.core.ui.BananaSurfaceDark
+import com.san1ch.vocabanana.core.ui.Typography
 
 private val DarkColorScheme = darkColorScheme(
     primary = BananaPrimaryDark,

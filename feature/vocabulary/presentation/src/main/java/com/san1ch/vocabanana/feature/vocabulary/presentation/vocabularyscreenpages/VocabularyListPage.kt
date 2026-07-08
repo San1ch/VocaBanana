@@ -67,7 +67,7 @@ import com.san1ch.vocabanana.core.ui.WordFilter
 import com.san1ch.vocabanana.core.ui.WordUi
 import com.san1ch.vocabanana.core.ui.compose.DeleteConfirmDialog
 import com.san1ch.vocabanana.core.ui.compose.SearchBarField
-import com.san1ch.vocabanana.core.ui.theme.AppColor
+import com.san1ch.vocabanana.core.ui.AppColor
 import com.san1ch.vocabanana.feature.vocabulary.presentation.R
 import com.san1ch.vocabanana.feature.vocabulary.presentation.VocabMilestone
 import com.san1ch.vocabanana.feature.vocabulary.presentation.VocabularyIntent

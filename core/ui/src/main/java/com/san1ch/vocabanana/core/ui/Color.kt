@@ -1,4 +1,4 @@
-package com.san1ch.vocabanana.core.ui.theme
+package com.san1ch.vocabanana.core.ui
 
 import androidx.compose.ui.graphics.Color
 

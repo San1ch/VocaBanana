@@ -1,11 +1,8 @@
 package com.san1ch.vocabanana.feature.text.domain.usecase
 
-import com.san1ch.vocabanana.core.essentials.repositories.WordRepository
 import javax.inject.Inject
 
-class TextProcessingService @Inject constructor(
-    private val wordRepository: WordRepository,
-) {
+class TextProcessingService @Inject constructor() {
 
     val stopWords = setOf(
         // Articles & Conjunctions

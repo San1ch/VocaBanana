@@ -57,7 +57,7 @@ import com.san1ch.vocabanana.core.ui.StateObserver
 import com.san1ch.vocabanana.core.ui.WordUi
 import com.san1ch.vocabanana.core.ui.compose.CollectUiEvents
 import com.san1ch.vocabanana.core.ui.compose.SearchBarField
-import com.san1ch.vocabanana.core.ui.theme.AppColor
+import com.san1ch.vocabanana.core.ui.AppColor
 
 @Composable
 fun NewWordListScreen(
