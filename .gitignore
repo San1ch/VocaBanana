@@ -1,24 +1,34 @@
+# ==========================================
+# 1. Android Studio, Gradle, and Kotlin Trash
+# ==========================================
 *.iml
-.gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-.DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
+.gradle/
+.kotlin/
+build/
+**/build/
 local.properties
-/app/src/main/java/com/example/.vs/slnx.sqlite
-/app/src/main/java/com/example/.vs/VSWorkspaceState.json
-/app/release/output-metadata.json
-/my-release-key.jks
-/app/src/main/java/com/example/.vs/example.slnx/v18/DocumentLayout.json
-/app/release/baselineProfiles/1/app-release.dm
-/app/release/baselineProfiles/0/app-release.dm
-/app/release/app-release.apk
-/app/src/main/java/com/example/.vs/example.slnx/v18/.wsuo
+.DS_Store
+captures/
+.externalNativeBuild/
+.cxx/
+
+# ==========================================
+# 2. IDE Settings (Ignore the entire folder)
+# ==========================================
+.idea/
+
+# Exception example for the future (if you want to share Git settings inside IDE):
+#!.idea/vcs.xml
+
+# ==========================================
+# 3. Visual Studio Leftovers (.vs folders)
+# ==========================================
+**/.vs/
+
+# ==========================================
+# 4. Releases, Heavy APKs, and Secret Keys (Critical!)
+# ==========================================
+*.apk
+*.jks
+*.dm
+output-metadata.json
