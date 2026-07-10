@@ -67,8 +67,12 @@ class TextRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getTextWordCounts(wordIds: List<Int>): Map<Int, Int> {
-        return textWordCountDao.getWordCountsByWordList(wordIds)
-            .associate { it.wordId to it.count }
+        val entities = textWordCountDao.getWordCountsByWordList(wordIds)
+        return entities
+            .groupBy { it.wordId }
+            .mapValues { entry ->
+                entry.value.sumOf { it.count }
+            }
     }
 
 }

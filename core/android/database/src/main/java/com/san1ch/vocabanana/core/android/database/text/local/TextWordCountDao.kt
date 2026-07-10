@@ -13,7 +13,8 @@ interface TextWordCountDao {
 
     @Query("DELETE FROM text_word_counts WHERE textId = :textId")
     suspend fun deleteCountsForText(textId: Int)
-
+    @Query("SELECT id FROM texts")
+    suspend fun getAllTextIds(): List<Int>
     @Query("SELECT * FROM text_word_counts WHERE textId = :textId")
     suspend fun getWordCountsForText(textId: Int): List<TextWordCountEntity>
     
