@@ -20,8 +20,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.san1ch.vocabanana.core.ui.StateObserver
-import com.san1ch.vocabanana.core.ui.TextPreview
+import com.san1ch.vocabanana.core.ui.state.StateObserver
+import com.san1ch.vocabanana.core.ui.model.TextPreview
 import com.san1ch.vocabanana.core.ui.compose.CollectUiEvents
 
 sealed class DebugIntent {

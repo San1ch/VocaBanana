@@ -53,11 +53,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.san1ch.vocabanana.core.essentials.model.word.WordState
-import com.san1ch.vocabanana.core.ui.StateObserver
-import com.san1ch.vocabanana.core.ui.WordUi
+import com.san1ch.vocabanana.core.ui.state.StateObserver
+import com.san1ch.vocabanana.core.ui.model.WordUi
 import com.san1ch.vocabanana.core.ui.compose.CollectUiEvents
 import com.san1ch.vocabanana.core.ui.compose.SearchBarField
-import com.san1ch.vocabanana.core.ui.AppColor
+import com.san1ch.vocabanana.core.ui.theme.AppColor
 
 @Composable
 fun NewWordListScreen(

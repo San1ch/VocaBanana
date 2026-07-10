@@ -4,7 +4,7 @@ import androidx.lifecycle.viewModelScope
 import com.san1ch.vocabanana.core.essentials.model.AppThemeMode
 import com.san1ch.vocabanana.core.essentials.repositories.SettingsRepository
 import com.san1ch.vocabanana.core.ui.BaseViewModel
-import com.san1ch.vocabanana.core.ui.UiEvent
+import com.san1ch.vocabanana.core.ui.model.UiEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow

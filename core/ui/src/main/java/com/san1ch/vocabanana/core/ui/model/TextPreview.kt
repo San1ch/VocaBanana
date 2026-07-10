@@ -1,4 +1,4 @@
-package com.san1ch.vocabanana.core.ui
+package com.san1ch.vocabanana.core.ui.model
 
 import com.san1ch.vocabanana.core.essentials.model.text.TextDomain
 

@@ -62,12 +62,12 @@ import co.yml.charts.ui.piechart.charts.DonutPieChart
 import co.yml.charts.ui.piechart.models.PieChartConfig
 import co.yml.charts.ui.piechart.models.PieChartData
 import com.san1ch.vocabanana.core.essentials.model.word.WordState
-import com.san1ch.vocabanana.core.ui.SortType
-import com.san1ch.vocabanana.core.ui.WordFilter
-import com.san1ch.vocabanana.core.ui.WordUi
+import com.san1ch.vocabanana.core.ui.model.SortType
+import com.san1ch.vocabanana.core.ui.model.WordFilter
+import com.san1ch.vocabanana.core.ui.model.WordUi
 import com.san1ch.vocabanana.core.ui.compose.DeleteConfirmDialog
 import com.san1ch.vocabanana.core.ui.compose.SearchBarField
-import com.san1ch.vocabanana.core.ui.AppColor
+import com.san1ch.vocabanana.core.ui.theme.AppColor
 import com.san1ch.vocabanana.feature.vocabulary.presentation.R
 import com.san1ch.vocabanana.feature.vocabulary.presentation.VocabMilestone
 import com.san1ch.vocabanana.feature.vocabulary.presentation.VocabularyIntent

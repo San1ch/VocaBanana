@@ -7,7 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.net.toUri
-import com.san1ch.vocabanana.core.ui.UiEvent
+import com.san1ch.vocabanana.core.ui.model.UiEvent
 import kotlinx.coroutines.flow.Flow
 
 @SuppressLint("LocalContextGetResourceValueCall")

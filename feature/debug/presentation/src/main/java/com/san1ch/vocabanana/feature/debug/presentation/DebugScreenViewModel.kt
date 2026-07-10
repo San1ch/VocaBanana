@@ -4,9 +4,9 @@ import androidx.lifecycle.viewModelScope
 import com.san1ch.vocabanana.core.essentials.repositories.TextRepository
 import com.san1ch.vocabanana.core.essentials.repositories.WordRepository
 import com.san1ch.vocabanana.core.ui.BaseViewModel
-import com.san1ch.vocabanana.core.ui.UiState
-import com.san1ch.vocabanana.core.ui.asUiState
-import com.san1ch.vocabanana.core.ui.toPreview
+import com.san1ch.vocabanana.core.ui.state.UiState
+import com.san1ch.vocabanana.core.ui.state.asUiState
+import com.san1ch.vocabanana.core.ui.model.toPreview
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow

@@ -1,4 +1,4 @@
-package com.san1ch.vocabanana.core.ui
+package com.san1ch.vocabanana.core.ui.state
 
 sealed interface UiState<out T> {
     data object Loading : UiState<Nothing>

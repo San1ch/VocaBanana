@@ -6,7 +6,7 @@ import com.san1ch.vocabanana.core.essentials.repositories.SettingsRepository
 import com.san1ch.vocabanana.core.essentials.repositories.TextRepository
 import com.san1ch.vocabanana.core.essentials.repositories.WordRepository
 import com.san1ch.vocabanana.core.ui.BaseViewModel
-import com.san1ch.vocabanana.core.ui.UiEvent
+import com.san1ch.vocabanana.core.ui.model.UiEvent
 import com.san1ch.vocabanana.feature.text.domain.GenerateWordsFromTextUseCase
 import com.san1ch.vocabanana.feature.text.presentation.mapper.GenerateWordsFromTextUiMapper
 import com.san1ch.vocabanana.feature.text.presentation.model.GenerateWordsFromTextUiState
@@ -20,11 +20,11 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 //toPreview
-import com.san1ch.vocabanana.core.ui.TextPreview
-import com.san1ch.vocabanana.core.ui.TextUi
-import com.san1ch.vocabanana.core.ui.WordUi
-import com.san1ch.vocabanana.core.ui.toPreview
-import com.san1ch.vocabanana.core.ui.toUi
+import com.san1ch.vocabanana.core.ui.model.TextPreview
+import com.san1ch.vocabanana.core.ui.model.TextUi
+import com.san1ch.vocabanana.core.ui.model.WordUi
+import com.san1ch.vocabanana.core.ui.model.toPreview
+import com.san1ch.vocabanana.core.ui.model.toUi
 
 @HiltViewModel
 class TextListScreenViewModel @Inject constructor(

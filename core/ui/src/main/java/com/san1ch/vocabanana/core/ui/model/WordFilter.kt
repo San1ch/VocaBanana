@@ -1,4 +1,4 @@
-package com.san1ch.vocabanana.core.ui
+package com.san1ch.vocabanana.core.ui.model
 
 
 data class WordFilter(

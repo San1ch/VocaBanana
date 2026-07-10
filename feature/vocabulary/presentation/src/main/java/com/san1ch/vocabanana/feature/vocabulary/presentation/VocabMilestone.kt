@@ -1,7 +1,7 @@
 package com.san1ch.vocabanana.feature.vocabulary.presentation
 
 import androidx.compose.ui.graphics.Color
-import com.san1ch.vocabanana.core.ui.MileStoneColor
+import com.san1ch.vocabanana.core.ui.theme.MileStoneColor
 
 enum class VocabMilestone(val label: String, val threshold: Int, val color: Color) {
     NOVICE("Novice", 100, MileStoneColor.Novice),
