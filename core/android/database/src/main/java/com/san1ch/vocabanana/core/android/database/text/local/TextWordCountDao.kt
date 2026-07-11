@@ -4,10 +4,22 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface TextWordCountDao {
-
+    @Query("""
+SELECT wordId
+FROM text_word_counts
+WHERE (:filter = 0)
+   OR (:exclude = 0 AND textId IN (:textIds))
+   OR (:exclude = 1 AND textId NOT IN (:textIds))
+""")
+    fun getWordIdsByTextIds(
+        textIds: List<Int>,
+        filter: Boolean,
+        exclude: Boolean
+    ): Flow<List<Int>>
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertWordCounts(counts: List<TextWordCountEntity>)
 

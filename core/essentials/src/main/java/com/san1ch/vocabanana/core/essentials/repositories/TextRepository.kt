@@ -2,10 +2,11 @@ package com.san1ch.vocabanana.core.essentials.repositories
 
 import com.san1ch.vocabanana.core.essentials.model.text.TextDomain
 import com.san1ch.vocabanana.core.essentials.model.text.TextWordCount
-import com.san1ch.vocabanana.core.essentials.model.text.WordWithCount
+import com.san1ch.vocabanana.core.essentials.model.word.FilterType
 import kotlinx.coroutines.flow.Flow
 
 interface TextRepository {
+    fun getWordIdsByTextIds(textIds: FilterType<Int>): Flow<List<Int>>
 
     fun getTexts(): Flow<List<TextDomain>>
     suspend fun getTextById(id: Int): Result<TextDomain>

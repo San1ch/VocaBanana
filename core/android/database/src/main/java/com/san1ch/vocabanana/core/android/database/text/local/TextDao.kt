@@ -7,6 +7,9 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface TextDao {
+
+
+
     @Query("SELECT * FROM texts")
     fun getTexts(): Flow<List<TextEntity>>
 
