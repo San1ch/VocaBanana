@@ -2,8 +2,12 @@ package com.san1ch.vocabanana.feature.vocabulary.presentation
 
 import androidx.lifecycle.viewModelScope
 import com.san1ch.vocabanana.core.essentials.model.fold
+import com.san1ch.vocabanana.core.essentials.model.word.FilterType
+import com.san1ch.vocabanana.core.essentials.model.word.WordQuery
 import com.san1ch.vocabanana.core.essentials.model.word.WordState
 import com.san1ch.vocabanana.core.essentials.repositories.WordRepository
+import com.san1ch.vocabanana.core.essentials.usecases.GetWordsUseCase
+import com.san1ch.vocabanana.core.essentials.usecases.GetWordsWithCountUseCase
 import com.san1ch.vocabanana.core.ui.BaseViewModel
 import com.san1ch.vocabanana.core.ui.SortType
 import com.san1ch.vocabanana.core.ui.UiEvent
@@ -16,9 +20,12 @@ import com.san1ch.vocabanana.core.ui.toUi
 import com.san1ch.vocabanana.feature.vocabulary.presentation.router.VocabularyRouter
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -26,20 +33,22 @@ import javax.inject.Inject
 
 @HiltViewModel
 class VocabularyScreenViewModel @Inject constructor(
+    private val getWordsWithCountUseCase: GetWordsWithCountUseCase,
     private val wordRepository: WordRepository,
     private val vocabularyRouter: VocabularyRouter
 ) : BaseViewModel() {
 
     private val _wordFilter = MutableStateFlow(WordFilter())
+    @OptIn(FlowPreview::class)
+    private val debounceWordFilter = _wordFilter.debounce(500).distinctUntilChanged()
     private val _selectedWordId = MutableStateFlow<Int?>(null)
 
     // The single stream of state for the entire screen
     val uiState = combine(
-        wordRepository.getAllLemmas(),
-        wordRepository.getCountByStates(listOf(WordState.NEW)),
-        _wordFilter,
+        getWordsWithCountUseCase(),
+        debounceWordFilter,
         _selectedWordId
-    ) { allLemmas, newCount, filter, selectedId ->
+    ) { allLemmas, filter, selectedId ->
 
         val validLemmas = allLemmas.filter { it.state != WordState.NEW }
 
@@ -56,7 +65,7 @@ class VocabularyScreenViewModel @Inject constructor(
             ),
             wordFilter = filter,
             selectedWordId = selectedId,
-            newWordsCount = newCount
+            newWordsCount = allLemmas.count { it.state == WordState.NEW }
         )
     }.stateIn(
         scope = viewModelScope,
