@@ -27,6 +27,9 @@ import com.san1ch.vocabanana.core.ui.compose.CollectUiEvents
 sealed class DebugIntent {
     data class SelectText(val id: Int) : DebugIntent()
     object DeleteAllWords : DebugIntent()
+    object PrintWords : DebugIntent()
+
+    object PrintWordCounts : DebugIntent()
 }
 
 @Composable
@@ -47,7 +50,7 @@ fun DebugScreen(
             DebugContent(
                 texts = texts,
                 selectedId = selectedId,
-                onIntent = viewModel::handleAction
+                onIntent = viewModel::onIntent
             )
         }
     )
@@ -76,6 +79,17 @@ fun DebugContent(
         Spacer(modifier = Modifier.height(16.dp))
         Button(onClick = { onIntent(DebugIntent.DeleteAllWords) }) {
             Text(stringResource(R.string.delete_all_words))
+        }
+        Button(
+            onClick = { onIntent(DebugIntent.PrintWords) }
+        ) {
+            Text("Print words")
+        }
+
+        Button(
+            onClick = { onIntent(DebugIntent.PrintWordCounts) }
+        ) {
+            Text("Print counts")
         }
     }
 }
