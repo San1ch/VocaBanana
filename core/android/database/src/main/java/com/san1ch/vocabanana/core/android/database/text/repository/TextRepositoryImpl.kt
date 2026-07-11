@@ -9,6 +9,7 @@ import com.san1ch.vocabanana.core.android.database.text.local.TextWordCountDao
 import com.san1ch.vocabanana.core.android.database.text.local.toEntity
 import com.san1ch.vocabanana.core.essentials.model.text.TextDomain
 import com.san1ch.vocabanana.core.essentials.model.text.TextWordCount
+import com.san1ch.vocabanana.core.essentials.model.word.FilterType
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -19,6 +20,31 @@ class TextRepositoryImpl @Inject constructor(
     private val fileStorage: FileStorage,
     private val textWordCountDao: TextWordCountDao
 ) : TextRepository {
+    override fun getWordIdsByTextIds(textIds: FilterType<Int>): Flow<List<Int>> {
+        return when (textIds) {
+            is FilterType.All ->
+                textWordCountDao.getWordIdsByTextIds(
+                    emptyList(),
+                    filter = false,
+                    exclude = false
+                )
+
+            is FilterType.Include ->
+                textWordCountDao.getWordIdsByTextIds(
+                    textIds.items,
+                    filter = true,
+                    exclude = false
+                )
+
+            is FilterType.Exclude ->
+                textWordCountDao.getWordIdsByTextIds(
+                    textIds.items,
+                    filter = true,
+                    exclude = true
+                )
+        }
+    }
+
 
     override fun getTexts(): Flow<List<TextDomain>> =
         textDao.getTexts().map { list ->
@@ -26,8 +52,9 @@ class TextRepositoryImpl @Inject constructor(
                 entity.toDomainUnsafe(content = "")
             }
         }
+
     override suspend fun getTextById(id: Int): Result<TextDomain> {
-        val text = when(val result = textDao.getTextById(id)){
+        val text = when (val result = textDao.getTextById(id)) {
             null -> return Result.failure(Exception("Text not found"))
             else -> result.toDomainUnsafe(fileStorage.loadText(result.contentPath))
         }
@@ -49,9 +76,9 @@ class TextRepositoryImpl @Inject constructor(
         )
     }
 
-    override suspend  fun deleteText(textId: Int) = textDao.deleteTextById(textId)
+    override suspend fun deleteText(textId: Int) = textDao.deleteTextById(textId)
 
-    override suspend  fun updateProgress(id: Int, position: Float, time: Long) {
+    override suspend fun updateProgress(id: Int, position: Float, time: Long) {
         textDao.updateProgress(id, position, time)
     }
 
@@ -67,7 +94,10 @@ class TextRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getTextWordCounts(wordIds: List<Int>): Map<Int, Int> {
+        if (wordIds.isEmpty()) return emptyMap()
+
         val entities = textWordCountDao.getWordCountsByWordList(wordIds)
+
         return entities
             .groupBy { it.wordId }
             .mapValues { entry ->

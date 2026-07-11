@@ -1,9 +1,11 @@
 package com.san1ch.vocabanana.feature.vocabulary.presentation
 
 import androidx.lifecycle.viewModelScope
+import com.san1ch.vocabanana.core.essentials.model.word.FilterType
+import com.san1ch.vocabanana.core.essentials.model.word.WordQuery
 import com.san1ch.vocabanana.core.essentials.model.word.WordState
 import com.san1ch.vocabanana.core.essentials.repositories.WordRepository
-import com.san1ch.vocabanana.core.essentials.usecases.GetNewWordWithCountByStateUseCase
+import com.san1ch.vocabanana.core.essentials.usecases.GetWordsWithCountUseCase
 import com.san1ch.vocabanana.core.ui.BaseViewModel
 import com.san1ch.vocabanana.core.ui.model.SortType
 import com.san1ch.vocabanana.core.ui.model.WordFilter
@@ -14,6 +16,7 @@ import com.san1ch.vocabanana.core.ui.state.UiState
 import com.san1ch.vocabanana.feature.vocabulary.presentation.router.VocabularyRouter
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
@@ -28,17 +31,18 @@ import javax.inject.Inject
 class NewWordListScreenViewModel @Inject constructor(
     private val wordRepository: WordRepository,
     private val vocabularyRouter: VocabularyRouter,
-    private val getNewWordWithCountByStateUseCase: GetNewWordWithCountByStateUseCase
+    private val getWordWithCountUseCase: GetWordsWithCountUseCase
 ) : BaseViewModel() {
 
     // Internal UI State flows
     private val _wordFilter = MutableStateFlow(WordFilter(sortType = SortType.COUNT))
+    @OptIn(FlowPreview::class)
+    private val debounceWordFilter = _wordFilter.debounce(500).distinctUntilChanged()
 
     // The Main State: Combined and Optimized
-    @OptIn(kotlinx.coroutines.FlowPreview::class)
     val uiState = combine(
-        getNewWordWithCountByStateUseCase(listOf(WordState.NEW)),
-        _wordFilter.debounce(300)
+        getWordWithCountUseCase(WordQuery(states = FilterType.Include(listOf(WordState.NEW)))),
+        debounceWordFilter
     ) { rawList, filterData ->
         // Filter only NEW words, Transform to UI object and Filter
         val filteredList = rawList

@@ -2,146 +2,116 @@ package com.san1ch.vocabanana.core.android.database.word.repository
 
 import com.san1ch.vocabanana.core.android.database.word.toDomain
 import com.san1ch.vocabanana.core.android.database.word.toWordEntity
+import com.san1ch.vocabanana.core.android.database.word.local.WordDao
+import com.san1ch.vocabanana.core.android.database.word.model.WordToLemmaPair
 import com.san1ch.vocabanana.core.essentials.exceptions.RepositoryNoDataByRequestException
+import com.san1ch.vocabanana.core.essentials.model.word.FilterType
 import com.san1ch.vocabanana.core.essentials.model.word.WordDomain
 import com.san1ch.vocabanana.core.essentials.model.word.WordState
 import com.san1ch.vocabanana.core.essentials.repositories.WordRepository
-import com.san1ch.vocabanana.core.android.database.word.local.WordDao
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
-import kotlin.collections.associate
-import com.san1ch.vocabanana.core.android.database.word.model.WordToLemmaPair
 
 class WordRepositoryRoomImpl @Inject constructor(
     private val wordDao: WordDao
 ) : WordRepository {
 
-    // Helper to convert Enum list to Int list for Room queries
-    private fun List<WordState>.toIntList() = this.map { it.value }
+    override fun getWords(
+        wordIds: FilterType<Int>,
+        states: FilterType<WordState>
+    ): Flow<List<WordDomain>> {
 
-    // --- State-Based Queries (Flows for UI) ---
-
-    override fun getAllLemmas(): Flow<List<WordDomain>> =
-        wordDao.getAllWordsFlow()
-            .distinctUntilChanged()
-            .map { list -> list.map { it.toDomain() } }
-
-    override fun getWordsByStates(states: List<WordState>): Flow<List<WordDomain>> =
-        wordDao.getWordsByStates(states.toIntList())
-            .distinctUntilChanged()
-            .map { list -> list.map { it.toDomain() } }
-
-    override fun getWordExceptStates(states: List<WordState>): Flow<List<WordDomain>> =
-        wordDao.getWordsExceptStates(states.toIntList())
-            .distinctUntilChanged()
-            .map { list -> list.map { it.toDomain() } }
-
-    override fun getCountExceptStates(states: List<WordState>): Flow<Int> =
-        wordDao.getCountExceptStates(states.toIntList())
-            .distinctUntilChanged()
-
-    override fun getCountByStates(states: List<WordState>): Flow<Int> =
-        wordDao.getCountByStates(states.toIntList())
-            .distinctUntilChanged()
-
-
-    // --- Detail & CRUD ---
-
-    override suspend fun getWordById(id: Int): Result<WordDomain> {
-        val result = wordDao.getWordWithFormsById(id)
-        return if (result != null) {
-            Result.success(result.toDomain())
-        } else {
-            Result.failure(RepositoryNoDataByRequestException())
+        val idsIncluded = when (wordIds) {
+            is FilterType.Include -> wordIds.items
+            else -> emptyList()
         }
+
+        val idsExcluded = when (wordIds) {
+            is FilterType.Exclude -> wordIds.items
+            else -> emptyList()
+        }
+
+        val statesIncluded = when (states) {
+            is FilterType.Include -> states.items.map { it.value }
+            else -> emptyList()
+        }
+
+        val statesExcluded = when (states) {
+            is FilterType.Exclude -> states.items.map { it.value }
+            else -> emptyList()
+        }
+
+        return wordDao.getWordsFiltered(
+            idsIncluded = idsIncluded,
+            idsExcluded = idsExcluded,
+            statesIncluded = statesIncluded,
+            statesExcluded = statesExcluded,
+            filterIds = wordIds is FilterType.Include,
+            excludeIds = wordIds is FilterType.Exclude,
+            filterStates = states is FilterType.Include,
+            excludeStates = states is FilterType.Exclude
+        )
+            .distinctUntilChanged()
+            .map { list -> list.map { it.toDomain() } }
     }
 
-    override suspend fun getWordByWord(word: String): Result<WordDomain> {
-        val result = wordDao.getWordByAnyForm(word.trim().lowercase())
-        return if (result != null) {
-            Result.success(result.toDomain())
-        } else {
-            Result.failure(RepositoryNoDataByRequestException())
-        }
-    }
 
-    /**
-     * Optimized update: Use this for changing WordState (colors).
-     * It only touches the 'words' table, not 'word_forms'.
-     */
     override suspend fun updateWord(word: WordDomain) {
         wordDao.insertWord(word.toWordEntity())
     }
 
-    /**
-     * Heavy update: Merges new forms with existing ones in the DB.
-     * Use this when parsing text or importing words.
-     */
     override suspend fun syncWordWithDatabase(word: WordDomain) {
-        val existingRelation = if (word.id != 0) {
-            wordDao.getWordWithFormsById(word.id)
-        } else {
-            wordDao.getWordWithFormsByLemma(word.lemma)
-        }
+        val existing = if (word.id != 0) wordDao.getWordWithFormsById(word.id)
+        else wordDao.getWordWithFormsByLemma(word.lemma)
 
-        if (existingRelation != null) {
-            // If word exists, merge its forms with the new ones
-            val updatedDomain = existingRelation.toDomain().addForms(word.forms)
-            wordDao.insertWordWithForms(updatedDomain.toWordEntity(), updatedDomain.forms)
+        if (existing != null) {
+            val updated = existing.toDomain().addForms(word.forms)
+            wordDao.insertWordWithForms(updated.toWordEntity(), updated.forms)
         } else {
-            // If it's a completely new word
             wordDao.insertWordWithForms(word.toWordEntity(), word.forms)
         }
     }
+
     override suspend fun changeState(wordId: Int, state: WordState) {
-        val word = wordDao.getWordWithFormsById(wordId)
-        word?.let {
-            val updatedWord = it.toDomain().withState(state)
-            wordDao.insertWord(updatedWord.toWordEntity())
+        wordDao.getWordWithFormsById(wordId)?.let {
+            val updated = it.toDomain().withState(state)
+            wordDao.insertWord(updated.toWordEntity())
         }
     }
 
     override suspend fun addWords(words: List<WordDomain>) {
-        val databaseWordsMap = wordDao.getAllWordsList().associateBy { it.word.lemma }
-        val processingMap = mutableMapOf<String, WordDomain>()
-
-        words.forEach { newWord ->
-            // Check if we already handled this lemma in this loop OR if it's in the DB
-            val existingEntry = processingMap[newWord.lemma]
-                ?: databaseWordsMap[newWord.lemma]?.toDomain()
-
-            if (existingEntry != null) {
-                // MERGE LOGIC: Add forms AND sum the counts
-                processingMap[newWord.lemma] = existingEntry
-                    .addForms(newWord.forms)
-            } else {
-                // New word entirely
-                processingMap[newWord.lemma] = newWord
-            }
+        val dbWords = wordDao.getAllWordsList().associateBy { it.word.lemma }
+        val toSave = words.fold(mutableMapOf<String, WordDomain>()) { acc, newWord ->
+            val existing = acc[newWord.lemma] ?: dbWords[newWord.lemma]?.toDomain()
+            acc[newWord.lemma] = existing?.addForms(newWord.forms) ?: newWord
+            acc
         }
+        toSave.values.forEach { wordDao.insertWordWithForms(it.toWordEntity(), it.forms) }
+    }
 
-        // Save to DB
-        processingMap.values.forEach { domain ->
-            wordDao.insertWordWithForms(domain.toWordEntity(), domain.forms)
-        }
+    override suspend fun getWordById(id: Int): Result<WordDomain> {
+        return wordDao.getWordWithFormsById(id)?.let { Result.success(it.toDomain()) }
+            ?: Result.failure(RepositoryNoDataByRequestException())
+    }
+
+    override suspend fun getWordByWord(word: String): Result<WordDomain> {
+        return wordDao.getWordByAnyForm(word.trim().lowercase())?.let {
+            Result.success(it.toDomain())
+        } ?: Result.failure(RepositoryNoDataByRequestException())
     }
 
     override suspend fun getLemmasForWords(words: List<String>): Map<String, String> {
         if (words.isEmpty()) return emptyMap()
-
         val databasePairs: List<WordToLemmaPair> = wordDao.getLemmasForWordsInternal(words)
-
         return databasePairs.associate { pair -> pair.word to pair.lemma }
     }
 
-
-    // --- Metadata & Deletion ---
-
     override suspend fun getAllLemmasAndForms(): List<String> {
-        val data = wordDao.getAllWordsList()
-        return data.flatMap { item -> listOf(item.word.lemma) + item.forms.map { it.form } }
+        return wordDao.getAllWordsList().flatMap { item ->
+            listOf(item.word.lemma) + item.forms.map { it.form }
+        }
     }
 
     override suspend fun getExistingWords(words: List<String>): Set<String> {
@@ -151,13 +121,13 @@ class WordRepositoryRoomImpl @Inject constructor(
         return (lemmas + forms).toSet()
     }
 
-
     override suspend fun getWordDomainsForWords(words: List<String>): Map<String, WordDomain> {
-        val words = wordDao.getWordsByLemmas(words).map{it.toDomain()}
-        return words.associateBy { it.lemma }
+        return wordDao.getWordsByLemmas(words).map { it.toDomain() }.associateBy { it.lemma }
     }
 
     override suspend fun deleteWord(word: WordDomain) = wordDao.deleteWord(word.toWordEntity())
+
     override suspend fun deleteById(id: Int) = wordDao.deleteById(id)
+
     override suspend fun deleteAllWords(): Int = wordDao.deleteAll()
 }

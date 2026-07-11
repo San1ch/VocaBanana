@@ -14,6 +14,7 @@ android {
 
 dependencies {
     implementation(projects.core.essentials)
+    implementation(projects.feature.debug.domain)
     implementation(projects.core.ui)
 
     implementation(platform(libs.androidx.compose.bom))
