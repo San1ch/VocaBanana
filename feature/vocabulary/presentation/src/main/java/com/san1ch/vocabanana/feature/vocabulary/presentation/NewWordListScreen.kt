@@ -53,9 +53,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.san1ch.vocabanana.core.essentials.model.word.WordState
-import com.san1ch.vocabanana.core.ui.state.StateObserver
+import com.san1ch.vocabanana.core.ui.state.ResourceObserver
 import com.san1ch.vocabanana.core.ui.model.WordUi
-import com.san1ch.vocabanana.core.ui.compose.CollectUiEvents
+import com.san1ch.vocabanana.core.ui.compose.CollectResource
 import com.san1ch.vocabanana.core.ui.compose.SearchBarField
 import com.san1ch.vocabanana.core.ui.theme.AppColor
 
@@ -63,13 +63,13 @@ import com.san1ch.vocabanana.core.ui.theme.AppColor
 fun NewWordListScreen(
     viewModel: NewWordListScreenViewModel = hiltViewModel()
 ) {
-    CollectUiEvents(
+    CollectResource(
         events = viewModel.events
     )
 
-    val state by viewModel.uiState.collectAsState()
+    val state by viewModel.resource.collectAsState()
 
-    StateObserver(state.words) { words ->
+    ResourceObserver(state.words) { words ->
         NewWordListContent(
             state = state,
             words = words,

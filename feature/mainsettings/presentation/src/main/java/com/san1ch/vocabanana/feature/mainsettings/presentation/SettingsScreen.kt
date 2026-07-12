@@ -41,7 +41,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.san1ch.vocabanana.core.essentials.model.AppThemeMode
-import com.san1ch.vocabanana.core.ui.compose.CollectUiEvents
+import com.san1ch.vocabanana.core.ui.compose.CollectResource
 
 
 // The actions the user can take
@@ -52,7 +52,7 @@ fun SettingsScreen(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
-    CollectUiEvents(
+    CollectResource(
         events = viewModel.events
     )
 

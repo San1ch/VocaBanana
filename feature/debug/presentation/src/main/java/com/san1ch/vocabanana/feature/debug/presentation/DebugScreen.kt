@@ -20,9 +20,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.san1ch.vocabanana.core.ui.state.StateObserver
+import com.san1ch.vocabanana.core.ui.state.ResourceObserver
 import com.san1ch.vocabanana.core.ui.model.TextPreview
-import com.san1ch.vocabanana.core.ui.compose.CollectUiEvents
+import com.san1ch.vocabanana.core.ui.compose.CollectResource
 
 sealed class DebugIntent {
     data class SelectText(val id: Int) : DebugIntent()
@@ -40,11 +40,11 @@ fun DebugScreen(
     val selectedId by viewModel.selectedTextId.collectAsStateWithLifecycle()
 
 
-    CollectUiEvents(
+    CollectResource(
         viewModel.events
     )
 
-    StateObserver(
+    ResourceObserver(
         state = textsState,
         onSuccess = { texts ->
             DebugContent(

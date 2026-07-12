@@ -8,7 +8,7 @@ import com.san1ch.vocabanana.core.essentials.usecases.GetWordsWithCountUseCase
 import com.san1ch.vocabanana.core.ui.BaseViewModel
 import com.san1ch.vocabanana.core.ui.model.SortType
 import com.san1ch.vocabanana.core.ui.model.UiEvent
-import com.san1ch.vocabanana.core.ui.state.UiState
+import com.san1ch.vocabanana.core.ui.state.Resource
 import com.san1ch.vocabanana.core.ui.model.WordFilter
 import com.san1ch.vocabanana.core.ui.model.WordUi
 import com.san1ch.vocabanana.core.ui.model.filterAndSort
@@ -41,7 +41,7 @@ class VocabularyScreenViewModel @Inject constructor(
     private val _selectedWordId = MutableStateFlow<Int?>(null)
 
     // The single stream of state for the entire screen
-    val uiState = combine(
+    val resource = combine(
         getWordsWithCountUseCase(),
         debounceWordFilter,
         _selectedWordId
@@ -50,7 +50,7 @@ class VocabularyScreenViewModel @Inject constructor(
         val validLemmas = allLemmas.filter { it.state != WordState.NEW }
 
         VocabularyUiState(
-            wordsState = UiState.Success(
+            wordsState = Resource.Success(
                 validLemmas.map { it.toUi() }.filterAndSort(filter)
             ),
             stats = VocabularyStats(
@@ -99,7 +99,7 @@ class VocabularyScreenViewModel @Inject constructor(
 }
 
 data class VocabularyUiState(
-    val wordsState: UiState<List<WordUi>> = UiState.Loading,
+    val wordsState: Resource<List<WordUi>> = Resource.Loading,
     val stats: VocabularyStats = VocabularyStats(),
     val wordFilter: WordFilter = WordFilter(),
     val selectedWordId: Int? = null,

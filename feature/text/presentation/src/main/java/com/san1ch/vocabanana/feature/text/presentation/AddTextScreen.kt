@@ -41,7 +41,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.san1ch.vocabanana.core.essentials.model.constants.TextConstant
-import com.san1ch.vocabanana.core.ui.compose.CollectUiEvents
+import com.san1ch.vocabanana.core.ui.compose.CollectResource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -49,7 +49,7 @@ import kotlinx.coroutines.launch
 fun AddTextScreen(
     viewModel: AddTextScreenViewModel = hiltViewModel()
 ) {
-    CollectUiEvents(events = viewModel.events)
+    CollectResource(events = viewModel.events)
 
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current

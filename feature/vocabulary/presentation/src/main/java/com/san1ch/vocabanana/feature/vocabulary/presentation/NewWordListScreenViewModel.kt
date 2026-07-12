@@ -12,7 +12,7 @@ import com.san1ch.vocabanana.core.ui.model.WordFilter
 import com.san1ch.vocabanana.core.ui.model.WordUi
 import com.san1ch.vocabanana.core.ui.model.filterAndSort
 import com.san1ch.vocabanana.core.ui.model.toUi
-import com.san1ch.vocabanana.core.ui.state.UiState
+import com.san1ch.vocabanana.core.ui.state.Resource
 import com.san1ch.vocabanana.feature.vocabulary.presentation.router.VocabularyRouter
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -40,7 +40,7 @@ class NewWordListScreenViewModel @Inject constructor(
     private val debounceWordFilter = _wordFilter.debounce(500).distinctUntilChanged()
 
     // The Main State: Combined and Optimized
-    val uiState = combine(
+    val resource = combine(
         getWordWithCountUseCase(WordQuery(states = FilterType.Include(listOf(WordState.NEW)))),
         debounceWordFilter
     ) { rawList, filterData ->
@@ -53,7 +53,7 @@ class NewWordListScreenViewModel @Inject constructor(
             .filterAndSort(filterData)
 
         NewWordListState(
-            words = UiState.Success(filteredList),
+            words = Resource.Success(filteredList),
             filter = filterData
         )
     }
@@ -62,7 +62,7 @@ class NewWordListScreenViewModel @Inject constructor(
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
-            NewWordListState(words = UiState.Loading)
+            NewWordListState(words = Resource.Loading)
         )
 
     /**
@@ -99,6 +99,6 @@ sealed interface NewWordListIntent {
 }
 
 data class NewWordListState(
-    val words: UiState<List<WordUi>> = UiState.Loading,
+    val words: Resource<List<WordUi>> = Resource.Loading,
     val filter: WordFilter = WordFilter()
 )

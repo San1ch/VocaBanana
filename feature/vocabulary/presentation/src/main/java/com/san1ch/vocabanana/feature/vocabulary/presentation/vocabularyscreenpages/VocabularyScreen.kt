@@ -14,8 +14,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.san1ch.vocabanana.core.ui.state.StateObserver
-import com.san1ch.vocabanana.core.ui.compose.CollectUiEvents
+import com.san1ch.vocabanana.core.ui.state.ResourceObserver
+import com.san1ch.vocabanana.core.ui.compose.CollectResource
 import com.san1ch.vocabanana.feature.vocabulary.presentation.VocabularyIntent
 import com.san1ch.vocabanana.feature.vocabulary.presentation.VocabularyScreenViewModel
 import kotlinx.coroutines.launch
@@ -25,10 +25,10 @@ import kotlinx.coroutines.launch
 fun VocabularyScreen(
     viewModel: VocabularyScreenViewModel = hiltViewModel()
 ) {
-    CollectUiEvents(viewModel.events)
+    CollectResource(viewModel.events)
 
     // Single observation point
-    val state by viewModel.uiState.collectAsState()
+    val state by viewModel.resource.collectAsState()
 
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -61,7 +61,7 @@ fun VocabularyScreen(
         }
     ) {
         // Observe the wordsState inside the main UI
-        StateObserver(state.wordsState) { words ->
+        ResourceObserver(state.wordsState) { words ->
             val selectedWord = words.find { it.id == state.selectedWordId }
 
             HorizontalPager(

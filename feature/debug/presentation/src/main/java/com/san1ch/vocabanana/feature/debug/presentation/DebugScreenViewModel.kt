@@ -7,8 +7,8 @@ import com.san1ch.vocabanana.core.essentials.model.word.WordQuery
 import com.san1ch.vocabanana.core.essentials.repositories.TextRepository
 import com.san1ch.vocabanana.core.essentials.repositories.WordRepository
 import com.san1ch.vocabanana.core.ui.BaseViewModel
-import com.san1ch.vocabanana.core.ui.state.UiState
-import com.san1ch.vocabanana.core.ui.state.asUiState
+import com.san1ch.vocabanana.core.ui.state.Resource
+import com.san1ch.vocabanana.core.ui.state.asResource
 import com.san1ch.vocabanana.core.ui.model.toPreview
 import com.san1ch.vocabanana.feature.debug.domain.DebugAssistant
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -30,8 +30,8 @@ class DebugScreenViewModel @Inject constructor(
 
     val textsState = textRepository.getTexts()
         .map { list -> list.map { it.toPreview() } }
-        .asUiState()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), UiState.Loading)
+        .asResource()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), Resource.Loading)
 
     private val _selectedTextId = MutableStateFlow<Int?>(null)
     val selectedTextId = _selectedTextId.asStateFlow()
