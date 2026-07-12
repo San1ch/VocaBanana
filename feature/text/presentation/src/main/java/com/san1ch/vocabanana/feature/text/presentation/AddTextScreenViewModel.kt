@@ -1,5 +1,6 @@
 package com.san1ch.vocabanana.feature.text.presentation
 
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.viewModelScope
 import com.san1ch.vocabanana.core.essentials.model.constants.TextConstant
 import com.san1ch.vocabanana.core.essentials.resources.CoreStringProvider
@@ -27,7 +28,7 @@ class AddTextScreenViewModel @Inject constructor(
     fun onIntent(intent: AddTextUiIntent) {
         when (intent) {
             is AddTextUiIntent.TitleChanged -> updateTitle(intent.title)
-            is AddTextUiIntent.ContentChanged -> updateContent(intent.content)
+            is AddTextUiIntent.ContentChanged -> updateContent(TextFieldValue(intent.content))
             is AddTextUiIntent.FileLoaded -> handleFileLoaded(intent.fileName, intent.content)
             is AddTextUiIntent.StartLoadingFile -> _uiState.update { it.copy(isLoadingFile = true) }
             is AddTextUiIntent.ClearClicked -> clearFields()
@@ -45,11 +46,11 @@ class AddTextScreenViewModel @Inject constructor(
         }
     }
 
-    private fun updateContent(newContent: String) {
+    private fun updateContent(newContent: TextFieldValue) {
         _uiState.update {
             it.copy(
                 content = newContent,
-                fileName = if (newContent.isNotBlank()) null else it.fileName
+                fileName = if (newContent.text.isNotBlank()) null else it.fileName
             )
         }
     }
@@ -57,7 +58,7 @@ class AddTextScreenViewModel @Inject constructor(
     private fun handleFileLoaded(name: String, fileContent: String) {
         _uiState.update {
             it.copy(
-                content = fileContent,
+                content = TextFieldValue(fileContent),
                 fileName = name,
                 isLoadingFile = false
             )
@@ -65,15 +66,15 @@ class AddTextScreenViewModel @Inject constructor(
     }
 
     private fun clearFields() {
-        _uiState.update { it.copy(title = "", content = "", fileName = null) }
+        _uiState.update { it.copy(title = "", content = TextFieldValue(""), fileName = null) }
     }
 
     private fun submitText() {
         val currentState = _uiState.value
-        if (currentState.content.isBlank() || currentState.isTitleTooLong) return
+        if (currentState.content.text.isBlank() || currentState.isTitleTooLong) return
 
         viewModelScope.launch(Dispatchers.IO) {
-            createTextUseCase(currentState.title, currentState.content).fold(  onSuccess = {
+            createTextUseCase(currentState.title, currentState.content.text).fold(  onSuccess = {
                 addTextRouter.navigateBack()
             },onFailure = { error ->
                 sendEvent(UiEvent.ShowToast(error.message ?: stringProvider.unknownErrorMessage))
@@ -85,7 +86,7 @@ class AddTextScreenViewModel @Inject constructor(
 
 data class AddTextUiState(
     val title: String = "",
-    val content: String = "",
+    val content: TextFieldValue = TextFieldValue(""),
     val fileName: String? = null,
     val isLoadingFile: Boolean = false,
     val isTitleTooLong: Boolean = false

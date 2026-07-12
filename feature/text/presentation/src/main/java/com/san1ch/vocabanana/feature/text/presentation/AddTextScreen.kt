@@ -97,8 +97,8 @@ fun AddTextScreen(
             }
         },
         onCopyClick = {
-            if (state.content.isNotBlank()) {
-                clipboardManager.setPrimaryClip(ClipData.newPlainText("text", state.content))
+            if (state.content.text.isNotBlank()) {
+                clipboardManager.setPrimaryClip(ClipData.newPlainText("text", state.content.text))
             }
         }
     )
@@ -167,7 +167,7 @@ fun AddTextContent(
             } else {
                 OutlinedTextField(
                     value = state.content,
-                    onValueChange = { onIntent(AddTextUiIntent.ContentChanged(it)) },
+                    onValueChange = { onIntent(AddTextUiIntent.ContentChanged(it.text)) },
                     label = { Text(if (state.isLoadingFile) stringResource(R.string.loading_file) else stringResource(
                         R.string.paste_your_text_here
                     )) },
@@ -182,7 +182,7 @@ fun AddTextContent(
                 OutlinedButton(
                     onClick = onCopyClick,
                     modifier = Modifier.weight(1f),
-                    enabled = state.content.isNotBlank()
+                    enabled = state.content.text.isNotBlank()
                 ) {
                     Text(stringResource(R.string.copy))
                 }
@@ -214,7 +214,7 @@ fun AddTextContent(
                 Button(
                     onClick = { onIntent(AddTextUiIntent.AddTextClicked) },
                     modifier = Modifier.weight(1f),
-                    enabled = state.content.isNotBlank() && !state.isTitleTooLong && !state.isLoadingFile
+                    enabled = state.content.text.isNotBlank() && !state.isTitleTooLong && !state.isLoadingFile
                 ) {
                     Text(stringResource(R.string.add))
                 }
