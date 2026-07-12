@@ -1,5 +1,6 @@
 package com.san1ch.vocabanana.feature.text.presentation.textlistscreenpages
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
@@ -81,6 +82,12 @@ fun TextListContent(
 
     val currentPage = remember(pagerState.currentPage) {
         TextListScreenPage.fromIndex(pagerState.currentPage)
+    }
+
+    BackHandler(enabled = pagerState.currentPage != 0) {
+        coroutineScope.launch {
+            pagerState.animateScrollToPage(pagerState.currentPage - 1)
+        }
     }
 
     LaunchedEffect(pagerState.currentPage) {
