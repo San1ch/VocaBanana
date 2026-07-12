@@ -43,6 +43,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -216,6 +217,11 @@ fun VocabularyDrawerContent(
                 selected = wordFilter.sortType == SortType.DATE,
                 onClick = { onIntent(VocabularyIntent.ChangeSortType(SortType.DATE)); onClose() }
             )
+            SortOption(
+                label = stringResource(R.string.count),
+                selected = wordFilter.sortType == SortType.COUNT,
+                onClick = { onIntent(VocabularyIntent.ChangeSortType(SortType.DATE)); onClose() }
+            )
         }
     }
 }
@@ -387,7 +393,6 @@ fun WordListItem(
         else -> Color.Gray
     }
 
-    // Modern card: Solid color, subtle border, no weird "frame"
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -395,12 +400,10 @@ fun WordListItem(
             .clickable { onClick() },
         shape = MaterialTheme.shapes.medium,
         colors = CardDefaults.cardColors(
-            // If it's light theme, we use pure white. If dark, a slightly lighter gray than background.
             containerColor = if (isSystemInDarkTheme())
                 MaterialTheme.colorScheme.surface
             else Color.White
         ),
-        // Use either elevation or border. For a clean look, let's use a soft border:
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         border = BorderStroke(
             width = 1.dp,
@@ -433,6 +436,19 @@ fun WordListItem(
                     text = word.partOfSpeech.lowercase(),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.secondary
+                )
+            }
+
+            Surface(
+                shape = CircleShape,
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f),
+                modifier = Modifier.padding(end = 8.dp)
+            ) {
+                Text(
+                    text = "×${word.count}",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
                 )
             }
 

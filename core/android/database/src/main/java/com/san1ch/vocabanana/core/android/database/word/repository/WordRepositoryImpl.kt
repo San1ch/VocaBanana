@@ -102,6 +102,11 @@ class WordRepositoryRoomImpl @Inject constructor(
         } ?: Result.failure(RepositoryNoDataByRequestException())
     }
 
+    override suspend fun getIdByWord(word: String): Result<Int> {
+        return wordDao.getWordIdByAnyForm(word.trim().lowercase())?.let { Result.success(it) }
+            ?: Result.failure(RepositoryNoDataByRequestException())
+    }
+
     override suspend fun getLemmasForWords(words: List<String>): Map<String, String> {
         if (words.isEmpty()) return emptyMap()
         val databasePairs: List<WordToLemmaPair> = wordDao.getLemmasForWordsInternal(words)

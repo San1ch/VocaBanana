@@ -23,6 +23,7 @@ interface WordRepository {
 
     // --- Get (Single or Static List) ---
     suspend fun getWordByWord(word: String): Result<WordDomain>
+    suspend fun getIdByWord(word: String): Result<Int>
     suspend fun getWordById(id: Int): Result<WordDomain>
 
     suspend fun getWordDomainsForWords(words: List<String>): Map<String, WordDomain>

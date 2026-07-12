@@ -2,9 +2,13 @@ package com.san1ch.vocabanana.feature.text.presentation
 
 import androidx.lifecycle.viewModelScope
 import com.san1ch.vocabanana.core.essentials.model.ReaderSettings
+import com.san1ch.vocabanana.core.essentials.model.word.FilterType
+import com.san1ch.vocabanana.core.essentials.model.word.WordQuery
 import com.san1ch.vocabanana.core.essentials.repositories.SettingsRepository
 import com.san1ch.vocabanana.core.essentials.repositories.TextRepository
 import com.san1ch.vocabanana.core.essentials.repositories.WordRepository
+import com.san1ch.vocabanana.core.essentials.usecases.GetWordsUseCase
+import com.san1ch.vocabanana.core.essentials.usecases.GetWordsWithCountUseCase
 import com.san1ch.vocabanana.core.ui.BaseViewModel
 import com.san1ch.vocabanana.core.ui.model.UiEvent
 import com.san1ch.vocabanana.feature.text.domain.GenerateWordsFromTextUseCase
@@ -25,6 +29,8 @@ import com.san1ch.vocabanana.core.ui.model.TextUi
 import com.san1ch.vocabanana.core.ui.model.WordUi
 import com.san1ch.vocabanana.core.ui.model.toPreview
 import com.san1ch.vocabanana.core.ui.model.toUi
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 
 @HiltViewModel
 class TextListScreenViewModel @Inject constructor(
@@ -33,7 +39,8 @@ class TextListScreenViewModel @Inject constructor(
     private val generateWordsFromText: GenerateWordsFromTextUseCase,
     private val settingsRepository: SettingsRepository,
     private val router: TextListRouter,
-    private val generateWordsFromTextUiMapper: GenerateWordsFromTextUiMapper
+    private val generateWordsFromTextUiMapper: GenerateWordsFromTextUiMapper,
+    private val getWordsWithCountUseCase: GetWordsWithCountUseCase
 ) : BaseViewModel() {
 
     // 1. Single source of truth for the UI
@@ -136,11 +143,14 @@ class TextListScreenViewModel @Inject constructor(
         _uiState.update { it.copy(wordInfoState = WordInfoState.Loading) }
 
         viewModelScope.launch {
-            wordRepository.getWordByWord(word)
+            wordRepository.getIdByWord(word)
                 .onSuccess { result ->
+                    val word = getWordsWithCountUseCase(WordQuery(wordIds = FilterType.Include<Int>(listOf(result)))).map {
+                        it[0]
+                    }.first()
                     _uiState.update {
                         it.copy(
-                            wordInfoState = WordInfoState.Found(result.toUi())
+                            wordInfoState = WordInfoState.Found(word.toUi())
                         )
                     }
                 }
