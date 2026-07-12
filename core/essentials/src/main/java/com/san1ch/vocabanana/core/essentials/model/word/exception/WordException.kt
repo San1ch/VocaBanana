@@ -10,23 +10,28 @@ abstract class WordException(
     cause: Throwable? = null
 ) : AppException(message, cause), WithLocalizedMessage {
     override fun getLocalizedMessage(stringProviderStore: StringProviderStore): String {
-        return getLocalizedMessage(stringProviderStore<WordStringProvider>() )
+        return getLocalizedMessage(stringProviderStore<WordStringProvider>())
     }
+
     abstract fun getLocalizedMessage(stringProvider: WordStringProvider): String
 }
 
 
-class WordValidateEmptyException: WordException("Word is empty"){
+class WordValidateEmptyException : WordException("Word is empty") {
     override fun getLocalizedMessage(stringProvider: WordStringProvider): String {
         return stringProvider.wordEmpty
     }
 }
-class WordValidateTooLongException(private val maxSize: Int) : WordException("Word is too long"){
+
+class WordValidateTooLongException(private val maxSize: Int) : WordException("Word is too long") {
     override fun getLocalizedMessage(stringProvider: WordStringProvider): String {
         return stringProvider.wordTooLong(maxSize)
     }
 }
-class WordValidateInvalidLemmaCharException(private val invalidChar: Char) : WordException("Word contains invalid lemma char"){
+
+class WordValidateInvalidLemmaCharException(
+    private val invalidChar: Char
+) : WordException("Word contains invalid lemma char") {
     override fun getLocalizedMessage(stringProvider: WordStringProvider): String {
         return stringProvider.wordInvalidLemmaChar(invalidChar)
     }

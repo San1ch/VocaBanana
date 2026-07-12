@@ -11,6 +11,7 @@ class CustomKotlinLibraryPlugin : Plugin<Project> {
         with(target) {
             pluginManager.apply("java-library")
             pluginManager.apply("org.jetbrains.kotlin.jvm")
+            pluginManager.apply("io.gitlab.arturbosch.detekt")
 
             extensions.configure<JavaPluginExtension> {
                 sourceCompatibility = JavaVersion.VERSION_17

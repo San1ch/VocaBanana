@@ -37,7 +37,7 @@ data class TextDomain private constructor(
         /**
          * Creates a TextDomain object with full validation of name and content.
          * Use this for user input or any data that needs to be verified against business rules.
-         * Returns [com.san1ch.vocabanana.core.model.ValidateResult.Success] if valid, or [com.san1ch.vocabanana.core.model.ValidateResult.Error] with the failure reason.
+         * Returns [ValidateResult.Success] if valid, or [ValidateResult.Error] with the failure reason.
          */
         fun create(
             id: Int = 0,

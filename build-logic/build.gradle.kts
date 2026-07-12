@@ -13,6 +13,8 @@ dependencies {
     implementation(libs.plugin.kotlin.android)
     implementation("org.jetbrains.kotlin.plugin.compose:org.jetbrains.kotlin.plugin.compose.gradle.plugin:2.1.0")
     implementation(libs.plugin.jetbrains.kotlin.jvm)
+    implementation(libs.detekt)
+
 
     implementation(libs.javapoet)
     constraints {
