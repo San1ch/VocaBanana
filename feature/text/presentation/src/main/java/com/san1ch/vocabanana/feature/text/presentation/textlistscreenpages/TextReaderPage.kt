@@ -183,123 +183,66 @@ fun WordInfoPopup(
 ) {
     AnimatedVisibility(
         visible = state !is WordInfoState.Hidden,
-        enter = fadeIn(animationSpec = tween(300)) + slideInVertically(initialOffsetY = { -100 }),
-        exit = fadeOut(animationSpec = tween(250)) + slideOutVertically(targetOffsetY = { -100 })
+        enter = fadeIn() + slideInVertically { -50 },
+        exit = fadeOut() + slideOutVertically { -50 }
     ) {
-        // Backdrop: Uses a darker, more professional dim
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.Black.copy(alpha = 0.5f)) // Darker for better focus
+                .background(Color.Black.copy(alpha = 0.4f))
                 .pointerInput(Unit) { detectTapGestures { onDismiss() } }
-                .padding(top = 56.dp, start = 24.dp, end = 24.dp),
+                .padding(20.dp),
             contentAlignment = Alignment.TopCenter
         ) {
             Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable(enabled = false) { /* Stop click propagation */ }
-                    .graphicsLayer {
-                        clip = true
-                        shape = RoundedCornerShape(24.dp)
-                        shadowElevation = 20.dp.toPx()
-                    },
-                shape = RoundedCornerShape(24.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(4.dp)
-                ),
-                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                elevation = CardDefaults.cardElevation(defaultElevation = 12.dp)
             ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(24.dp)
-                ) {
+                Column(modifier = Modifier.padding(20.dp)) {
                     when (state) {
-                        is WordInfoState.Loading -> {
-                            Box(
-                                Modifier
-                                    .fillMaxWidth()
-                                    .height(100.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                CircularProgressIndicator(strokeWidth = 3.dp)
-                            }
-                        }
+                        is WordInfoState.Loading -> CircularProgressIndicator(Modifier.align(Alignment.CenterHorizontally).size(40.dp))
 
                         is WordInfoState.NotFound -> {
-                            Text(
-                                "Definition Missing",
-                                style = MaterialTheme.typography.titleLarge,
-                                fontWeight = FontWeight.ExtraBold,
-                                color = MaterialTheme.colorScheme.error
-                            )
-                            Text(
-                                "We couldn't find '${state.word}' in your local dictionary.",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.padding(vertical = 8.dp)
-                            )
+                            Text("Not found", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.error)
+                            Text("The word '${state.word}' is missing from your dictionary.", style = MaterialTheme.typography.bodyMedium)
                             ActionSection(state.word, onOxfordClick)
                         }
 
                         is WordInfoState.Found -> {
-                            // Header Row: Word + Part of Speech Badge
+                            // Header: Lemma + POS (Compact)
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.Top
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Column(modifier = Modifier.weight(1f)) {
+                                Column {
+                                    Text(text = state.word.lemma, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
                                     Text(
-                                        text = state.word.lemma,
-                                        style = MaterialTheme.typography.headlineMedium,
-                                        fontWeight = FontWeight.Black,
-                                        color = MaterialTheme.colorScheme.onSurface
-                                    )
-                                    if (state.word.forms.isNotEmpty()) {
-                                        Text(
-                                            text = state.word.forms.joinToString(" • "),
-                                            style = MaterialTheme.typography.labelMedium,
-                                            color = MaterialTheme.colorScheme.primary,
-                                            letterSpacing = 1.sp
-                                        )
-                                    }
-                                }
-
-                                // Clean POS Badge
-                                Surface(
-                                    shape = CircleShape,
-                                    color = MaterialTheme.colorScheme.primaryContainer,
-                                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                                ) {
-                                    Text(
-                                        text = state.word.partOfSpeech.lowercase(),
-                                        modifier = Modifier.padding(
-                                            horizontal = 12.dp,
-                                            vertical = 4.dp
-                                        ),
-                                        style = MaterialTheme.typography.labelLarge,
-                                        fontWeight = FontWeight.Bold
+                                        text = "${state.word.partOfSpeech.uppercase()} • ${state.word.count} uses",
+                                        style = MaterialTheme.typography.labelMedium,
+                                        color = MaterialTheme.colorScheme.primary
                                     )
                                 }
+                                // Subtle badge
+                                Text(
+                                    text = state.word.state.name.lowercase().replaceFirstChar { it.uppercase() },
+                                    style = MaterialTheme.typography.labelSmall,
+                                    modifier = Modifier.background(MaterialTheme.colorScheme.primaryContainer, CircleShape).padding(horizontal = 10.dp, vertical = 4.dp)
+                                )
                             }
 
-                            Spacer(Modifier.height(16.dp))
+                            Spacer(Modifier.height(12.dp))
 
-                            // Definition with better line height
                             Text(
-                                text = state.word.definition.ifEmpty { "No definition available." },
-                                style = MaterialTheme.typography.bodyLarge.copy(
-                                    lineHeight = 26.sp,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
+                                text = state.word.definition.ifEmpty { "No definition." },
+                                style = MaterialTheme.typography.bodyMedium.copy(lineHeight = 22.sp),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
 
-                            Spacer(Modifier.height(24.dp))
                             ActionSection(state.word.lemma, onOxfordClick)
                         }
-
                         else -> {}
                     }
                 }
@@ -307,7 +250,6 @@ fun WordInfoPopup(
         }
     }
 }
-
 @Composable
 private fun ActionSection(word: String, onOxfordClick: (String) -> Unit) {
     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
