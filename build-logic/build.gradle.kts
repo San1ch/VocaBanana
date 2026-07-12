@@ -36,5 +36,9 @@ gradlePlugin {
             id = "custom-kotlin-library"
             implementationClass = "CustomKotlinLibraryPlugin"
         }
+        register("customAndroidComposeLibrary") {
+            id = "custom-android-compose-library"
+            implementationClass = "CustomAndroidComposeLibraryPlugin"
+        }
     }
 }

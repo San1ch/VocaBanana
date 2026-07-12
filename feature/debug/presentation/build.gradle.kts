@@ -1,15 +1,11 @@
 plugins {
-    alias(libs.plugins.custom.android.library)
+    alias(libs.plugins.custom.android.compose.library)
     alias(libs.plugins.hilt)
     alias(libs.plugins.ksp)
-    alias(libs.plugins.kotlin.compose)
 }
 
 android {
     namespace = "com.san1ch.vocabanana.feature.debug.presentation"
-    buildFeatures {
-        compose = true
-    }
 }
 
 dependencies {

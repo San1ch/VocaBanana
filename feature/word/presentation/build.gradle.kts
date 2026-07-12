@@ -1,5 +1,5 @@
 plugins {
-    alias(libs.plugins.custom.android.library)
+    alias(libs.plugins.custom.android.compose.library)
     alias(libs.plugins.hilt)
     alias(libs.plugins.ksp)
 }

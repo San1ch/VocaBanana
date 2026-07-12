@@ -144,6 +144,8 @@ junit-jupiter = { group = "org.junit.jupiter", name = "junit-jupiter", version.r
 custom-android-application = { id = "custom-android-application" }
 custom-android-library = { id = "custom-android-library" }
 custom-kotlin-library = { id = "custom-kotlin-library" }
+custom-android-compose-library = { id = "custom-android-compose-library" }
+
 
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
