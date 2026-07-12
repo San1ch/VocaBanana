@@ -23,16 +23,16 @@ class MainScreenViewModel @Inject constructor(
     fun onIntent(intent: MainUiIntent) {
         when (intent) {
             MainUiIntent.NavigateToVocabulary -> {
-                router.launchVocabulary()
+                router.navigateToVocabulary()
             }
             MainUiIntent.NavigateToTexts -> {
-                router.launchTextList()
+                router.navigateToTextList()
             }
             MainUiIntent.NavigateToSettings -> {
-                router.launchMainSettings()
+                router.navigateToMainSettings()
             }
             MainUiIntent.NavigateToDebug -> {
-                router.launchDebug()
+                router.navigateToDebug()
             }
         }
     }

@@ -1,8 +1,8 @@
 package com.san1ch.vocabanana.feature.main.presentation
 
 interface MainRouter {
-    fun launchMainSettings()
-    fun launchVocabulary()
-    fun launchTextList()
-    fun launchDebug()
+    fun navigateToMainSettings()
+    fun navigateToVocabulary()
+    fun navigateToTextList()
+    fun navigateToDebug()
 }

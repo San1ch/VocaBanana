@@ -8,7 +8,7 @@ import javax.inject.Inject
 class TextListRouterImpl @Inject constructor(
     private val appRouter: AppRouter
 ) : TextListRouter {
-    override fun launchAddText() {
+    override fun navigateToAddText() {
         appRouter.navigateTo(AddTextRoute)
     }
 }

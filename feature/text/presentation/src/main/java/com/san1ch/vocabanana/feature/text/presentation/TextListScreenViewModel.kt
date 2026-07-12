@@ -7,7 +7,6 @@ import com.san1ch.vocabanana.core.essentials.model.word.WordQuery
 import com.san1ch.vocabanana.core.essentials.repositories.SettingsRepository
 import com.san1ch.vocabanana.core.essentials.repositories.TextRepository
 import com.san1ch.vocabanana.core.essentials.repositories.WordRepository
-import com.san1ch.vocabanana.core.essentials.usecases.GetWordsUseCase
 import com.san1ch.vocabanana.core.essentials.usecases.GetWordsWithCountUseCase
 import com.san1ch.vocabanana.core.ui.BaseViewModel
 import com.san1ch.vocabanana.core.ui.model.UiEvent
@@ -69,7 +68,7 @@ class TextListScreenViewModel @Inject constructor(
     fun onIntent(intent: TextListUiIntent) {
         when (intent) {
             // --- Navigation & Global ---
-            is TextListUiIntent.NavigateToAddText -> router.launchAddText()
+            is TextListUiIntent.NavigateToAddText -> router.navigateToAddText()
             is TextListUiIntent.PageChanged -> updatePage(intent.page)
 
             // --- Text Selection & Reading ---
