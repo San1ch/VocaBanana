@@ -15,7 +15,7 @@ import javax.inject.Inject
 class MainScreenViewModel @Inject constructor(
     private val settingsRepository: SettingsRepository,
     private val router: MainRouter,
-    private val appStringProvider: AppStringProvider
+    private val appStringProvider: AppStringProvider,
 ) : BaseViewModel() {
     private val _uiState = MutableStateFlow(MainUiState(appName = appStringProvider.appName))
     val uiState = _uiState.asStateFlow()
@@ -43,4 +43,3 @@ class MainScreenViewModel @Inject constructor(
         }
     }
 }
-

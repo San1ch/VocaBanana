@@ -26,18 +26,18 @@ fun AnimatedTitle(
             if (targetState != initialState) {
                 (slideInVertically { height -> height } + fadeIn(animationSpec = tween(300)))
                     .togetherWith(
-                        slideOutVertically { height -> -height } + fadeOut(animationSpec = tween(300))
+                        slideOutVertically { height -> -height } + fadeOut(animationSpec = tween(300)),
                     )
             } else {
                 EnterTransition.None togetherWith ExitTransition.None
             }
         },
         modifier = modifier,
-        label = stringResource(R.string.titleanimation)
+        label = stringResource(R.string.titleanimation),
     ) { textToDisplay ->
         Text(
             text = textToDisplay,
-            maxLines = 1
+            maxLines = 1,
         )
     }
 }

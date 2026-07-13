@@ -57,7 +57,7 @@ class TextProcessingServiceTest {
         val expected = mapOf(
             "apple" to 3,
             "banana" to 2,
-            "orange" to 1
+            "orange" to 1,
         )
 
         val result = service.prepareText(text)

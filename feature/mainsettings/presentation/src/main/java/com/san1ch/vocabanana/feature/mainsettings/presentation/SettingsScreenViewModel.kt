@@ -4,7 +4,6 @@ import androidx.lifecycle.viewModelScope
 import com.san1ch.vocabanana.core.essentials.model.AppThemeMode
 import com.san1ch.vocabanana.core.essentials.repositories.SettingsRepository
 import com.san1ch.vocabanana.core.ui.BaseViewModel
-import com.san1ch.vocabanana.core.ui.model.UiEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,12 +18,11 @@ import javax.inject.Inject
 @HiltViewModel
 class SettingsScreenViewModel @Inject constructor(
     private val repository: SettingsRepository,
-    private val settingsRouter: SettingsRouter
+    private val settingsRouter: SettingsRouter,
 ) : BaseViewModel() {
 
     private val _uiState = MutableStateFlow(SettingsUiState())
     val uiState: StateFlow<SettingsUiState> = _uiState.asStateFlow()
-
 
     init {
         repository.themeFlow.onEach { theme ->
@@ -72,5 +70,5 @@ data class SettingsUiState(
     val currentTheme: AppThemeMode = AppThemeMode.AUTO,
     val isNotificationsEnabled: Boolean = false,
     val volume: Float = 0.5f,
-    val userName: String = ""
+    val userName: String = "",
 )

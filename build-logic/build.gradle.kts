@@ -5,16 +5,20 @@ plugins {
 repositories {
     google()
     mavenCentral()
+    gradlePluginPortal()
 }
 
 dependencies {
+    implementation(libs.plugin.ksp)
+    implementation(libs.plugin.hilt)
+
     implementation(libs.plugin.android.application)
     implementation(libs.plugin.android.library)
     implementation(libs.plugin.kotlin.android)
     implementation("org.jetbrains.kotlin.plugin.compose:org.jetbrains.kotlin.plugin.compose.gradle.plugin:2.1.0")
     implementation(libs.plugin.jetbrains.kotlin.jvm)
     implementation(libs.detekt)
-
+    implementation(libs.spotless)
 
     implementation(libs.javapoet)
     constraints {
@@ -41,6 +45,10 @@ gradlePlugin {
         register("customAndroidComposeLibrary") {
             id = "custom-android-compose-library"
             implementationClass = "CustomAndroidComposeLibraryPlugin"
+        }
+        register("customSpotless") {
+            id = "custom-spotless"
+            implementationClass = "CustomSpotlessPlugin"
         }
     }
 }

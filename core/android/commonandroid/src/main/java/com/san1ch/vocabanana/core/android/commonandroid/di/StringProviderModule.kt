@@ -18,5 +18,4 @@ interface StringProviderModule {
 
     @Multibinds
     fun bindStringProvidersMap(): Map<KClass<*>, StringProvider>
-
 }

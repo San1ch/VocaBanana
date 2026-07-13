@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.custom.android.library)
+    alias(libs.plugins.custom.spotless)
     alias(libs.plugins.hilt)
     alias(libs.plugins.ksp)
     alias(libs.plugins.kotlin.compose)

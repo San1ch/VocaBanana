@@ -12,6 +12,8 @@ class CustomAndroidComposeLibraryPlugin : Plugin<Project> {
             pluginManager.apply("com.android.library")
             pluginManager.apply("org.jetbrains.kotlin.android")
             pluginManager.apply("org.jetbrains.kotlin.plugin.compose")
+            pluginManager.apply("com.google.dagger.hilt.android")
+            pluginManager.apply("com.google.devtools.ksp")
 
             extensions.configure<LibraryExtension> {
                 compileSdk = Const.TargetSdk

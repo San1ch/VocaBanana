@@ -24,13 +24,13 @@ fun CollectResource(
                     Toast.makeText(
                         context,
                         event.message,
-                        Toast.LENGTH_SHORT
+                        Toast.LENGTH_SHORT,
                     ).show()
                 is UiEvent.OpenUrl -> {
                     try {
                         val intent = Intent(
                             Intent.ACTION_VIEW,
-                            event.url.toUri()
+                            event.url.toUri(),
                         )
                         context.startActivity(intent)
                     } catch (e: Exception) {

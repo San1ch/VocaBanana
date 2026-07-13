@@ -12,54 +12,59 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import javax.inject.Inject
 
-
-class GetWordsUseCase @Inject constructor(
+class GetWordsUseCase
+@Inject
+constructor(
     private val wordRepository: WordRepository,
-    private val textRepository: TextRepository
+    private val textRepository: TextRepository,
 ) {
-
     @OptIn(ExperimentalCoroutinesApi::class)
-    operator fun invoke(query: WordQuery = WordQuery()): Flow<List<WordDomain>> {
-        return when (val textIds = query.textIds) {
-            is FilterType.All -> {
-                wordRepository.getWords(query.wordIds, query.states)
-            }
-            else -> {
-                textRepository.getWordIdsByTextIds(textIds)
-                    .flatMapLatest { textWordIds ->
-                        val combinedIds = intersectIds(textWordIds, query.wordIds)
-                        wordRepository.getWords(combinedIds, query.states)
-                    }
-            }
+    operator fun invoke(query: WordQuery = WordQuery()): Flow<List<WordDomain>> = when (val textIds = query.textIds) {
+        is FilterType.All -> {
+            wordRepository.getWords(query.wordIds, query.states)
+        }
+
+        else -> {
+            textRepository
+                .getWordIdsByTextIds(textIds)
+                .flatMapLatest { textWordIds ->
+                    val combinedIds = intersectIds(textWordIds, query.wordIds)
+                    wordRepository.getWords(combinedIds, query.states)
+                }
         }
     }
 
-    private fun intersectIds(idsFromText: List<Int>, wordIdsFilter: FilterType<Int>): FilterType<Int> {
-        return when (wordIdsFilter) {
-            is FilterType.All -> FilterType.Include(idsFromText)
-            is FilterType.Include -> FilterType.Include(idsFromText.filter { it in wordIdsFilter.items })
-            is FilterType.Exclude -> FilterType.Include(idsFromText.filter { it !in wordIdsFilter.items })
-        }
+    private fun intersectIds(
+        idsFromText: List<Int>,
+        wordIdsFilter: FilterType<Int>,
+    ): FilterType<Int> = when (wordIdsFilter) {
+        is FilterType.All -> FilterType.Include(idsFromText)
+        is FilterType.Include -> FilterType.Include(idsFromText.filter { it in wordIdsFilter.items })
+        is FilterType.Exclude -> FilterType.Include(idsFromText.filter { it !in wordIdsFilter.items })
     }
 }
 
-class GetWordsWithCountUseCase @Inject constructor(
+class GetWordsWithCountUseCase
+@Inject
+constructor(
     private val getWords: GetWordsUseCase,
-    private val textRepository: TextRepository
+    private val textRepository: TextRepository,
 ) {
     @OptIn(ExperimentalCoroutinesApi::class)
-    operator fun invoke(query: WordQuery = WordQuery()): Flow<List<WordWithCount>> {
-        return getWords(query).flatMapLatest { words ->
-            val wordIds = words.map { it.id }
+    operator fun invoke(
+        query: WordQuery = WordQuery(),
+    ): Flow<List<WordWithCount>> = getWords(query).flatMapLatest { words ->
+        val wordIds = words.map { it.id }
 
-            val countsMap = textRepository.getTextWordCounts(wordIds)
+        val countsMap = textRepository.getTextWordCounts(wordIds)
 
-            flowOf(words.map { word ->
+        flowOf(
+            words.map { word ->
                 WordWithCount(
                     word = word,
-                    count = countsMap[word.id] ?: 0
+                    count = countsMap[word.id] ?: 0,
                 )
-            })
-        }
+            },
+        )
     }
 }

@@ -3,7 +3,6 @@ package com.san1ch.vocabanana.core.essentials.resources.featureproviders
 import com.san1ch.vocabanana.core.essentials.resources.StringProvider
 
 interface TextStringProvider : StringProvider {
-
     val textValidateEmptyText: String
     val textValidateEmptyName: String
 
@@ -27,7 +26,7 @@ interface TextStringProvider : StringProvider {
 
     fun generateWordsNotAllNewWordsAdded(
         added: Int,
-        total: Int
+        total: Int,
     ): String
 
     fun generateWordsUnknownError(message: String): String

@@ -14,16 +14,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.san1ch.vocabanana.core.ui.state.ResourceObserver
 import com.san1ch.vocabanana.core.ui.compose.CollectResource
+import com.san1ch.vocabanana.core.ui.state.ResourceObserver
 import com.san1ch.vocabanana.feature.vocabulary.presentation.VocabularyIntent
 import com.san1ch.vocabanana.feature.vocabulary.presentation.VocabularyScreenViewModel
 import kotlinx.coroutines.launch
 
-
 @Composable
 fun VocabularyScreen(
-    viewModel: VocabularyScreenViewModel = hiltViewModel()
+    viewModel: VocabularyScreenViewModel = hiltViewModel(),
 ) {
     CollectResource(viewModel.events)
 
@@ -56,9 +55,9 @@ fun VocabularyScreen(
             VocabularyDrawerContent(
                 wordFilter = state.wordFilter,
                 onIntent = viewModel::onIntent,
-                onClose = { scope.launch { drawerState.close() } }
+                onClose = { scope.launch { drawerState.close() } },
             )
-        }
+        },
     ) {
         // Observe the wordsState inside the main UI
         ResourceObserver(state.wordsState) { words ->
@@ -67,7 +66,7 @@ fun VocabularyScreen(
             HorizontalPager(
                 state = pagerState,
                 userScrollEnabled = selectedWord != null,
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(),
             ) { page ->
                 when (page) {
                     0 -> VocabularyListPage(
@@ -81,16 +80,15 @@ fun VocabularyScreen(
                             if (intent is VocabularyIntent.SelectWord) {
                                 scope.launch { pagerState.animateScrollToPage(1) }
                             }
-                        }
+                        },
                     )
 
                     1 -> WordDetailsAndEditPage(
                         word = selectedWord,
-                        onUpdateWord = { viewModel.onIntent(VocabularyIntent.UpdateWord(it)) }
+                        onUpdateWord = { viewModel.onIntent(VocabularyIntent.UpdateWord(it)) },
                     )
                 }
             }
         }
     }
 }
-

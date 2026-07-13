@@ -46,14 +46,13 @@ import com.san1ch.vocabanana.feature.vocabulary.presentation.VocabularyIntent
 import com.san1ch.vocabanana.feature.vocabulary.presentation.VocabularyScreenViewModel
 import java.text.SimpleDateFormat
 
-
 @SuppressLint("SimpleDateFormat")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun WordDetailsAndEditPage(
     word: WordUi?,
     onUpdateWord: (WordUi) -> Unit,
-    viewModel: VocabularyScreenViewModel = hiltViewModel()
+    viewModel: VocabularyScreenViewModel = hiltViewModel(),
 ) {
     Scaffold(
         topBar = {
@@ -63,9 +62,9 @@ fun WordDetailsAndEditPage(
                     IconButton(onClick = { viewModel.onIntent(VocabularyIntent.NavigateBack) }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
                     }
-                }
+                },
             )
-        }
+        },
     ) { padding ->
         if (word == null) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -78,7 +77,7 @@ fun WordDetailsAndEditPage(
                     .padding(padding)
                     .padding(horizontal = 16.dp)
                     .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(16.dp) // Компактніші відступи
+                verticalArrangement = Arrangement.spacedBy(16.dp), // Компактніші відступи
             ) {
                 // Header with Lemma and Frequency
                 Column(modifier = Modifier.padding(top = 8.dp)) {
@@ -86,7 +85,7 @@ fun WordDetailsAndEditPage(
                     Text(
                         text = "Used ${word.count} times in your texts",
                         style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.primary
+                        color = MaterialTheme.colorScheme.primary,
                     )
                 }
 
@@ -99,7 +98,7 @@ fun WordDetailsAndEditPage(
                             FilterChip(
                                 selected = isSelected,
                                 onClick = { onUpdateWord(word.copy(state = state)) },
-                                label = { Text(state.name.replace("_", " "),style = MaterialTheme.typography.labelMedium) }
+                                label = { Text(state.name.replace("_", " "), style = MaterialTheme.typography.labelMedium) },
                             )
                         }
                     }
@@ -109,7 +108,7 @@ fun WordDetailsAndEditPage(
                 var posExpanded by remember { mutableStateOf(false) }
                 ExposedDropdownMenuBox(
                     expanded = posExpanded,
-                    onExpandedChange = { posExpanded = !posExpanded }
+                    onExpandedChange = { posExpanded = !posExpanded },
                 ) {
                     OutlinedTextField(
                         value = word.partOfSpeech.uppercase(),
@@ -117,13 +116,16 @@ fun WordDetailsAndEditPage(
                         readOnly = true,
                         label = { Text(stringResource(R.string.part_of_speech)) },
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = posExpanded) },
-                        modifier = Modifier.menuAnchor().fillMaxWidth()
+                        modifier = Modifier.menuAnchor().fillMaxWidth(),
                     )
                     ExposedDropdownMenu(expanded = posExpanded, onDismissRequest = { posExpanded = false }) {
                         PartOfSpeech.entries.forEach { pos ->
                             DropdownMenuItem(
                                 text = { Text(pos.name) },
-                                onClick = { onUpdateWord(word.copy(partOfSpeech = pos.shortName)); posExpanded = false }
+                                onClick = {
+                                    onUpdateWord(word.copy(partOfSpeech = pos.shortName))
+                                    posExpanded = false
+                                },
                             )
                         }
                     }
@@ -136,7 +138,7 @@ fun WordDetailsAndEditPage(
                     label = { Text(stringResource(R.string.definition)) },
                     modifier = Modifier.fillMaxWidth(),
                     minLines = 3,
-                    shape = MaterialTheme.shapes.medium
+                    shape = MaterialTheme.shapes.medium,
                 )
 
                 // 4. Metadata
@@ -157,7 +159,7 @@ private fun InfoRow(label: String, value: String) {
         Text(
             label,
             style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.secondary
+            color = MaterialTheme.colorScheme.secondary,
         )
         Text(value, style = MaterialTheme.typography.bodyMedium)
     }

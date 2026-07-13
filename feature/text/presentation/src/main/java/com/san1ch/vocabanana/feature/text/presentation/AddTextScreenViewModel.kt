@@ -19,7 +19,7 @@ import javax.inject.Inject
 class AddTextScreenViewModel @Inject constructor(
     private val createTextUseCase: CreateTextUseCase,
     private val addTextRouter: AddTextRouter,
-    private val stringProvider: CoreStringProvider
+    private val stringProvider: CoreStringProvider,
 ) : BaseViewModel() {
 
     private val _uiState = MutableStateFlow(AddTextUiState())
@@ -41,7 +41,7 @@ class AddTextScreenViewModel @Inject constructor(
         _uiState.update {
             it.copy(
                 title = newTitle,
-                isTitleTooLong = newTitle.length > TextConstant.MAX_NAME_LENGTH
+                isTitleTooLong = newTitle.length > TextConstant.MAX_NAME_LENGTH,
             )
         }
     }
@@ -50,7 +50,7 @@ class AddTextScreenViewModel @Inject constructor(
         _uiState.update {
             it.copy(
                 content = newContent,
-                fileName = if (newContent.text.isNotBlank()) null else it.fileName
+                fileName = if (newContent.text.isNotBlank()) null else it.fileName,
             )
         }
     }
@@ -60,7 +60,7 @@ class AddTextScreenViewModel @Inject constructor(
             it.copy(
                 content = TextFieldValue(fileContent),
                 fileName = name,
-                isLoadingFile = false
+                isLoadingFile = false,
             )
         }
     }
@@ -74,12 +74,11 @@ class AddTextScreenViewModel @Inject constructor(
         if (currentState.content.text.isBlank() || currentState.isTitleTooLong) return
 
         viewModelScope.launch(Dispatchers.IO) {
-            createTextUseCase(currentState.title, currentState.content.text).fold(  onSuccess = {
+            createTextUseCase(currentState.title, currentState.content.text).fold(onSuccess = {
                 addTextRouter.navigateBack()
-            },onFailure = { error ->
+            }, onFailure = { error ->
                 sendEvent(UiEvent.ShowToast(error.message ?: stringProvider.unknownErrorMessage))
             })
-
         }
     }
 }
@@ -89,7 +88,7 @@ data class AddTextUiState(
     val content: TextFieldValue = TextFieldValue(""),
     val fileName: String? = null,
     val isLoadingFile: Boolean = false,
-    val isTitleTooLong: Boolean = false
+    val isTitleTooLong: Boolean = false,
 )
 
 sealed class AddTextUiIntent {

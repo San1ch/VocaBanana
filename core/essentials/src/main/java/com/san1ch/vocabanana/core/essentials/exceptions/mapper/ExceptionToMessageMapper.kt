@@ -6,13 +6,10 @@ interface ExceptionToMessageMapper {
     companion object {
         private var instance: ExceptionToMessageMapper = EmptyExceptionToMessageMapper()
 
-        fun getLocalizedMessage(exception: Exception): String {
-            return instance.getLocalizedMessage(exception)
-        }
+        fun getLocalizedMessage(exception: Exception): String = instance.getLocalizedMessage(exception)
 
         fun setInstance(instance: ExceptionToMessageMapper) {
             this.instance = instance
         }
-
     }
 }

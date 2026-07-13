@@ -1,15 +1,15 @@
 package com.san1ch.vocabanana.core.android.database.text.repository
 
-import com.san1ch.vocabanana.core.essentials.repositories.FileStorage
-import com.san1ch.vocabanana.core.essentials.repositories.TextRepository
 import com.san1ch.vocabanana.core.android.database.text.local.TextDao
 import com.san1ch.vocabanana.core.android.database.text.local.TextEntity
-import com.san1ch.vocabanana.core.android.database.text.toDomainUnsafe
 import com.san1ch.vocabanana.core.android.database.text.local.TextWordCountDao
 import com.san1ch.vocabanana.core.android.database.text.local.toEntity
+import com.san1ch.vocabanana.core.android.database.text.toDomainUnsafe
 import com.san1ch.vocabanana.core.essentials.model.text.TextDomain
 import com.san1ch.vocabanana.core.essentials.model.text.TextWordCount
 import com.san1ch.vocabanana.core.essentials.model.word.FilterType
+import com.san1ch.vocabanana.core.essentials.repositories.FileStorage
+import com.san1ch.vocabanana.core.essentials.repositories.TextRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -18,40 +18,36 @@ import javax.inject.Inject
 class TextRepositoryImpl @Inject constructor(
     private val textDao: TextDao,
     private val fileStorage: FileStorage,
-    private val textWordCountDao: TextWordCountDao
+    private val textWordCountDao: TextWordCountDao,
 ) : TextRepository {
-    override fun getWordIdsByTextIds(textIds: FilterType<Int>): Flow<List<Int>> {
-        return when (textIds) {
-            is FilterType.All ->
-                textWordCountDao.getWordIdsByTextIds(
-                    emptyList(),
-                    filter = false,
-                    exclude = false
-                )
+    override fun getWordIdsByTextIds(textIds: FilterType<Int>): Flow<List<Int>> = when (textIds) {
+        is FilterType.All ->
+            textWordCountDao.getWordIdsByTextIds(
+                emptyList(),
+                filter = false,
+                exclude = false,
+            )
 
-            is FilterType.Include ->
-                textWordCountDao.getWordIdsByTextIds(
-                    textIds.items,
-                    filter = true,
-                    exclude = false
-                )
+        is FilterType.Include ->
+            textWordCountDao.getWordIdsByTextIds(
+                textIds.items,
+                filter = true,
+                exclude = false,
+            )
 
-            is FilterType.Exclude ->
-                textWordCountDao.getWordIdsByTextIds(
-                    textIds.items,
-                    filter = true,
-                    exclude = true
-                )
-        }
+        is FilterType.Exclude ->
+            textWordCountDao.getWordIdsByTextIds(
+                textIds.items,
+                filter = true,
+                exclude = true,
+            )
     }
 
-
-    override fun getTexts(): Flow<List<TextDomain>> =
-        textDao.getTexts().map { list ->
-            list.map { entity ->
-                entity.toDomainUnsafe(content = "")
-            }
+    override fun getTexts(): Flow<List<TextDomain>> = textDao.getTexts().map { list ->
+        list.map { entity ->
+            entity.toDomainUnsafe(content = "")
         }
+    }
 
     override suspend fun getTextById(id: Int): Result<TextDomain> {
         val text = when (val result = textDao.getTextById(id)) {
@@ -60,7 +56,6 @@ class TextRepositoryImpl @Inject constructor(
         }
         return Result.success(text)
     }
-
 
     override fun saveText(text: TextDomain) {
         val path = fileStorage.saveText(text.name, text.content)
@@ -71,8 +66,8 @@ class TextRepositoryImpl @Inject constructor(
                 text.name,
                 path,
                 text.info.lastScrollPosition,
-                text.info.lastReadTime
-            )
+                text.info.lastReadTime,
+            ),
         )
     }
 
@@ -82,10 +77,7 @@ class TextRepositoryImpl @Inject constructor(
         textDao.updateProgress(id, position, time)
     }
 
-
-    override fun isTextNameUnique(name: String): Boolean {
-        return !textDao.isNameUnique(name)
-    }
+    override fun isTextNameUnique(name: String): Boolean = !textDao.isNameUnique(name)
 
     override suspend fun saveTextWordCounts(textWordCounts: List<TextWordCount>) {
         if (textWordCounts.isEmpty()) return
@@ -104,5 +96,4 @@ class TextRepositoryImpl @Inject constructor(
                 entry.value.sumOf { it.count }
             }
     }
-
 }

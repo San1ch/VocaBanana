@@ -45,30 +45,29 @@ import com.san1ch.vocabanana.feature.text.presentation.R
 import com.san1ch.vocabanana.feature.text.presentation.TextListUiIntent
 import com.san1ch.vocabanana.feature.text.presentation.model.GenerateWordsFromTextUiState
 
-
 @Composable
 fun TextSettingsPage(
     generatingState: GenerateWordsFromTextUiState?,
-    onIntent: (TextListUiIntent) -> Unit
+    onIntent: (TextListUiIntent) -> Unit,
 ) {
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(20.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Top // Move to top for better reachability
+        verticalArrangement = Arrangement.Top, // Move to top for better reachability
     ) {
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(28.dp),
             colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(2.dp)
-            )
+                containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(2.dp),
+            ),
         ) {
             Column(
                 modifier = Modifier.padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(20.dp)
+                verticalArrangement = Arrangement.spacedBy(20.dp),
             ) {
                 // Icon & Title Header
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -76,21 +75,21 @@ fun TextSettingsPage(
                         imageVector = Icons.Default.AutoAwesome,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(40.dp)
+                        modifier = Modifier.size(40.dp),
                     )
                     Spacer(Modifier.height(8.dp))
                     Text(
                         text = stringResource(R.string.vocabulary_generator),
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.ExtraBold,
-                        color = MaterialTheme.colorScheme.onSurface
+                        color = MaterialTheme.colorScheme.onSurface,
                     )
                     Text(
                         text = stringResource(R.string.extract_and_save_new_words_from_this_text_to_your_local_dictionary),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(horizontal = 12.dp)
+                        modifier = Modifier.padding(horizontal = 12.dp),
                     )
                 }
 
@@ -102,14 +101,14 @@ fun TextSettingsPage(
                     shape = RoundedCornerShape(16.dp),
                     enabled = generatingState !is GenerateWordsFromTextUiState.Loading,
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary
-                    )
+                        containerColor = MaterialTheme.colorScheme.primary,
+                    ),
                 ) {
                     if (generatingState is GenerateWordsFromTextUiState.Loading) {
                         CircularProgressIndicator(
                             modifier = Modifier.size(24.dp),
                             color = MaterialTheme.colorScheme.onPrimary,
-                            strokeWidth = 2.dp
+                            strokeWidth = 2.dp,
                         )
                     } else {
                         Icon(Icons.Default.Add, contentDescription = null)
@@ -122,7 +121,7 @@ fun TextSettingsPage(
                 AnimatedVisibility(
                     visible = generatingState != null,
                     enter = expandVertically() + fadeIn(),
-                    exit = shrinkVertically() + fadeOut()
+                    exit = shrinkVertically() + fadeOut(),
                 ) {
                     GeneratingWordStatus(generatingState)
                 }
@@ -141,19 +140,19 @@ private fun GeneratingWordStatus(state: GenerateWordsFromTextUiState?) {
         is GenerateWordsFromTextUiState.Success -> Triple(
             Color(0xFF4CAF50),
             Icons.Default.CheckCircle,
-            Color(0xFF4CAF50).copy(0.1f)
+            Color(0xFF4CAF50).copy(0.1f),
         )
 
         is GenerateWordsFromTextUiState.Error -> Triple(
             MaterialTheme.colorScheme.error,
             Icons.Default.Error,
-            MaterialTheme.colorScheme.error.copy(0.1f)
+            MaterialTheme.colorScheme.error.copy(0.1f),
         )
 
         is GenerateWordsFromTextUiState.Loading -> Triple(
             MaterialTheme.colorScheme.primary,
             Icons.Default.Sync,
-            MaterialTheme.colorScheme.primary.copy(0.1f)
+            MaterialTheme.colorScheme.primary.copy(0.1f),
         )
     }
 
@@ -167,25 +166,25 @@ private fun GeneratingWordStatus(state: GenerateWordsFromTextUiState?) {
     Surface(
         color = bg,
         shape = RoundedCornerShape(16.dp),
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
     ) {
         Row(
             modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Icon(
                 imageVector = icon,
                 contentDescription = null,
                 tint = color,
-                modifier = Modifier.size(24.dp)
+                modifier = Modifier.size(24.dp),
             )
             Text(
                 text = message,
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Medium,
                 color = color,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
             )
         }
     }

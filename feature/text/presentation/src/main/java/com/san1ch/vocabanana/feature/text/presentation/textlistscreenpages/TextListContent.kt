@@ -60,7 +60,8 @@ import kotlin.math.abs
 enum class TextListScreenPage(val index: Int) {
     MyTexts(0),
     TextReader(1),
-    Settings(2);
+    Settings(2),
+    ;
 
     companion object {
         fun fromIndex(index: Int) = when (index) {
@@ -75,7 +76,7 @@ enum class TextListScreenPage(val index: Int) {
 @Composable
 fun TextListContent(
     state: TextListUiState,
-    onIntent: (TextListUiIntent) -> Unit
+    onIntent: (TextListUiIntent) -> Unit,
 ) {
     val pagerState = rememberPagerState(pageCount = { TextListScreenPage.entries.size })
     val coroutineScope = rememberCoroutineScope()
@@ -106,8 +107,9 @@ fun TextListContent(
                         title = {
                             val title = when (currentPage) {
                                 TextListScreenPage.MyTexts -> "My Texts"
-                                TextListScreenPage.TextReader -> state.selectedText?.title
-                                    ?: "Loading..."
+                                TextListScreenPage.TextReader ->
+                                    state.selectedText?.title
+                                        ?: "Loading..."
 
                                 TextListScreenPage.Settings -> "Settings"
                             }
@@ -121,31 +123,33 @@ fun TextListContent(
                                 onLockClick = { onIntent(TextListUiIntent.ToggleLock) },
                                 onPageSettings = {
                                     onIntent(TextListUiIntent.ShowRenderSettings)
-                                }
+                                },
                             )
-                        }
+                        },
                     )
                 },
                 floatingActionButton = {
                     FabAnimated(
                         visible = state.pagerPage == 0,
-                        onClick = { onIntent(TextListUiIntent.NavigateToAddText) }
+                        onClick = { onIntent(TextListUiIntent.NavigateToAddText) },
                     )
-                }
+                },
             ) { paddingValues ->
                 HorizontalPager(
                     state = pagerState,
                     modifier = Modifier
                         .padding(paddingValues)
                         .pointerInput(state.isLocked) {
-                            if (state.isLocked) detectDragGestures { change, dragAmount ->
-                                if (abs(dragAmount.x) > (abs(dragAmount.y))) {
-                                    onIntent(TextListUiIntent.NotifySwipeBlocked)
-                                    change.consume()
+                            if (state.isLocked) {
+                                detectDragGestures { change, dragAmount ->
+                                    if (abs(dragAmount.x) > (abs(dragAmount.y))) {
+                                        onIntent(TextListUiIntent.NotifySwipeBlocked)
+                                        change.consume()
+                                    }
                                 }
                             }
                         },
-                    userScrollEnabled = state.selectedText != null && !state.isLocked
+                    userScrollEnabled = state.selectedText != null && !state.isLocked,
                 ) { pageIndex ->
                     when (TextListScreenPage.fromIndex(pageIndex)) {
                         TextListScreenPage.MyTexts ->
@@ -154,7 +158,8 @@ fun TextListContent(
                                 onIntent = onIntent,
                                 onNavigateToReader = {
                                     coroutineScope.launch { pagerState.animateScrollToPage(1) }
-                                })
+                                },
+                            )
 
                         TextListScreenPage.TextReader ->
                             TextReaderPage(state.selectedText, state.readerSettings, onIntent)
@@ -171,22 +176,21 @@ fun TextListContent(
             onDismiss = { onIntent(TextListUiIntent.ClearTextIdToDelete) },
             onConfirm = { text ->
                 onIntent(TextListUiIntent.DeleteText)
-            }
+            },
         )
 
         WordInfoPopup(
             state = state.wordInfoState,
             onDismiss = { onIntent(TextListUiIntent.CloseWordInfo) },
-            onOxfordClick = { onIntent(TextListUiIntent.OxfordMoreInfo(it)) }
+            onOxfordClick = { onIntent(TextListUiIntent.OxfordMoreInfo(it)) },
         )
 
         ReaderSettingsPanel(
             visibility = state.showSettings,
             settings = state.readerSettings,
-            onIntent = onIntent
+            onIntent = onIntent,
         )
     }
-
 }
 
 @Composable
@@ -195,7 +199,7 @@ private fun TopBarActions(
     isLocked: Boolean,
     isSwipeAttempted: Boolean,
     onLockClick: () -> Unit,
-    onPageSettings: () -> Unit
+    onPageSettings: () -> Unit,
 ) {
     Row {
         AnimatedVisibility(visible = currentPage == 1, enter = fadeIn(), exit = fadeOut()) {
@@ -225,22 +229,25 @@ private fun AnimatedLockIcon(isLocked: Boolean, isSwipeAttempted: Boolean) {
 
     val scale by animateFloatAsState(
         targetValue = if (isSwipeAttempted) 1.5f else 1.0f,
-        animationSpec = spring(dampingRatio = 0.5f, stiffness = 500f)
+        animationSpec = spring(dampingRatio = 0.5f, stiffness = 500f),
     )
     Spacer(
         modifier = Modifier
             .size(24.dp)
-            .graphicsLayer { scaleX = scale; scaleY = scale }
+            .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+            }
             .drawWithCache {
                 onDrawBehind {
                     with(iconPainter) {
                         draw(
                             size = size,
-                            colorFilter = ColorFilter.tint(animatedColor)
+                            colorFilter = ColorFilter.tint(animatedColor),
                         )
                     }
                 }
-            }
+            },
     )
 }
 
@@ -267,13 +274,12 @@ private fun CustomTouchSlopProvider(content: @Composable () -> Unit) {
     }
 }
 
-
 @Composable
 private fun FabAnimated(visible: Boolean, onClick: () -> Unit) {
     AnimatedVisibility(
         visible = visible,
         enter = fadeIn() + scaleIn(),
-        exit = fadeOut() + scaleOut()
+        exit = fadeOut() + scaleOut(),
     ) {
         FloatingActionButton(onClick = onClick) {
             Icon(Icons.Default.Add, contentDescription = "Add")

@@ -6,11 +6,14 @@ import kotlinx.coroutines.flow.Flow
 
 interface SettingsRepository {
     val initActiveFlow: Flow<Boolean>
+
     suspend fun setInitActive(value: Boolean)
 
     val themeFlow: Flow<AppThemeMode>
+
     suspend fun setTheme(value: AppThemeMode)
 
     val readerSettingsFlow: Flow<ReaderSettings>
+
     suspend fun saveReaderSettings(settings: ReaderSettings)
 }

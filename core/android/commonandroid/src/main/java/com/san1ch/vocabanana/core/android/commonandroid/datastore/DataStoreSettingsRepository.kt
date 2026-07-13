@@ -18,7 +18,7 @@ import javax.inject.Inject
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
 
 class DataStoreSettingsRepository @Inject constructor(
-    private val dataStore: DataStore<Preferences>
+    private val dataStore: DataStore<Preferences>,
 ) : SettingsRepository {
 
     companion object {
@@ -60,7 +60,7 @@ class DataStoreSettingsRepository @Inject constructor(
             fontSize = pref[FONT_SIZE] ?: 18,
             lineSpacing = pref[LINE_SPACING] ?: 4,
             paragraphSpacing = pref[PARAG_SPACING] ?: 16,
-            horizontalPadding = pref[HORIZ_PADDING] ?: 16
+            horizontalPadding = pref[HORIZ_PADDING] ?: 16,
         )
     }
 

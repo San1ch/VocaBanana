@@ -1,7 +1,6 @@
 plugins {
     alias(libs.plugins.custom.android.compose.library)
-    alias(libs.plugins.hilt)
-    alias(libs.plugins.ksp)
+    alias(libs.plugins.custom.spotless)
 }
 
 android {
@@ -16,7 +15,6 @@ dependencies {
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.material3)
-
 
     implementation(libs.google.hilt)
     ksp(libs.google.hilt.compiler)

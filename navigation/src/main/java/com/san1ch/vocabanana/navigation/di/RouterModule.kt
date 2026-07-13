@@ -6,8 +6,6 @@ import com.san1ch.vocabanana.feature.mainsettings.presentation.SettingsRouter
 import com.san1ch.vocabanana.feature.text.presentation.AddTextRouter
 import com.san1ch.vocabanana.feature.text.presentation.TextListRouter
 import com.san1ch.vocabanana.feature.vocabulary.presentation.router.VocabularyRouter
-import com.san1ch.vocabanana.navigation.InitRoute
-import com.san1ch.vocabanana.navigation.MainRoute
 import com.san1ch.vocabanana.navigation.routers.AddTextRouterImpl
 import com.san1ch.vocabanana.navigation.routers.InitRouterImpl
 import com.san1ch.vocabanana.navigation.routers.MainRouteImpl
@@ -22,7 +20,6 @@ import dagger.hilt.components.SingletonComponent
 @Module
 @InstallIn(SingletonComponent::class)
 interface RouterModule {
-
     @Binds
     fun bindInitRoute(initRoute: InitRouterImpl): InitRouter
 

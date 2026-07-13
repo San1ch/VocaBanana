@@ -47,7 +47,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun AddTextScreen(
-    viewModel: AddTextScreenViewModel = hiltViewModel()
+    viewModel: AddTextScreenViewModel = hiltViewModel(),
 ) {
     CollectResource(events = viewModel.events)
 
@@ -58,14 +58,13 @@ fun AddTextScreen(
     val clipboardManager = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
 
     val filePickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
+        contract = ActivityResultContracts.GetContent(),
     ) { uri ->
         uri?.let { selectedUri ->
-            
+
             viewModel.onIntent(AddTextUiIntent.StartLoadingFile)
 
             scope.launch(Dispatchers.IO) {
-                
                 var name: String? = null
                 context.contentResolver.query(selectedUri, null, null, null, null)?.use { cursor ->
                     val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
@@ -75,12 +74,10 @@ fun AddTextScreen(
                 }
                 val finalName = name ?: "Selected file"
 
-                
                 val text = context.contentResolver.openInputStream(selectedUri)
                     ?.bufferedReader()
                     ?.use { it.readText() } ?: ""
 
-                
                 viewModel.onIntent(AddTextUiIntent.FileLoaded(finalName, text))
             }
         }
@@ -100,7 +97,7 @@ fun AddTextScreen(
             if (state.content.text.isNotBlank()) {
                 clipboardManager.setPrimaryClip(ClipData.newPlainText("text", state.content.text))
             }
-        }
+        },
     )
 }
 
@@ -112,11 +109,11 @@ fun AddTextContent(
     onIntent: (AddTextUiIntent) -> Unit,
     onOpenFileClick: () -> Unit,
     onPasteClick: () -> Unit,
-    onCopyClick: () -> Unit
+    onCopyClick: () -> Unit,
 ) {
     val color by animateColorAsState(
         targetValue = if (state.isTitleTooLong) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.secondary,
-        label = stringResource(R.string.bordercolor)
+        label = stringResource(R.string.bordercolor),
     )
 
     Scaffold(
@@ -127,29 +124,32 @@ fun AddTextContent(
                     IconButton(onClick = { onIntent(AddTextUiIntent.BackClicked) }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
-                }
+                },
             )
-        }
+        },
     ) { paddingValues ->
         Column(
             modifier = modifier
                 .fillMaxSize()
                 .padding(paddingValues)
                 .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             OutlinedTextField(
                 value = state.title,
                 onValueChange = { onIntent(AddTextUiIntent.TitleChanged(it)) },
-                label = { Text(
-                    stringResource(
-                        R.string.title,
-                        state.title.length,
-                        TextConstant.MAX_NAME_LENGTH
-                    )) },
+                label = {
+                    Text(
+                        stringResource(
+                            R.string.title,
+                            state.title.length,
+                            TextConstant.MAX_NAME_LENGTH,
+                        ),
+                    )
+                },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
-                isError = state.isTitleTooLong
+                isError = state.isTitleTooLong,
             )
 
             if (state.fileName != null) {
@@ -158,7 +158,7 @@ fun AddTextContent(
                         .fillMaxWidth()
                         .weight(1f),
                     color = MaterialTheme.colorScheme.secondaryContainer,
-                    shape = MaterialTheme.shapes.medium
+                    shape = MaterialTheme.shapes.medium,
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         Text(state.fileName, style = MaterialTheme.typography.headlineSmall)
@@ -168,13 +168,21 @@ fun AddTextContent(
                 OutlinedTextField(
                     value = state.content,
                     onValueChange = { onIntent(AddTextUiIntent.ContentChanged(it.text)) },
-                    label = { Text(if (state.isLoadingFile) stringResource(R.string.loading_file) else stringResource(
-                        R.string.paste_your_text_here
-                    )) },
+                    label = {
+                        Text(
+                            if (state.isLoadingFile) {
+                                stringResource(R.string.loading_file)
+                            } else {
+                                stringResource(
+                                    R.string.paste_your_text_here,
+                                )
+                            },
+                        )
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f),
-                    enabled = !state.isLoadingFile
+                    enabled = !state.isLoadingFile,
                 )
             }
 
@@ -182,20 +190,20 @@ fun AddTextContent(
                 OutlinedButton(
                     onClick = onCopyClick,
                     modifier = Modifier.weight(1f),
-                    enabled = state.content.text.isNotBlank()
+                    enabled = state.content.text.isNotBlank(),
                 ) {
                     Text(stringResource(R.string.copy))
                 }
                 OutlinedButton(
                     onClick = onPasteClick,
                     modifier = Modifier.weight(1f),
-                    enabled = !state.isLoadingFile
+                    enabled = !state.isLoadingFile,
                 ) {
                     Text(stringResource(R.string.paste))
                 }
                 OutlinedButton(
                     onClick = { onIntent(AddTextUiIntent.ClearClicked) },
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
                 ) {
                     Text(stringResource(R.string.clear))
                 }
@@ -205,7 +213,7 @@ fun AddTextContent(
                 OutlinedButton(
                     onClick = onOpenFileClick,
                     modifier = Modifier.weight(1f),
-                    enabled = !state.isLoadingFile
+                    enabled = !state.isLoadingFile,
                 ) {
                     Icon(Icons.Default.AttachFile, null)
                     Spacer(Modifier.width(8.dp))
@@ -214,7 +222,7 @@ fun AddTextContent(
                 Button(
                     onClick = { onIntent(AddTextUiIntent.AddTextClicked) },
                     modifier = Modifier.weight(1f),
-                    enabled = state.content.text.isNotBlank() && !state.isTitleTooLong && !state.isLoadingFile
+                    enabled = state.content.text.isNotBlank() && !state.isTitleTooLong && !state.isLoadingFile,
                 ) {
                     Text(stringResource(R.string.add))
                 }

@@ -31,18 +31,19 @@ import javax.inject.Inject
 class NewWordListScreenViewModel @Inject constructor(
     private val wordRepository: WordRepository,
     private val vocabularyRouter: VocabularyRouter,
-    private val getWordWithCountUseCase: GetWordsWithCountUseCase
+    private val getWordWithCountUseCase: GetWordsWithCountUseCase,
 ) : BaseViewModel() {
 
     // Internal UI State flows
     private val _wordFilter = MutableStateFlow(WordFilter(sortType = SortType.COUNT))
+
     @OptIn(FlowPreview::class)
-    private val debounceWordFilter = _wordFilter.debounce(500).distinctUntilChanged()
+    val wordFilter = _wordFilter.debounce(500).distinctUntilChanged()
 
     // The Main State: Combined and Optimized
     val resource = combine(
         getWordWithCountUseCase(WordQuery(states = FilterType.Include(listOf(WordState.NEW)))),
-        debounceWordFilter
+        wordFilter,
     ) { rawList, filterData ->
         // Filter only NEW words, Transform to UI object and Filter
         val filteredList = rawList
@@ -54,7 +55,7 @@ class NewWordListScreenViewModel @Inject constructor(
 
         NewWordListState(
             words = Resource.Success(filteredList),
-            filter = filterData
+            filter = filterData,
         )
     }
         .distinctUntilChanged() // Only emit if the actual data content changes
@@ -62,7 +63,7 @@ class NewWordListScreenViewModel @Inject constructor(
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
-            NewWordListState(words = Resource.Loading)
+            NewWordListState(words = Resource.Loading),
         )
 
     /**
@@ -100,5 +101,5 @@ sealed interface NewWordListIntent {
 
 data class NewWordListState(
     val words: Resource<List<WordUi>> = Resource.Loading,
-    val filter: WordFilter = WordFilter()
+    val filter: WordFilter = WordFilter(),
 )

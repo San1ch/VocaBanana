@@ -12,11 +12,15 @@ interface LexiconDao {
     suspend fun getExistingWords(words: List<String>): List<String>
 
     @Query("SELECT word, type FROM 'lexicon-en' WHERE word IN (:words)")
-    suspend fun getPartOfSpeeches(words: List<String>):
-            Map<
-            @MapColumn(columnName = "word") String,
-            @MapColumn(columnName = "type") String
-                    >
+    suspend fun getPartOfSpeeches(
+        words: List<String>,
+    ): Map<
+        @MapColumn(columnName = "word")
+        String,
+        @MapColumn(columnName = "type")
+        String,
+        >
+
     @Query("SELECT * FROM 'lexicon-en' WHERE word IN (:words)")
     suspend fun getWordsFromWords(words: List<String>): List<LexiconEntity>
 }

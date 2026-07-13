@@ -9,7 +9,6 @@ import com.san1ch.vocabanana.core.android.database.text.local.TextWordCountEntit
 import com.san1ch.vocabanana.core.android.database.word.local.WordDao
 import com.san1ch.vocabanana.core.android.database.word.local.WordEntity
 import com.san1ch.vocabanana.core.android.database.word.local.WordFormEntity
-import dagger.Provides
 
 @Database(
     entities = [
@@ -19,7 +18,7 @@ import dagger.Provides
         TextWordCountEntity::class,
     ],
     version = 11,
-    exportSchema = false
+    exportSchema = false,
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun wordDao(): WordDao

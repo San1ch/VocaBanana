@@ -19,7 +19,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class GetWordsUseCaseTest {
-
     private val wordRepository = mockk<WordRepository>()
     private val textRepository = mockk<TextRepository>()
 
@@ -27,10 +26,11 @@ class GetWordsUseCaseTest {
 
     @BeforeEach
     fun setup() {
-        useCase = GetWordsUseCase(
-            wordRepository,
-            textRepository
-        )
+        useCase =
+            GetWordsUseCase(
+                wordRepository,
+                textRepository,
+            )
     }
 
     @Test
@@ -40,7 +40,7 @@ class GetWordsUseCaseTest {
         every {
             wordRepository.getWords(
                 query.wordIds,
-                query.states
+                query.states,
             )
         } returns flowOf(emptyList())
 
@@ -57,11 +57,11 @@ class GetWordsUseCaseTest {
 
     @Test
     fun `should combine text ids with word ids`() = runTest {
-
-        val query = WordQuery(
-            textIds = FilterType.Include(listOf(1)),
-            wordIds = FilterType.Include(listOf(2, 3, 4))
-        )
+        val query =
+            WordQuery(
+                textIds = FilterType.Include(listOf(1)),
+                wordIds = FilterType.Include(listOf(2, 3, 4)),
+            )
 
         every {
             textRepository.getWordIdsByTextIds(query.textIds)
@@ -70,7 +70,7 @@ class GetWordsUseCaseTest {
         every {
             wordRepository.getWords(
                 FilterType.Include(listOf(3, 4)),
-                query.states
+                query.states,
             )
         } returns flowOf(emptyList())
 
@@ -79,18 +79,18 @@ class GetWordsUseCaseTest {
         verify {
             wordRepository.getWords(
                 FilterType.Include(listOf(3, 4)),
-                query.states
+                query.states,
             )
         }
     }
 
     @Test
     fun `should exclude ids correctly`() = runTest {
-
-        val query = WordQuery(
-            textIds = FilterType.Include(listOf(1)),
-            wordIds = FilterType.Exclude(listOf(2, 5))
-        )
+        val query =
+            WordQuery(
+                textIds = FilterType.Include(listOf(1)),
+                wordIds = FilterType.Exclude(listOf(2, 5)),
+            )
 
         every {
             textRepository.getWordIdsByTextIds(query.textIds)
@@ -99,7 +99,7 @@ class GetWordsUseCaseTest {
         every {
             wordRepository.getWords(
                 FilterType.Include(listOf(1, 3, 4)),
-                query.states
+                query.states,
             )
         } returns flowOf(emptyList())
 
@@ -108,14 +108,13 @@ class GetWordsUseCaseTest {
         verify {
             wordRepository.getWords(
                 FilterType.Include(listOf(1, 3, 4)),
-                query.states
+                query.states,
             )
         }
     }
 }
 
 class GetWordsWithCountUseCaseTest {
-
     private val getWords = mockk<GetWordsUseCase>()
     private val textRepository = mockk<TextRepository>()
 
@@ -123,35 +122,36 @@ class GetWordsWithCountUseCaseTest {
 
     @BeforeEach
     fun setup() {
-        useCase = GetWordsWithCountUseCase(
-            getWords,
-            textRepository
-        )
+        useCase =
+            GetWordsWithCountUseCase(
+                getWords,
+                textRepository,
+            )
     }
 
     @Test
     fun `should attach counts to words`() = runTest {
-
-        val words = listOf(
-            WordDomain.createUnsafe(
-                id = 1,
-                lemma = "apple",
-                whenAdded = 0,
-                state = WordState.NEW,
-                forms = emptyList(),
-                partOfSpeech = PartOfSpeech.NOUN,
-                definition = ""
-            ),
-            WordDomain.createUnsafe(
-                id = 2,
-                lemma = "dog",
-                whenAdded = 0,
-                state = WordState.LEARNING,
-                forms = emptyList(),
-                partOfSpeech = PartOfSpeech.NOUN,
-                definition = ""
+        val words =
+            listOf(
+                WordDomain.createUnsafe(
+                    id = 1,
+                    lemma = "apple",
+                    whenAdded = 0,
+                    state = WordState.NEW,
+                    forms = emptyList(),
+                    partOfSpeech = PartOfSpeech.NOUN,
+                    definition = "",
+                ),
+                WordDomain.createUnsafe(
+                    id = 2,
+                    lemma = "dog",
+                    whenAdded = 0,
+                    state = WordState.LEARNING,
+                    forms = emptyList(),
+                    partOfSpeech = PartOfSpeech.NOUN,
+                    definition = "",
+                ),
             )
-        )
 
         every {
             getWords(any())
@@ -159,10 +159,11 @@ class GetWordsWithCountUseCaseTest {
 
         coEvery {
             textRepository.getTextWordCounts(listOf(1, 2))
-        } returns mapOf(
-            1 to 5,
-            2 to 10
-        )
+        } returns
+            mapOf(
+                1 to 5,
+                2 to 10,
+            )
 
         val result = useCase(WordQuery()).first()
 
@@ -174,16 +175,16 @@ class GetWordsWithCountUseCaseTest {
 
     @Test
     fun `should return zero when count is missing`() = runTest {
-
-        val word = WordDomain.createUnsafe(
-            id = 1,
-            lemma = "apple",
-            whenAdded = 0,
-            state = WordState.NEW,
-            forms = emptyList(),
-            partOfSpeech = PartOfSpeech.NOUN,
-            definition = ""
-        )
+        val word =
+            WordDomain.createUnsafe(
+                id = 1,
+                lemma = "apple",
+                whenAdded = 0,
+                state = WordState.NEW,
+                forms = emptyList(),
+                partOfSpeech = PartOfSpeech.NOUN,
+                definition = "",
+            )
 
         every {
             getWords(any())

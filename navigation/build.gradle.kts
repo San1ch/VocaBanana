@@ -1,7 +1,6 @@
 plugins {
     alias(libs.plugins.custom.android.compose.library)
-    alias(libs.plugins.hilt)
-    alias(libs.plugins.ksp)
+    alias(libs.plugins.custom.spotless)
     alias(libs.plugins.kotlin.serialization)
 }
 
@@ -13,7 +12,7 @@ android {
     }
 }
 dependencies {
-    //Modules
+    // Modules
     implementation(projects.core.essentials)
     implementation(projects.core.ui)
 
@@ -25,7 +24,7 @@ dependencies {
     implementation(projects.feature.mainsettings.presentation)
     implementation(projects.feature.word.presentation)
 
-    //serialization
+    // serialization
     implementation(libs.kotlinx.serialization.json)
 
     implementation(libs.androidx.navigation.compose)

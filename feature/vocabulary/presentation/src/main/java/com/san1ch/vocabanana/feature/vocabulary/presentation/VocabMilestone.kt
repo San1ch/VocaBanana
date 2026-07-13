@@ -8,14 +8,13 @@ enum class VocabMilestone(val label: String, val threshold: Int, val color: Colo
     LEARNER("Learner", 500, MileStoneColor.Learner),
     FLUENT("Fluent", 2000, MileStoneColor.Fluent),
     PROFESSIONAL("Expert", 5000, MileStoneColor.Professional),
-    MASTERY("Mastery", 10000, MileStoneColor.Mastery);
+    MASTERY("Mastery", 10000, MileStoneColor.Mastery),
+    ;
 
     companion object {
-        fun getNext(currentCount: Int) =
-            entries.firstOrNull { it.threshold > currentCount } ?: MASTERY
+        fun getNext(currentCount: Int) = entries.firstOrNull { it.threshold > currentCount } ?: MASTERY
 
-        fun getCurrent(currentCount: Int) =
-            entries.lastOrNull { it.threshold <= currentCount } ?: NOVICE
+        fun getCurrent(currentCount: Int) = entries.lastOrNull { it.threshold <= currentCount } ?: NOVICE
     }
 }
 
@@ -24,5 +23,5 @@ data class VocabularyStats(
     val known: Int = 0,
     val learning: Int = 0,
     val notKnown: Int = 0,
-    val ignored: Int = 0
+    val ignored: Int = 0,
 )

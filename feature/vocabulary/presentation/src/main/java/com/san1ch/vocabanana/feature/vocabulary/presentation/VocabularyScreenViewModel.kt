@@ -8,12 +8,12 @@ import com.san1ch.vocabanana.core.essentials.usecases.GetWordsWithCountUseCase
 import com.san1ch.vocabanana.core.ui.BaseViewModel
 import com.san1ch.vocabanana.core.ui.model.SortType
 import com.san1ch.vocabanana.core.ui.model.UiEvent
-import com.san1ch.vocabanana.core.ui.state.Resource
 import com.san1ch.vocabanana.core.ui.model.WordFilter
 import com.san1ch.vocabanana.core.ui.model.WordUi
 import com.san1ch.vocabanana.core.ui.model.filterAndSort
 import com.san1ch.vocabanana.core.ui.model.toDomain
 import com.san1ch.vocabanana.core.ui.model.toUi
+import com.san1ch.vocabanana.core.ui.state.Resource
 import com.san1ch.vocabanana.feature.vocabulary.presentation.router.VocabularyRouter
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -32,42 +32,44 @@ import javax.inject.Inject
 class VocabularyScreenViewModel @Inject constructor(
     private val getWordsWithCountUseCase: GetWordsWithCountUseCase,
     private val wordRepository: WordRepository,
-    private val vocabularyRouter: VocabularyRouter
+    private val vocabularyRouter: VocabularyRouter,
 ) : BaseViewModel() {
 
     private val _wordFilter = MutableStateFlow(WordFilter())
+
     @OptIn(FlowPreview::class)
-    private val debounceWordFilter = _wordFilter.debounce(500).distinctUntilChanged()
+    val wordFilter = _wordFilter.debounce(500).distinctUntilChanged()
     private val _selectedWordId = MutableStateFlow<Int?>(null)
+    val selectedWordId = _selectedWordId
 
     // The single stream of state for the entire screen
     val resource = combine(
         getWordsWithCountUseCase(),
-        debounceWordFilter,
-        _selectedWordId
+        wordFilter,
+        selectedWordId,
     ) { allLemmas, filter, selectedId ->
 
         val validLemmas = allLemmas.filter { it.state != WordState.NEW }
 
         VocabularyUiState(
             wordsState = Resource.Success(
-                validLemmas.map { it.toUi() }.filterAndSort(filter)
+                validLemmas.map { it.toUi() }.filterAndSort(filter),
             ),
             stats = VocabularyStats(
                 totalLemmas = validLemmas.size,
                 known = validLemmas.count { it.state == WordState.KNOWN },
                 learning = validLemmas.count { it.state == WordState.LEARNING },
                 notKnown = validLemmas.count { it.state == WordState.NOT_KNOWN },
-                ignored = validLemmas.count { it.state == WordState.IGNORED }
+                ignored = validLemmas.count { it.state == WordState.IGNORED },
             ),
             wordFilter = filter,
             selectedWordId = selectedId,
-            newWordsCount = allLemmas.count { it.state == WordState.NEW }
+            newWordsCount = allLemmas.count { it.state == WordState.NEW },
         )
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
-        initialValue = VocabularyUiState()
+        initialValue = VocabularyUiState(),
     )
 
     fun onIntent(intent: VocabularyIntent) {
@@ -93,7 +95,7 @@ class VocabularyScreenViewModel @Inject constructor(
     private fun updateWord(word: WordUi) {
         word.toDomain().fold(
             onSuccess = { viewModelScope.launch(Dispatchers.IO) { wordRepository.updateWord(it) } },
-            onError = { sendEvent(UiEvent.ShowToast(it.message)) }
+            onError = { sendEvent(UiEvent.ShowToast(it.message)) },
         )
     }
 }
@@ -103,7 +105,7 @@ data class VocabularyUiState(
     val stats: VocabularyStats = VocabularyStats(),
     val wordFilter: WordFilter = WordFilter(),
     val selectedWordId: Int? = null,
-    val newWordsCount: Int = 0
+    val newWordsCount: Int = 0,
 )
 
 sealed interface VocabularyIntent {

@@ -19,11 +19,11 @@ interface CommonAndroidModule {
 
     @Binds
     fun bindExceptionToMessageMapper(
-        impl: DefaultExceptionToMessageMapper
+        impl: DefaultExceptionToMessageMapper,
     ): ExceptionToMessageMapper
 
     @Binds
     fun bindRepositoryStringProvider(
-        impl: RepositoryStringProviderImpl
+        impl: RepositoryStringProviderImpl,
     ): RepositoryStringProvider
 }

@@ -20,7 +20,7 @@ fun <T : Any> ResourceObserver(
     onLoading: (@Composable () -> Unit)? = null,
     onError: (@Composable (String) -> Unit)? = null,
     onEmpty: (@Composable () -> Unit)? = null,
-    onSuccess: (@Composable (T) -> Unit)
+    onSuccess: (@Composable (T) -> Unit),
 ) {
     when (state) {
         is Resource.Loading -> {
@@ -60,15 +60,13 @@ fun ErrorContent(errorText: String, modifier: Modifier = Modifier) {
     }
 }
 
-fun <T> Flow<T>.asResource(): Flow<Resource<T>> {
-    return this
-        .map<T, Resource<T>> { data ->
-            Resource.Success(data)
-        }.onStart {
-            emit(Resource.Loading)
-        }
-        .catch { e ->
-            val errorText = ResourceError.Unknown(e.message ?: "Unknown error")
-            emit(Resource.Error(errorText))
-        }
-}
+fun <T> Flow<T>.asResource(): Flow<Resource<T>> = this
+    .map<T, Resource<T>> { data ->
+        Resource.Success(data)
+    }.onStart {
+        emit(Resource.Loading)
+    }
+    .catch { e ->
+        val errorText = ResourceError.Unknown(e.message ?: "Unknown error")
+        emit(Resource.Error(errorText))
+    }

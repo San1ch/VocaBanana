@@ -7,12 +7,10 @@ package com.san1ch.vocabanana.core.essentials.model.word
 data class WordQuery(
     /** Filter by the learning progress state of the word. Defaults to [FilterType.All]. */
     val states: FilterType<WordState> = FilterType.All,
-
     /** Filter words based on their association with specific texts. Defaults to [FilterType.All]. */
     val textIds: FilterType<Int> = FilterType.All,
-
     /** Direct filter for specific word IDs. Defaults to [FilterType.All]. */
-    val wordIds: FilterType<Int> = FilterType.All
+    val wordIds: FilterType<Int> = FilterType.All,
 )
 
 /**
@@ -24,8 +22,12 @@ sealed interface FilterType<out T> {
     object All : FilterType<Nothing>
 
     /** Include only the provided items in the result set. */
-    data class Include<T>(val items: List<T>) : FilterType<T>
+    data class Include<T>(
+        val items: List<T>,
+    ) : FilterType<T>
 
     /** Include all items except the ones provided in this list. */
-    data class Exclude<T>(val items: List<T>) : FilterType<T>
+    data class Exclude<T>(
+        val items: List<T>,
+    ) : FilterType<T>
 }

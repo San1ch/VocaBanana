@@ -1,6 +1,5 @@
 package com.san1ch.vocabanana.navigation
 
-import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.san1ch.vocabanana.feature.debug.presentation.DebugScreen
@@ -21,5 +20,4 @@ fun NavGraphBuilder.buildAppNavGraph() {
     composable<MainSettingsRoute> { SettingsScreen() }
     composable<DebugRoute> { DebugScreen() }
     composable<NewWordListRoute> { NewWordListScreen() }
-
 }

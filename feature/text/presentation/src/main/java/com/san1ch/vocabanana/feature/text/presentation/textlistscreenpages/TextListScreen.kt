@@ -7,7 +7,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.san1ch.vocabanana.core.ui.compose.CollectResource
 import com.san1ch.vocabanana.feature.text.presentation.TextListScreenViewModel
 
-
 @Composable
 fun TextListScreen(
     viewModel: TextListScreenViewModel = hiltViewModel(),
@@ -18,6 +17,6 @@ fun TextListScreen(
 
     TextListContent(
         state = state,
-        onIntent = viewModel::onIntent
+        onIntent = viewModel::onIntent,
     )
 }

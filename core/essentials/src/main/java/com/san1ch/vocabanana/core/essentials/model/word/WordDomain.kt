@@ -7,7 +7,6 @@ import com.san1ch.vocabanana.core.essentials.model.word.exception.WordValidateEm
 import com.san1ch.vocabanana.core.essentials.model.word.exception.WordValidateInvalidLemmaCharException
 import com.san1ch.vocabanana.core.essentials.model.word.exception.WordValidateTooLongException
 
-
 @ConsistentCopyVisibility
 data class WordDomain private constructor(
     val id: Int,
@@ -18,13 +17,9 @@ data class WordDomain private constructor(
     val whenAdded: Long,
     val state: WordState,
 ) {
+    fun withState(newState: WordState): WordDomain = this.copy(state = newState)
 
-    fun withState(newState: WordState): WordDomain {
-        return this.copy(state = newState)
-    }
-    fun withDefinition(newDefinition: String): WordDomain {
-        return this.copy(definition = newDefinition)
-    }
+    fun withDefinition(newDefinition: String): WordDomain = this.copy(definition = newDefinition)
 
     fun addForms(newForms: List<String>): WordDomain {
         val updatedForms = (this.forms + newForms).distinct()
@@ -34,7 +29,6 @@ data class WordDomain private constructor(
     fun addForm(form: String): WordDomain = addForms(listOf(form))
 
     companion object {
-
         /*
          * Creates a WordDomain object with validation.
          * Use this for any data coming from users or external sources.
@@ -48,19 +42,17 @@ data class WordDomain private constructor(
             forms: List<String> = emptyList(),
             partOfSpeech: PartOfSpeech,
             state: WordState = WordState.NEW,
-            definition: String = ""
-        ): ValidateResult<WordDomain> {
-            return validateLemma(lemma).map { validLemma ->
-                WordDomain(
-                    id = id,
-                    lemma = validLemma,
-                    whenAdded = whenAdded,
-                    state = state,
-                    partOfSpeech = partOfSpeech,
-                    forms = forms,
-                    definition = definition
-                )
-            }
+            definition: String = "",
+        ): ValidateResult<WordDomain> = validateLemma(lemma).map { validLemma ->
+            WordDomain(
+                id = id,
+                lemma = validLemma,
+                whenAdded = whenAdded,
+                state = state,
+                partOfSpeech = partOfSpeech,
+                forms = forms,
+                definition = definition,
+            )
         }
 
         /*
@@ -75,34 +67,34 @@ data class WordDomain private constructor(
             state: WordState,
             forms: List<String>,
             partOfSpeech: PartOfSpeech,
-            definition: String
-        ): WordDomain {
-            return WordDomain(
-                id = id,
-                lemma = lemma,
-                whenAdded = whenAdded,
-                state = state,
-                partOfSpeech = partOfSpeech,
-                forms = forms,
-                definition = definition
-            )
-        }
+            definition: String,
+        ): WordDomain = WordDomain(
+            id = id,
+            lemma = lemma,
+            whenAdded = whenAdded,
+            state = state,
+            partOfSpeech = partOfSpeech,
+            forms = forms,
+            definition = definition,
+        )
+
         private fun validateLemma(input: String): ValidateResult<String> {
             val trimmed = input.trim()
 
             if (trimmed.isEmpty()) return ValidateResult.Error(WordValidateEmptyException())
 
             // Check length
-            if (trimmed.length > WordConstants.MAX_WORD_LENGTH)
+            if (trimmed.length > WordConstants.MAX_WORD_LENGTH) {
                 return ValidateResult.Error(WordValidateTooLongException(WordConstants.MAX_WORD_LENGTH))
+            }
 
             // Check invalid characters
             val invalidChar = trimmed.firstOrNull { !WordConstants.WORD_REGEX.matches(it.toString()) }
-            if (invalidChar != null)
+            if (invalidChar != null) {
                 return ValidateResult.Error(WordValidateInvalidLemmaCharException(invalidChar))
+            }
 
             return ValidateResult.Success(trimmed)
         }
     }
-
 }

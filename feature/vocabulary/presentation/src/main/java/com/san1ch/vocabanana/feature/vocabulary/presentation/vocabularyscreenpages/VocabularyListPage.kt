@@ -63,17 +63,16 @@ import co.yml.charts.ui.piechart.charts.DonutPieChart
 import co.yml.charts.ui.piechart.models.PieChartConfig
 import co.yml.charts.ui.piechart.models.PieChartData
 import com.san1ch.vocabanana.core.essentials.model.word.WordState
+import com.san1ch.vocabanana.core.ui.compose.DeleteConfirmDialog
+import com.san1ch.vocabanana.core.ui.compose.SearchBarField
 import com.san1ch.vocabanana.core.ui.model.SortType
 import com.san1ch.vocabanana.core.ui.model.WordFilter
 import com.san1ch.vocabanana.core.ui.model.WordUi
-import com.san1ch.vocabanana.core.ui.compose.DeleteConfirmDialog
-import com.san1ch.vocabanana.core.ui.compose.SearchBarField
 import com.san1ch.vocabanana.core.ui.theme.AppColor
 import com.san1ch.vocabanana.feature.vocabulary.presentation.R
 import com.san1ch.vocabanana.feature.vocabulary.presentation.VocabMilestone
 import com.san1ch.vocabanana.feature.vocabulary.presentation.VocabularyIntent
 import com.san1ch.vocabanana.feature.vocabulary.presentation.VocabularyStats
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -83,7 +82,7 @@ fun VocabularyListPage(
     newWordsCount: Int,
     wordFilter: WordFilter,
     onIntent: (VocabularyIntent) -> Unit,
-    onMenuClick: () -> Unit
+    onMenuClick: () -> Unit,
 ) {
     var wordToDelete by remember { mutableStateOf<WordUi?>(null) }
     // Pick a surface color for the "Connected" look
@@ -97,7 +96,7 @@ fun VocabularyListPage(
         onConfirm = {
             onIntent(VocabularyIntent.DeleteWord(it.id))
             wordToDelete = null
-        }
+        },
     )
 
     Scaffold(
@@ -107,7 +106,7 @@ fun VocabularyListPage(
                 TopAppBar(
                     title = { Text(stringResource(R.string.vocabulary)) },
                     colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = containerColor // Same color as column
+                        containerColor = containerColor, // Same color as column
                     ),
                     navigationIcon = {
                         IconButton(onClick = onMenuClick) {
@@ -117,21 +116,21 @@ fun VocabularyListPage(
                     actions = {
                         NewWordsBadgeButton(
                             count = newWordsCount,
-                            onClick = { onIntent(VocabularyIntent.NavigateToNewWords) }
+                            onClick = { onIntent(VocabularyIntent.NavigateToNewWords) },
                         )
                         IconButton(onClick = { isSearchVisible = !isSearchVisible }) {
                             Icon(
                                 imageVector = if (isSearchVisible) Icons.Default.FilterList else Icons.Default.Search,
-                                contentDescription = "Toggle Search"
+                                contentDescription = "Toggle Search",
                             )
                         }
-                    }
+                    },
                 )
 
                 SearchBarField(
                     query = wordFilter.searchQuery,
                     onQueryChange = { onIntent(VocabularyIntent.UpdateSearchQuery(it)) },
-                    isVisible = isSearchVisible
+                    isVisible = isSearchVisible,
                 )
                 // The stats header now sits right under the title with NO gaps
                 VocabularyStatsHeader(stats = stats, backgroundColor = containerColor)
@@ -139,20 +138,20 @@ fun VocabularyListPage(
                 // Subtle line to separate the header from the scrolling list
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
             }
-        }
+        },
     ) { padding ->
         // LazyColumn fills the rest of the screen
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding), // This padding now starts AFTER the combined header
-            contentPadding = PaddingValues(bottom = 80.dp)
+            contentPadding = PaddingValues(bottom = 80.dp),
         ) {
             items(words, key = { it.id }) { word ->
                 WordListItem(
                     word = word,
                     onClick = { onIntent(VocabularyIntent.SelectWord(word.id)) },
-                    onDelete = { wordToDelete = word }
+                    onDelete = { wordToDelete = word },
                 )
             }
         }
@@ -163,13 +162,13 @@ fun VocabularyListPage(
 fun VocabularyDrawerContent(
     wordFilter: WordFilter,
     onIntent: (VocabularyIntent) -> Unit,
-    onClose: () -> Unit
+    onClose: () -> Unit,
 ) {
     ModalDrawerSheet {
         Column(
             modifier = Modifier
                 .padding(16.dp)
-                .fillMaxHeight()
+                .fillMaxHeight(),
         ) {
             Text("Vocabulary Settings", style = MaterialTheme.typography.headlineSmall)
 
@@ -183,21 +182,21 @@ fun VocabularyDrawerContent(
             HorizontalDivider(
                 modifier = Modifier.padding(vertical = 16.dp),
                 thickness = 1.dp,
-                color = MaterialTheme.colorScheme.outlineVariant
+                color = MaterialTheme.colorScheme.outlineVariant,
             )
 
             // Sorting Header with Order Toggle
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text("Sort By", style = MaterialTheme.typography.labelLarge)
                 IconButton(onClick = { onIntent(VocabularyIntent.ToggleSortOrder) }) {
                     Icon(
                         imageVector = if (wordFilter.isAscending) Icons.Default.ArrowUpward else Icons.Default.ArrowDownward,
                         contentDescription = "Toggle Order",
-                        tint = MaterialTheme.colorScheme.primary
+                        tint = MaterialTheme.colorScheme.primary,
                     )
                 }
             }
@@ -205,22 +204,34 @@ fun VocabularyDrawerContent(
             SortOption(
                 label = stringResource(R.string.alphabet),
                 selected = wordFilter.sortType == SortType.ALPHABETIC,
-                onClick = { onIntent(VocabularyIntent.ChangeSortType(SortType.ALPHABETIC)); onClose() }
+                onClick = {
+                    onIntent(VocabularyIntent.ChangeSortType(SortType.ALPHABETIC))
+                    onClose()
+                },
             )
             SortOption(
                 label = stringResource(R.string.status_state),
                 selected = wordFilter.sortType == SortType.STATE,
-                onClick = { onIntent(VocabularyIntent.ChangeSortType(SortType.STATE)); onClose() }
+                onClick = {
+                    onIntent(VocabularyIntent.ChangeSortType(SortType.STATE))
+                    onClose()
+                },
             )
             SortOption(
                 label = stringResource(R.string.recently_added),
                 selected = wordFilter.sortType == SortType.DATE,
-                onClick = { onIntent(VocabularyIntent.ChangeSortType(SortType.DATE)); onClose() }
+                onClick = {
+                    onIntent(VocabularyIntent.ChangeSortType(SortType.DATE))
+                    onClose()
+                },
             )
             SortOption(
                 label = stringResource(R.string.count),
                 selected = wordFilter.sortType == SortType.COUNT,
-                onClick = { onIntent(VocabularyIntent.ChangeSortType(SortType.DATE)); onClose() }
+                onClick = {
+                    onIntent(VocabularyIntent.ChangeSortType(SortType.DATE))
+                    onClose()
+                },
             )
         }
     }
@@ -229,7 +240,8 @@ fun VocabularyDrawerContent(
 @Composable
 fun VocabularyStatsHeader(
     stats: VocabularyStats,
-    backgroundColor: Color = Color.Transparent // Pass the surface color here
+    // Pass the surface color here
+    backgroundColor: Color = Color.Transparent,
 ) {
     var isExpanded by remember { mutableStateOf(false) }
     val nextMilestone = VocabMilestone.getNext(stats.totalLemmas)
@@ -241,18 +253,18 @@ fun VocabularyStatsHeader(
             .background(backgroundColor)
             .clickable { isExpanded = !isExpanded }
             .padding(horizontal = 16.dp, vertical = 4.dp) // Very small vertical padding
-            .animateContentSize()
+            .animateContentSize(),
     ) {
         // Compact Progress Row
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.height(32.dp) // Fixed short height for the "closed" state
+            modifier = Modifier.height(32.dp), // Fixed short height for the "closed" state
         ) {
             Text(
                 text = "${stats.known}",
                 style = MaterialTheme.typography.labelLarge,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface,
             )
 
             // Thinner Progress Bar
@@ -263,21 +275,21 @@ fun VocabularyStatsHeader(
                     .height(6.dp) // Decreased height from 8.dp to 6.dp
                     .background(
                         MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f),
-                        CircleShape
-                    )
+                        CircleShape,
+                    ),
             ) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth(progress.coerceIn(0f, 1f))
                         .fillMaxHeight()
-                        .background(nextMilestone.color, CircleShape)
+                        .background(nextMilestone.color, CircleShape),
                 )
             }
 
             Text(
                 text = "${nextMilestone.threshold}",
                 style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.outline
+                color = MaterialTheme.colorScheme.outline,
             )
 
             Icon(
@@ -286,7 +298,7 @@ fun VocabularyStatsHeader(
                 modifier = Modifier
                     .padding(start = 8.dp)
                     .size(16.dp),
-                tint = MaterialTheme.colorScheme.outline
+                tint = MaterialTheme.colorScheme.outline,
             )
         }
 
@@ -294,13 +306,13 @@ fun VocabularyStatsHeader(
         AnimatedVisibility(visible = isExpanded) {
             Column(
                 modifier = Modifier.padding(top = 8.dp, bottom = 12.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
                     text = "${nextMilestone.label}: ${nextMilestone.threshold - stats.known} more to go",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.Medium
+                    fontWeight = FontWeight.Medium,
                 )
 
                 Spacer(Modifier.height(12.dp))
@@ -308,25 +320,26 @@ fun VocabularyStatsHeader(
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
+                    horizontalArrangement = Arrangement.Center,
                 ) {
                     // Smaller Donut Chart
-                    Box(modifier = Modifier.size(110.dp)) { // Shorter chart
+                    Box(modifier = Modifier.size(110.dp)) {
+                        // Shorter chart
                         val donutChartData = PieChartData(
                             slices = listOf(
                                 PieChartData.Slice("Known", stats.known.toFloat(), AppColor.Known),
                                 PieChartData.Slice(
                                     "Learning",
                                     stats.learning.toFloat(),
-                                    AppColor.Learn
+                                    AppColor.Learn,
                                 ),
                                 PieChartData.Slice(
                                     "Not Known",
                                     stats.notKnown.toFloat(),
-                                    AppColor.NotKnow
+                                    AppColor.NotKnow,
                                 ),
                             ),
-                            plotType = PlotType.Donut
+                            plotType = PlotType.Donut,
                         )
                         DonutPieChart(
                             modifier = Modifier.fillMaxSize(),
@@ -335,8 +348,8 @@ fun VocabularyStatsHeader(
                                 isAnimationEnable = true,
                                 showSliceLabels = false,
                                 backgroundColor = Color.Transparent,
-                                strokeWidth = 20f // Thinner donut ring
-                            )
+                                strokeWidth = 20f, // Thinner donut ring
+                            ),
                         )
                     }
 
@@ -357,12 +370,12 @@ fun VocabularyStatsHeader(
 fun StatRow(color: Color, label: String, count: Int) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.padding(vertical = 2.dp)
+        modifier = Modifier.padding(vertical = 2.dp),
     ) {
         Box(
             Modifier
                 .size(8.dp)
-                .background(color, CircleShape)
+                .background(color, CircleShape),
         )
         Spacer(Modifier.width(8.dp))
         Text("$label: $count", style = MaterialTheme.typography.bodySmall)
@@ -375,7 +388,7 @@ fun SortOption(label: String, selected: Boolean, onClick: () -> Unit) {
         label = { Text(label) },
         selected = selected,
         onClick = onClick,
-        modifier = Modifier.padding(vertical = 2.dp)
+        modifier = Modifier.padding(vertical = 2.dp),
     )
 }
 
@@ -383,7 +396,7 @@ fun SortOption(label: String, selected: Boolean, onClick: () -> Unit) {
 fun WordListItem(
     word: WordUi,
     onClick: () -> Unit,
-    onDelete: () -> Unit
+    onDelete: () -> Unit,
 ) {
     val stateColor = when (word.state) {
         WordState.NOT_KNOWN -> AppColor.NotKnow
@@ -400,55 +413,57 @@ fun WordListItem(
             .clickable { onClick() },
         shape = MaterialTheme.shapes.medium,
         colors = CardDefaults.cardColors(
-            containerColor = if (isSystemInDarkTheme())
+            containerColor = if (isSystemInDarkTheme()) {
                 MaterialTheme.colorScheme.surface
-            else Color.White
+            } else {
+                Color.White
+            },
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         border = BorderStroke(
             width = 1.dp,
-            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
-        )
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f),
+        ),
     ) {
         Row(
             modifier = Modifier.height(IntrinsicSize.Min),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             // Status bar
             Box(
                 modifier = Modifier
                     .width(6.dp)
                     .fillMaxHeight()
-                    .background(stateColor)
+                    .background(stateColor),
             )
 
             Column(
                 modifier = Modifier
                     .weight(1f)
-                    .padding(16.dp)
+                    .padding(16.dp),
             ) {
                 Text(
                     text = word.lemma,
                     style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.SemiBold
+                    fontWeight = FontWeight.SemiBold,
                 )
                 Text(
                     text = word.partOfSpeech.lowercase(),
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.secondary
+                    color = MaterialTheme.colorScheme.secondary,
                 )
             }
 
             Surface(
                 shape = CircleShape,
                 color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f),
-                modifier = Modifier.padding(end = 8.dp)
+                modifier = Modifier.padding(end = 8.dp),
             ) {
                 Text(
                     text = "×${word.count}",
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
                 )
             }
 
@@ -456,7 +471,7 @@ fun WordListItem(
                 Icon(
                     imageVector = Icons.Default.Delete,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
                 )
             }
         }
@@ -467,7 +482,7 @@ fun WordListItem(
 @Composable
 fun NewWordsBadgeButton(
     count: Int,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
     if (count > 0) {
         val textCount = when (count) {
@@ -484,11 +499,11 @@ fun NewWordsBadgeButton(
                     ) {
                         Text(textCount)
                     }
-                }
+                },
             ) {
                 Icon(
                     imageVector = Icons.Default.AddCircleOutline,
-                    contentDescription = "New Words Pending"
+                    contentDescription = "New Words Pending",
                 )
             }
         }

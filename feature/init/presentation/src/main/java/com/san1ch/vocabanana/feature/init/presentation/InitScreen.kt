@@ -24,7 +24,7 @@ fun InitScreen(
     viewModel: InitScreenViewModel = hiltViewModel(),
 ) {
     CollectResource(viewModel.events)
-    InitContent(onFinished = viewModel::finishInit )
+    InitContent(onFinished = viewModel::finishInit)
 }
 
 @Composable
@@ -33,16 +33,16 @@ fun InitContent(onFinished: () -> Unit) {
         Column(
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.Center,
         ) {
             Text(stringResource(R.string.test_init_screen))
             Spacer(modifier = Modifier.height(16.dp))
             Button(
-                onClick = onFinished
+                onClick = onFinished,
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                    contentDescription = "Next"
+                    contentDescription = "Next",
                 )
             }
         }

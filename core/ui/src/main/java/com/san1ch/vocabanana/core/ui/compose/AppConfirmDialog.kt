@@ -15,7 +15,7 @@ fun AppConfirmDialog(
     confirmText: String = "Yes",
     dismissText: String = "No",
     onConfirm: () -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -30,7 +30,7 @@ fun AppConfirmDialog(
             TextButton(onClick = onDismiss) {
                 Text(dismissText)
             }
-        }
+        },
     )
 }
 
@@ -40,7 +40,7 @@ fun <T> DeleteConfirmDialog(
     title: String = stringResource(R.string.delete),
     text: String = "Are you sure you want to delete this? This action is permanent.",
     onDismiss: () -> Unit,
-    onConfirm: (T) -> Unit
+    onConfirm: (T) -> Unit,
 ) {
     if (item != null) {
         AppConfirmDialog(
@@ -48,7 +48,7 @@ fun <T> DeleteConfirmDialog(
             text = text,
             confirmText = stringResource(R.string.delete),
             onConfirm = { onConfirm(item) },
-            onDismiss = onDismiss
+            onDismiss = onDismiss,
         )
     }
 }

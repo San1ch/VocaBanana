@@ -7,9 +7,9 @@ import com.san1ch.vocabanana.core.essentials.model.word.WordQuery
 import com.san1ch.vocabanana.core.essentials.repositories.TextRepository
 import com.san1ch.vocabanana.core.essentials.repositories.WordRepository
 import com.san1ch.vocabanana.core.ui.BaseViewModel
+import com.san1ch.vocabanana.core.ui.model.toPreview
 import com.san1ch.vocabanana.core.ui.state.Resource
 import com.san1ch.vocabanana.core.ui.state.asResource
-import com.san1ch.vocabanana.core.ui.model.toPreview
 import com.san1ch.vocabanana.feature.debug.domain.DebugAssistant
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -22,16 +22,19 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class DebugScreenViewModel @Inject constructor(
+class DebugScreenViewModel
+@Inject
+constructor(
     textRepository: TextRepository,
     private val wordRepository: WordRepository,
-    private val debugAssistant: DebugAssistant
+    private val debugAssistant: DebugAssistant,
 ) : BaseViewModel() {
-
-    val textsState = textRepository.getTexts()
-        .map { list -> list.map { it.toPreview() } }
-        .asResource()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), Resource.Loading)
+    val textsState =
+        textRepository
+            .getTexts()
+            .map { list -> list.map { it.toPreview() } }
+            .asResource()
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), Resource.Loading)
 
     private val _selectedTextId = MutableStateFlow<Int?>(null)
     val selectedTextId = _selectedTextId.asStateFlow()
@@ -63,22 +66,21 @@ class DebugScreenViewModel @Inject constructor(
                 }
             }
         }
-
     }
-
 
     private fun buildDebugQueries(): List<Pair<String, WordQuery>> {
         val id = selectedTextId.value
 
         return listOf(
             "ALL" to WordQuery(),
-            "TEXT INCLUDE" to WordQuery(
-                textIds = FilterType.Include(listOfNotNull(id))
-            ),
-            "TEXT EXCLUDE" to WordQuery(
-                textIds = FilterType.Exclude(listOfNotNull(id))
-            )
+            "TEXT INCLUDE" to
+                WordQuery(
+                    textIds = FilterType.Include(listOfNotNull(id)),
+                ),
+            "TEXT EXCLUDE" to
+                WordQuery(
+                    textIds = FilterType.Exclude(listOfNotNull(id)),
+                ),
         )
     }
-
 }
