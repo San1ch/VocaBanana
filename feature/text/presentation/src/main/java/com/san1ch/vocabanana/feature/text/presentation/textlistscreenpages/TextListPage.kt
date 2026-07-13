@@ -36,7 +36,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.san1ch.vocabanana.core.ui.TextPreview
+import com.san1ch.vocabanana.core.ui.model.TextPreview
 import com.san1ch.vocabanana.core.ui.toFormattedDate
 import com.san1ch.vocabanana.feature.text.presentation.R
 import com.san1ch.vocabanana.feature.text.presentation.TextListUiIntent
@@ -45,18 +45,18 @@ import com.san1ch.vocabanana.feature.text.presentation.TextListUiIntent
 fun TextListPage(
     items: List<TextPreview>,
     onIntent: (TextListUiIntent) -> Unit,
-    onNavigateToReader: () -> Unit
+    onNavigateToReader: () -> Unit,
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         items(items, key = { it.id }) { item ->
             Box(
                 modifier = Modifier.animateItem(
-                    placementSpec = spring(dampingRatio = 0.6f, stiffness = 800f)
-                )
+                    placementSpec = spring(dampingRatio = 0.6f, stiffness = 800f),
+                ),
             ) {
                 TextLazyItem(
                     item = item,
@@ -66,19 +66,18 @@ fun TextListPage(
                     },
                     onDelete = {
                         onIntent(TextListUiIntent.SelectTextToDelete(item.id))
-                    }
+                    },
                 )
             }
         }
     }
 }
 
-
 @Composable
 private fun TextLazyItem(
     item: TextPreview,
     onClick: () -> Unit,
-    onDelete: (TextPreview) -> Unit
+    onDelete: (TextPreview) -> Unit,
 ) {
     Card(
         modifier = Modifier
@@ -87,38 +86,40 @@ private fun TextLazyItem(
             .clickable { onClick() },
         shape = MaterialTheme.shapes.medium,
         colors = CardDefaults.cardColors(
-            containerColor = if (isSystemInDarkTheme())
+            containerColor = if (isSystemInDarkTheme()) {
                 MaterialTheme.colorScheme.surface
-            else Color.White
+            } else {
+                Color.White
+            },
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         border = BorderStroke(
             width = 1.dp,
-            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
-        )
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f),
+        ),
     ) {
         Row(
             modifier = Modifier.height(IntrinsicSize.Min), // Essential for the vertical bar
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             // 1. Accent Bar - Using Secondary to distinguish from Vocabulary
             Box(
                 modifier = Modifier
                     .width(6.dp)
                     .fillMaxHeight()
-                    .background(MaterialTheme.colorScheme.secondary)
+                    .background(MaterialTheme.colorScheme.secondary),
             )
 
             Column(
                 modifier = Modifier
                     .weight(1f)
-                    .padding(16.dp)
+                    .padding(16.dp),
             ) {
                 Text(
                     text = item.title,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = MaterialTheme.colorScheme.onSurface,
                 )
 
                 Spacer(modifier = Modifier.height(4.dp))
@@ -127,20 +128,20 @@ private fun TextLazyItem(
                 Text(
                     text = stringResource(R.string.last_read, item.lastReadTime.toFormattedDate()),
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
 
             // 3. Delete Action - Subtle so it doesn't distract
             IconButton(
                 onClick = { onDelete(item) },
-                modifier = Modifier.padding(end = 8.dp)
+                modifier = Modifier.padding(end = 8.dp),
             ) {
                 Icon(
                     imageVector = Icons.Default.Delete,
                     contentDescription = "Delete",
                     tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-                    modifier = Modifier.size(20.dp)
+                    modifier = Modifier.size(20.dp),
                 )
             }
         }

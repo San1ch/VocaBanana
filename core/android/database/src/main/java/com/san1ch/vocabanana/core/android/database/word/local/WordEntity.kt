@@ -6,10 +6,6 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 import androidx.room.Relation
-import com.san1ch.vocabanana.core.essentials.model.word.WordDomain
-import com.san1ch.vocabanana.core.essentials.model.word.toPartOfSpeech
-import com.san1ch.vocabanana.core.essentials.model.word.toWordState
-
 
 @Entity(tableName = "words")
 data class WordEntity(
@@ -20,7 +16,7 @@ data class WordEntity(
     val state: Int,
     @ColumnInfo(name = "when_added") val whenAdded: Long,
     val partOfSpeech: Int,
-    val definition: String
+    val definition: String,
 )
 
 @Entity(
@@ -31,20 +27,20 @@ data class WordEntity(
             entity = WordEntity::class,
             parentColumns = ["id"],
             childColumns = ["wordId"],
-            onDelete = ForeignKey.CASCADE
-        )
-    ]
+            onDelete = ForeignKey.CASCADE,
+        ),
+    ],
 )
 data class WordFormEntity(
     val wordId: Int,
-    val form: String
+    val form: String,
 )
 
 data class WordWithForms(
     @Embedded val word: WordEntity,
     @Relation(
         parentColumn = "id",
-        entityColumn = "wordId"
+        entityColumn = "wordId",
     )
-    val forms: List<WordFormEntity>
+    val forms: List<WordFormEntity>,
 )

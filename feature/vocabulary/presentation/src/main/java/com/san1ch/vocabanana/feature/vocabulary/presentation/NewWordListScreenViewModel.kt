@@ -7,12 +7,12 @@ import com.san1ch.vocabanana.core.essentials.model.word.WordState
 import com.san1ch.vocabanana.core.essentials.repositories.WordRepository
 import com.san1ch.vocabanana.core.essentials.usecases.GetWordsWithCountUseCase
 import com.san1ch.vocabanana.core.ui.BaseViewModel
-import com.san1ch.vocabanana.core.ui.SortType
-import com.san1ch.vocabanana.core.ui.UiState
-import com.san1ch.vocabanana.core.ui.WordFilter
-import com.san1ch.vocabanana.core.ui.WordUi
-import com.san1ch.vocabanana.core.ui.filterAndSort
-import com.san1ch.vocabanana.core.ui.toUi
+import com.san1ch.vocabanana.core.ui.model.SortType
+import com.san1ch.vocabanana.core.ui.model.WordFilter
+import com.san1ch.vocabanana.core.ui.model.WordUi
+import com.san1ch.vocabanana.core.ui.model.filterAndSort
+import com.san1ch.vocabanana.core.ui.model.toUi
+import com.san1ch.vocabanana.core.ui.state.Resource
 import com.san1ch.vocabanana.feature.vocabulary.presentation.router.VocabularyRouter
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -31,18 +31,19 @@ import javax.inject.Inject
 class NewWordListScreenViewModel @Inject constructor(
     private val wordRepository: WordRepository,
     private val vocabularyRouter: VocabularyRouter,
-    private val getWordWithCountUseCase: GetWordsWithCountUseCase
+    private val getWordWithCountUseCase: GetWordsWithCountUseCase,
 ) : BaseViewModel() {
 
     // Internal UI State flows
     private val _wordFilter = MutableStateFlow(WordFilter(sortType = SortType.COUNT))
+
     @OptIn(FlowPreview::class)
-    private val debounceWordFilter = _wordFilter.debounce(500).distinctUntilChanged()
+    val wordFilter = _wordFilter.debounce(500).distinctUntilChanged()
 
     // The Main State: Combined and Optimized
-    val uiState = combine(
+    val resource = combine(
         getWordWithCountUseCase(WordQuery(states = FilterType.Include(listOf(WordState.NEW)))),
-        debounceWordFilter
+        wordFilter,
     ) { rawList, filterData ->
         // Filter only NEW words, Transform to UI object and Filter
         val filteredList = rawList
@@ -53,8 +54,8 @@ class NewWordListScreenViewModel @Inject constructor(
             .filterAndSort(filterData)
 
         NewWordListState(
-            words = UiState.Success(filteredList),
-            filter = filterData
+            words = Resource.Success(filteredList),
+            filter = filterData,
         )
     }
         .distinctUntilChanged() // Only emit if the actual data content changes
@@ -62,7 +63,7 @@ class NewWordListScreenViewModel @Inject constructor(
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
-            NewWordListState(words = UiState.Loading)
+            NewWordListState(words = Resource.Loading),
         )
 
     /**
@@ -99,6 +100,6 @@ sealed interface NewWordListIntent {
 }
 
 data class NewWordListState(
-    val words: UiState<List<WordUi>> = UiState.Loading,
-    val filter: WordFilter = WordFilter()
+    val words: Resource<List<WordUi>> = Resource.Loading,
+    val filter: WordFilter = WordFilter(),
 )

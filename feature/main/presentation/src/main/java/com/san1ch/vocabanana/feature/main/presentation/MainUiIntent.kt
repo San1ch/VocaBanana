@@ -6,4 +6,3 @@ sealed class MainUiIntent {
     object NavigateToSettings : MainUiIntent()
     object NavigateToDebug : MainUiIntent()
 }
-

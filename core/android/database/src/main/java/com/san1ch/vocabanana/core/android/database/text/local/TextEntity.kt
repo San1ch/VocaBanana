@@ -16,6 +16,5 @@ data class TextEntity(
     val lastScrollPosition: Float,
 
     @ColumnInfo(name = "last_read_time")
-    val lastReadTime: Long
+    val lastReadTime: Long,
 )
-

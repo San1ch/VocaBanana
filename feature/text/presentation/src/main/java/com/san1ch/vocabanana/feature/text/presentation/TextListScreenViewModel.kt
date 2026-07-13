@@ -2,11 +2,19 @@ package com.san1ch.vocabanana.feature.text.presentation
 
 import androidx.lifecycle.viewModelScope
 import com.san1ch.vocabanana.core.essentials.model.ReaderSettings
+import com.san1ch.vocabanana.core.essentials.model.word.FilterType
+import com.san1ch.vocabanana.core.essentials.model.word.WordQuery
 import com.san1ch.vocabanana.core.essentials.repositories.SettingsRepository
 import com.san1ch.vocabanana.core.essentials.repositories.TextRepository
 import com.san1ch.vocabanana.core.essentials.repositories.WordRepository
+import com.san1ch.vocabanana.core.essentials.usecases.GetWordsWithCountUseCase
 import com.san1ch.vocabanana.core.ui.BaseViewModel
-import com.san1ch.vocabanana.core.ui.UiEvent
+import com.san1ch.vocabanana.core.ui.model.TextPreview
+import com.san1ch.vocabanana.core.ui.model.TextUi
+import com.san1ch.vocabanana.core.ui.model.UiEvent
+import com.san1ch.vocabanana.core.ui.model.WordUi
+import com.san1ch.vocabanana.core.ui.model.toPreview
+import com.san1ch.vocabanana.core.ui.model.toUi
 import com.san1ch.vocabanana.feature.text.domain.GenerateWordsFromTextUseCase
 import com.san1ch.vocabanana.feature.text.presentation.mapper.GenerateWordsFromTextUiMapper
 import com.san1ch.vocabanana.feature.text.presentation.model.GenerateWordsFromTextUiState
@@ -16,15 +24,11 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-//toPreview
-import com.san1ch.vocabanana.core.ui.TextPreview
-import com.san1ch.vocabanana.core.ui.TextUi
-import com.san1ch.vocabanana.core.ui.WordUi
-import com.san1ch.vocabanana.core.ui.toPreview
-import com.san1ch.vocabanana.core.ui.toUi
 
 @HiltViewModel
 class TextListScreenViewModel @Inject constructor(
@@ -33,7 +37,8 @@ class TextListScreenViewModel @Inject constructor(
     private val generateWordsFromText: GenerateWordsFromTextUseCase,
     private val settingsRepository: SettingsRepository,
     private val router: TextListRouter,
-    private val generateWordsFromTextUiMapper: GenerateWordsFromTextUiMapper
+    private val generateWordsFromTextUiMapper: GenerateWordsFromTextUiMapper,
+    private val getWordsWithCountUseCase: GetWordsWithCountUseCase,
 ) : BaseViewModel() {
 
     // 1. Single source of truth for the UI
@@ -57,12 +62,11 @@ class TextListScreenViewModel @Inject constructor(
         }
     }
 
-
     // 2. The single entry point for all UI actions
     fun onIntent(intent: TextListUiIntent) {
         when (intent) {
             // --- Navigation & Global ---
-            is TextListUiIntent.NavigateToAddText -> router.launchAddText()
+            is TextListUiIntent.NavigateToAddText -> router.navigateToAddText()
             is TextListUiIntent.PageChanged -> updatePage(intent.page)
 
             // --- Text Selection & Reading ---
@@ -136,18 +140,21 @@ class TextListScreenViewModel @Inject constructor(
         _uiState.update { it.copy(wordInfoState = WordInfoState.Loading) }
 
         viewModelScope.launch {
-            wordRepository.getWordByWord(word)
+            wordRepository.getIdByWord(word)
                 .onSuccess { result ->
+                    val word = getWordsWithCountUseCase(WordQuery(wordIds = FilterType.Include<Int>(listOf(result)))).map {
+                        it[0]
+                    }.first()
                     _uiState.update {
                         it.copy(
-                            wordInfoState = WordInfoState.Found(result.toUi())
+                            wordInfoState = WordInfoState.Found(word.toUi()),
                         )
                     }
                 }
                 .onFailure {
                     _uiState.update {
                         it.copy(
-                            wordInfoState = WordInfoState.NotFound(word)
+                            wordInfoState = WordInfoState.NotFound(word),
                         )
                         // TODO Process error
                     }
@@ -270,7 +277,7 @@ data class TextListUiState(
 
     // --- Operations & Feedback (Temporary States) ---
     val selectedTextIdToDelete: Int? = null,
-    val isSwipeAttempted: Boolean = false
+    val isSwipeAttempted: Boolean = false,
 )
 
 sealed class WordInfoState {

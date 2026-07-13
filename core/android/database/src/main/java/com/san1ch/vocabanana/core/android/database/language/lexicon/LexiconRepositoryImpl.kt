@@ -7,17 +7,12 @@ import com.san1ch.vocabanana.feature.database.language.lexicon.LexiconDao
 import javax.inject.Inject
 
 class LexiconRepositoryImpl @Inject constructor(
-    private val lexiconDao: LexiconDao
+    private val lexiconDao: LexiconDao,
 ) : LexiconRepository {
-    override suspend fun getExistingWords(words: List<String>): List<String> {
-        return lexiconDao.getExistingWords(words)
-    }
+    override suspend fun getExistingWords(words: List<String>): List<String> = lexiconDao.getExistingWords(words)
 
-    override suspend fun getWordsFromWords(words: List<String>): List<LexiconDto> {
-        return lexiconDao.getWordsFromWords(words).map { it.toDto }
-    }
+    override suspend fun getWordsFromWords(words: List<String>): List<LexiconDto> = lexiconDao.getWordsFromWords(words).map { it.toDto }
 }
-
 
 val String.toPartOfSpeech: PartOfSpeech
     get() = when {
@@ -27,8 +22,6 @@ val String.toPartOfSpeech: PartOfSpeech
         this == "adverb" -> PartOfSpeech.ADVERB
         else -> PartOfSpeech.UNKNOWN
     }
-
-
 
 val LexiconEntity.toDto: LexiconDto
     get() = LexiconDto(word, type, definition)

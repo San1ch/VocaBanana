@@ -1,12 +1,11 @@
 package com.san1ch.vocabanana.core.android.database.word
 
+import com.san1ch.vocabanana.core.android.database.word.local.WordEntity
+import com.san1ch.vocabanana.core.android.database.word.local.WordWithForms
 import com.san1ch.vocabanana.core.essentials.model.word.WordDomain
 import com.san1ch.vocabanana.core.essentials.model.word.toInt
 import com.san1ch.vocabanana.core.essentials.model.word.toPartOfSpeech
 import com.san1ch.vocabanana.core.essentials.model.word.toWordState
-import com.san1ch.vocabanana.core.android.database.word.local.WordEntity
-import com.san1ch.vocabanana.core.android.database.word.local.WordWithForms
-
 
 // WordMapper.kt
 fun WordDomain.toWordEntity() = WordEntity(
@@ -15,7 +14,7 @@ fun WordDomain.toWordEntity() = WordEntity(
     state = state.toInt(),
     whenAdded = whenAdded,
     partOfSpeech = partOfSpeech.toInt(),
-    definition = definition
+    definition = definition,
 )
 
 fun WordWithForms.toDomain() = WordDomain.createUnsafe(
@@ -27,4 +26,3 @@ fun WordWithForms.toDomain() = WordDomain.createUnsafe(
     forms = forms.map { it.form },
     definition = word.definition,
 )
-

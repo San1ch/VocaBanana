@@ -5,10 +5,12 @@ import com.san1ch.vocabanana.navigation.AddTextRoute
 import com.san1ch.vocabanana.navigation.AppRouter
 import javax.inject.Inject
 
-class TextListRouterImpl @Inject constructor(
-    private val appRouter: AppRouter
+class TextListRouterImpl
+@Inject
+constructor(
+    private val appRouter: AppRouter,
 ) : TextListRouter {
-    override fun launchAddText() {
+    override fun navigateToAddText() {
         appRouter.navigateTo(AddTextRoute)
     }
 }

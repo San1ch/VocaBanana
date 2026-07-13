@@ -1,14 +1,9 @@
 package com.san1ch.vocabanana.feature.text.presentation.data
 
-import com.san1ch.vocabanana.core.essentials.model.text.TextDomain
-
-
-
 sealed class TextToken {
     data class Word(val text: String) : TextToken()
     data class Symbol(val text: String) : TextToken()
 }
-
 
 fun String.tokenize(): List<TextToken> {
     val wordPattern = Regex("[a-zA-Z']+")
@@ -18,7 +13,10 @@ fun String.tokenize(): List<TextToken> {
     return this.split(Regex("(?<=[^a-zA-Z'])|(?=[^a-zA-Z'])"))
         .filter { it.isNotEmpty() }
         .map {
-            if (it.matches(wordPattern)) TextToken.Word(it)
-            else TextToken.Symbol(it)
+            if (it.matches(wordPattern)) {
+                TextToken.Word(it)
+            } else {
+                TextToken.Symbol(it)
+            }
         }
 }

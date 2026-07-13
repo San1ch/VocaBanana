@@ -13,16 +13,15 @@ import com.san1ch.vocabanana.core.essentials.model.text.TextWordCount
             entity = TextEntity::class,
             parentColumns = ["id"],
             childColumns = ["textId"],
-            onDelete = ForeignKey.CASCADE
-        )
+            onDelete = ForeignKey.CASCADE,
+        ),
     ],
-    indices = [Index(value = ["textId"])]
+    indices = [Index(value = ["textId"])],
 )
 data class TextWordCountEntity(
     val textId: Int,
     val wordId: Int,
-    val count: Int
+    val count: Int,
 )
 
 fun TextWordCount.toEntity() = TextWordCountEntity(textId, wordId, count)
-

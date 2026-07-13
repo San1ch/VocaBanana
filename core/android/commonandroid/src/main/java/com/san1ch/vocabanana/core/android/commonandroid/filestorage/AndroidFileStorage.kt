@@ -6,14 +6,11 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.File
 import javax.inject.Inject
 
-
 class AndroidFileStorage @Inject constructor(
-    @param:ApplicationContext private val context: Context
+    @param:ApplicationContext private val context: Context,
 ) : FileStorage {
 
-    override fun loadText(filePath: String): String {
-        return File(filePath).readText()
-    }
+    override fun loadText(filePath: String): String = File(filePath).readText()
 
     override fun deleteText(filePath: String) = File(filePath).delete()
 
@@ -21,7 +18,11 @@ class AndroidFileStorage @Inject constructor(
         val safeName = fileName.replace(Regex("[^a-zA-Z0-9]"), "_")
         val file = File(context.filesDir, "texts/$safeName.txt")
 
-        if (!file.parentFile.exists()) file.parentFile.mkdirs()
+        file.parentFile?.let { parent ->
+            if (!parent.exists()) {
+                parent.mkdirs()
+            }
+        }
 
         file.writeText(content)
         return file.absolutePath

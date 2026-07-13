@@ -1,11 +1,10 @@
-package com.san1ch.vocabanana.core.ui
+package com.san1ch.vocabanana.core.ui.model
 
 import com.san1ch.vocabanana.core.essentials.model.text.WordWithCount
 import com.san1ch.vocabanana.core.essentials.model.word.PartOfSpeech
 import com.san1ch.vocabanana.core.essentials.model.word.WordDomain
 import com.san1ch.vocabanana.core.essentials.model.word.WordState
 import com.san1ch.vocabanana.core.essentials.model.word.toPartOfSpeech
-
 
 data class WordUi(
     val id: Int,
@@ -15,7 +14,7 @@ data class WordUi(
     val definition: String,
     val partOfSpeech: String,
     val forms: List<String>,
-    val count: Int? = null
+    val count: Int? = null,
 )
 
 fun PartOfSpeech.toUi(): String = when (this) {
@@ -45,7 +44,7 @@ fun WordWithCount.toUi() = WordUi(
     definition = word.definition,
     partOfSpeech = word.partOfSpeech.toUi(),
     forms = word.forms,
-    count = count
+    count = count,
 )
 
 fun WordUi.toDomain() = WordDomain.create(
@@ -55,9 +54,8 @@ fun WordUi.toDomain() = WordDomain.create(
     forms = forms,
     partOfSpeech = partOfSpeech.toPartOfSpeech(),
     state = state,
-    definition = definition
+    definition = definition,
 )
-
 
 fun List<WordUi>.filterAndSort(filter: WordFilter): List<WordUi> {
     val query = filter.searchQuery.lowercase()

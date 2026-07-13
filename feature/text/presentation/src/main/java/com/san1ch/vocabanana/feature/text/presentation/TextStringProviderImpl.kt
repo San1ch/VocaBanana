@@ -6,7 +6,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 
 class TextStringProviderImpl @Inject constructor(
-    @param:ApplicationContext private val context: Context
+    @param:ApplicationContext private val context: Context,
 ) : TextStringProvider {
 
     override val textValidateEmptyText: String
@@ -15,11 +15,9 @@ class TextStringProviderImpl @Inject constructor(
     override val textValidateEmptyName: String
         get() = context.getString(R.string.validate_empty_name)
 
-    override fun textNameValidateTooLong(maxLength: Int): String =
-        context.getString(R.string.validate_name_too_long, maxLength)
+    override fun textNameValidateTooLong(maxLength: Int): String = context.getString(R.string.validate_name_too_long, maxLength)
 
-    override fun textNameValidateHasInvalidChar(invalidChar: Char): String =
-        context.getString(R.string.validate_name_has_invalid_char, invalidChar)
+    override fun textNameValidateHasInvalidChar(invalidChar: Char): String = context.getString(R.string.validate_name_has_invalid_char, invalidChar)
 
     override val textValidateNameAlreadyExists: String
         get() = context.getString(R.string.validate_name_already_exists)
@@ -41,11 +39,9 @@ class TextStringProviderImpl @Inject constructor(
     override val generateWordsTextNotFound: String
         get() = context.getString(R.string.gen_words_text_not_found)
 
-    override fun generateWordsNotAllNewWordsAdded(added: Int, total: Int): String =
-        context.getString(R.string.gen_words_partial, added, total)
+    override fun generateWordsNotAllNewWordsAdded(added: Int, total: Int): String = context.getString(R.string.gen_words_partial, added, total)
 
-    override fun generateWordsUnknownError(message: String): String =
-        context.getString(R.string.gen_words_unknown, message)
+    override fun generateWordsUnknownError(message: String): String = context.getString(R.string.gen_words_unknown, message)
     override val generateWordsSuccess: String
         get() = context.getString(R.string.gen_words_success)
     override val generateWordsAllExists: String

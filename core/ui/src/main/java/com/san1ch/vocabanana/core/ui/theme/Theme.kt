@@ -14,11 +14,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
-import com.san1ch.vocabanana.core.ui.BananaBackgroundDark
-import com.san1ch.vocabanana.core.ui.BananaOnPrimaryDark
-import com.san1ch.vocabanana.core.ui.BananaPrimary
-import com.san1ch.vocabanana.core.ui.BananaPrimaryDark
-import com.san1ch.vocabanana.core.ui.BananaSurfaceDark
 import com.san1ch.vocabanana.core.ui.Typography
 
 private val DarkColorScheme = darkColorScheme(
@@ -33,7 +28,7 @@ private val DarkColorScheme = darkColorScheme(
     onSurface = Color(0xFFE6E2D9),
 
     secondary = Color(0xFFD2C6A1),
-    onSecondary = Color(0xFF373016)
+    onSecondary = Color(0xFF373016),
 )
 
 private val LightColorScheme = lightColorScheme(
@@ -48,14 +43,14 @@ private val LightColorScheme = lightColorScheme(
     onBackground = Color(0xFF1D1B16),
     onSurface = Color(0xFF1D1B16),
 
-    outlineVariant = Color(0xFFE6E2D9)
+    outlineVariant = Color(0xFFE6E2D9),
 )
 
 @Composable
 fun VocaBananaTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     dynamicColor: Boolean = false,
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit,
 ) {
     val colorScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
@@ -83,6 +78,6 @@ fun VocaBananaTheme(
     MaterialTheme(
         colorScheme = colorScheme,
         typography = Typography,
-        content = content
+        content = content,
     )
 }

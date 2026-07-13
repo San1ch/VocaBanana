@@ -28,12 +28,12 @@ fun SearchBarField(
     onQueryChange: (String) -> Unit,
     modifier: Modifier = Modifier,
     placeholder: String = "Search...",
-    isVisible: Boolean = true
+    isVisible: Boolean = true,
 ) {
     AnimatedVisibility(
         visible = isVisible,
         enter = expandVertically() + fadeIn(),
-        exit = shrinkVertically() + fadeOut()
+        exit = shrinkVertically() + fadeOut(),
     ) {
         Box(modifier = modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
             OutlinedTextField(
@@ -54,7 +54,7 @@ fun SearchBarField(
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedContainerColor = MaterialTheme.colorScheme.surface,
                     unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                )
+                ),
             )
         }
     }

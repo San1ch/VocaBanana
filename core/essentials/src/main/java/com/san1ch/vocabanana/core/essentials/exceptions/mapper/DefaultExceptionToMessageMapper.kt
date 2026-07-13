@@ -5,15 +5,14 @@ import com.san1ch.vocabanana.core.essentials.resources.CoreStringProvider
 import com.san1ch.vocabanana.core.essentials.resources.StringProviderStore
 import javax.inject.Inject
 
-class DefaultExceptionToMessageMapper @Inject constructor(
-    private val stringProviderStore: StringProviderStore
+class DefaultExceptionToMessageMapper
+@Inject
+constructor(
+    private val stringProviderStore: StringProviderStore,
 ) : ExceptionToMessageMapper {
-
-    override fun getLocalizedMessage(exception: Exception): String {
-        return if(exception is WithLocalizedMessage){
-            exception.getLocalizedMessage(stringProviderStore)
-        } else {
-            stringProviderStore<CoreStringProvider>().unknownErrorMessage
-        }
+    override fun getLocalizedMessage(exception: Exception): String = if (exception is WithLocalizedMessage) {
+        exception.getLocalizedMessage(stringProviderStore)
+    } else {
+        stringProviderStore<CoreStringProvider>().unknownErrorMessage
     }
 }

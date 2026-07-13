@@ -40,12 +40,11 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.san1ch.vocabanana.core.essentials.model.word.PartOfSpeech
 import com.san1ch.vocabanana.core.essentials.model.word.WordState
-import com.san1ch.vocabanana.core.ui.WordUi
+import com.san1ch.vocabanana.core.ui.model.WordUi
 import com.san1ch.vocabanana.feature.vocabulary.presentation.R
 import com.san1ch.vocabanana.feature.vocabulary.presentation.VocabularyIntent
 import com.san1ch.vocabanana.feature.vocabulary.presentation.VocabularyScreenViewModel
 import java.text.SimpleDateFormat
-
 
 @SuppressLint("SimpleDateFormat")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -53,7 +52,7 @@ import java.text.SimpleDateFormat
 fun WordDetailsAndEditPage(
     word: WordUi?,
     onUpdateWord: (WordUi) -> Unit,
-    viewModel: VocabularyScreenViewModel = hiltViewModel()
+    viewModel: VocabularyScreenViewModel = hiltViewModel(),
 ) {
     Scaffold(
         topBar = {
@@ -63,9 +62,9 @@ fun WordDetailsAndEditPage(
                     IconButton(onClick = { viewModel.onIntent(VocabularyIntent.NavigateBack) }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
                     }
-                }
+                },
             )
-        }
+        },
     ) { padding ->
         if (word == null) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -76,36 +75,40 @@ fun WordDetailsAndEditPage(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding)
-                    .padding(16.dp)
+                    .padding(horizontal = 16.dp)
                     .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(20.dp)
+                verticalArrangement = Arrangement.spacedBy(16.dp), // Компактніші відступи
             ) {
-                // Lemma Display
-                Text(
-                    text = word.lemma,
-                    style = MaterialTheme.typography.displaySmall,
-                    fontWeight = FontWeight.Bold
-                )
+                // Header with Lemma and Frequency
+                Column(modifier = Modifier.padding(top = 8.dp)) {
+                    Text(text = word.lemma, style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
+                    Text(
+                        text = "Used ${word.count} times in your texts",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                }
 
-                // 1. Status Selection (Chips)
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("Learning Status", style = MaterialTheme.typography.labelLarge)
+                // 1. Learning Status: Used a more compact layout
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(stringResource(R.string.learning_status), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.secondary)
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         WordState.entries.forEach { state ->
+                            val isSelected = word.state == state
                             FilterChip(
-                                selected = word.state == state,
+                                selected = isSelected,
                                 onClick = { onUpdateWord(word.copy(state = state)) },
-                                label = { Text(state.name) }
+                                label = { Text(state.name.replace("_", " "), style = MaterialTheme.typography.labelMedium) },
                             )
                         }
                     }
                 }
 
-                // 2. Part of Speech Selection
+                // 2. Part of Speech Selection (Compact Dropdown)
                 var posExpanded by remember { mutableStateOf(false) }
                 ExposedDropdownMenuBox(
                     expanded = posExpanded,
-                    onExpandedChange = { posExpanded = !posExpanded }
+                    onExpandedChange = { posExpanded = !posExpanded },
                 ) {
                     OutlinedTextField(
                         value = word.partOfSpeech.uppercase(),
@@ -113,44 +116,36 @@ fun WordDetailsAndEditPage(
                         readOnly = true,
                         label = { Text(stringResource(R.string.part_of_speech)) },
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = posExpanded) },
-                        modifier = Modifier
-                            .menuAnchor()
-                            .fillMaxWidth()
+                        modifier = Modifier.menuAnchor().fillMaxWidth(),
                     )
-                    ExposedDropdownMenu(
-                        expanded = posExpanded,
-                        onDismissRequest = { posExpanded = false }
-                    ) {
+                    ExposedDropdownMenu(expanded = posExpanded, onDismissRequest = { posExpanded = false }) {
                         PartOfSpeech.entries.forEach { pos ->
                             DropdownMenuItem(
                                 text = { Text(pos.name) },
                                 onClick = {
                                     onUpdateWord(word.copy(partOfSpeech = pos.shortName))
                                     posExpanded = false
-                                }
+                                },
                             )
                         }
                     }
                 }
 
-                // 3. Editable Definition
+                // 3. Definition (Less intrusive)
                 OutlinedTextField(
                     value = word.definition,
                     onValueChange = { onUpdateWord(word.copy(definition = it)) },
                     label = { Text(stringResource(R.string.definition)) },
                     modifier = Modifier.fillMaxWidth(),
-                    minLines = 3
+                    minLines = 3,
+                    shape = MaterialTheme.shapes.medium,
                 )
 
-                // 4. Metadata (Non-editable)
-                HorizontalDivider()
+                // 4. Metadata
+                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
-                InfoRow("Word Forms", word.forms.joinToString(", ").ifEmpty { "None" })
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    InfoRow("Forms", word.forms.joinToString(", ").ifEmpty { "None" })
                     InfoRow("Added", SimpleDateFormat("MMM dd, yyyy").format(word.whenAdded))
                 }
             }
@@ -164,7 +159,7 @@ private fun InfoRow(label: String, value: String) {
         Text(
             label,
             style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.secondary
+            color = MaterialTheme.colorScheme.secondary,
         )
         Text(value, style = MaterialTheme.typography.bodyMedium)
     }

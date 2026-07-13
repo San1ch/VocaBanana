@@ -1,7 +1,9 @@
 plugins {
-    id("custom-android-application")
+    alias(libs.plugins.custom.android.application)
+    alias(libs.plugins.custom.spotless)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
+    alias(libs.plugins.kotlin.compose)
 }
 
 android {
@@ -17,7 +19,7 @@ android {
             isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
         }
         getByName("debug") {
@@ -33,7 +35,6 @@ android {
 
     buildFeatures {
         buildConfig = true
-        compose = false
     }
 }
 
@@ -43,7 +44,7 @@ kotlin {
     }
 }
 
-dependencies{
+dependencies {
     implementation(projects.navigation)
 
     implementation(projects.core.essentials)
@@ -58,10 +59,9 @@ dependencies{
     implementation(projects.feature.vocabulary.presentation)
     implementation(projects.feature.word.presentation)
 
-
     implementation(libs.androidx.activity.compose)
 
-    //hilt for android app
+    // hilt for android app
     implementation(libs.google.hilt)
     ksp(libs.google.hilt.compiler)
 }

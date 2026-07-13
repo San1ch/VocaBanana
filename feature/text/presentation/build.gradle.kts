@@ -1,16 +1,10 @@
 plugins {
-    alias(libs.plugins.custom.android.library)
-    alias(libs.plugins.hilt)
-    alias(libs.plugins.ksp)
-    alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.custom.android.compose.library)
+    alias(libs.plugins.custom.spotless)
 }
 
 android {
     namespace = "com.san1ch.vocabanana.feature.text.presentation"
-
-    buildFeatures {
-        compose = true
-    }
 }
 
 dependencies {

@@ -1,13 +1,11 @@
 package com.san1ch.vocabanana.feature.text.presentation.textlistscreenpages
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -42,7 +40,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -52,7 +49,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.LinkAnnotation
@@ -64,19 +60,18 @@ import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.san1ch.vocabanana.core.essentials.model.ReaderSettings
-import com.san1ch.vocabanana.core.ui.TextUi
+import com.san1ch.vocabanana.core.ui.model.TextUi
 import com.san1ch.vocabanana.feature.text.presentation.R
 import com.san1ch.vocabanana.feature.text.presentation.TextListUiIntent
 import com.san1ch.vocabanana.feature.text.presentation.WordInfoState
 import com.san1ch.vocabanana.feature.text.presentation.data.TextToken
 import com.san1ch.vocabanana.feature.text.presentation.data.tokenize
 
-
 @Composable
 fun TextReaderPage(
     text: TextUi?,
     settings: ReaderSettings,
-    onIntent: (TextListUiIntent) -> Unit
+    onIntent: (TextListUiIntent) -> Unit,
 ) {
     val listState = rememberLazyListState()
     var isScrollRestored by remember(text?.id) { mutableStateOf(false) }
@@ -112,14 +107,14 @@ fun TextReaderPage(
                 // Apply dynamic padding from settings
                 contentPadding = PaddingValues(
                     horizontal = settings.horizontalPadding.dp,
-                    vertical = 16.dp
-                )
+                    vertical = 16.dp,
+                ),
             ) {
                 items(text.paragraphs) { paragraph ->
                     ParagraphViewItem(
                         paragraphText = paragraph,
                         settings = settings,
-                        onWordClick = { word -> onIntent(TextListUiIntent.WordClicked(word)) }
+                        onWordClick = { word -> onIntent(TextListUiIntent.WordClicked(word)) },
                     )
                     Spacer(modifier = Modifier.height(settings.paragraphSpacing.dp))
                 }
@@ -132,7 +127,7 @@ fun TextReaderPage(
 fun ParagraphViewItem(
     paragraphText: String,
     settings: ReaderSettings,
-    onWordClick: (String) -> Unit
+    onWordClick: (String) -> Unit,
 ) {
     val textColor = MaterialTheme.colorScheme.onSurface
     val highlightColor = MaterialTheme.colorScheme.primary
@@ -150,11 +145,11 @@ fun ParagraphViewItem(
                                     style = SpanStyle(color = textColor),
                                     pressedStyle = SpanStyle(
                                         color = highlightColor,
-                                        fontWeight = FontWeight.Bold
-                                    )
+                                        fontWeight = FontWeight.Bold,
+                                    ),
                                 ),
-                                linkInteractionListener = { onWordClick(token.text) }
-                            )
+                                linkInteractionListener = { onWordClick(token.text) },
+                            ),
                         ) { append(token.text) }
                     }
 
@@ -169,9 +164,9 @@ fun ParagraphViewItem(
         // Apply dynamic font size and line height
         style = MaterialTheme.typography.bodyLarge.copy(
             fontSize = settings.fontSize.sp,
-            lineHeight = (settings.fontSize * 1.5).sp
+            lineHeight = (settings.fontSize * 1.5).sp,
         ),
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
     )
 }
 
@@ -179,127 +174,70 @@ fun ParagraphViewItem(
 fun WordInfoPopup(
     state: WordInfoState,
     onDismiss: () -> Unit,
-    onOxfordClick: (String) -> Unit
+    onOxfordClick: (String) -> Unit,
 ) {
     AnimatedVisibility(
         visible = state !is WordInfoState.Hidden,
-        enter = fadeIn(animationSpec = tween(300)) + slideInVertically(initialOffsetY = { -100 }),
-        exit = fadeOut(animationSpec = tween(250)) + slideOutVertically(targetOffsetY = { -100 })
+        enter = fadeIn() + slideInVertically { -50 },
+        exit = fadeOut() + slideOutVertically { -50 },
     ) {
-        // Backdrop: Uses a darker, more professional dim
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.Black.copy(alpha = 0.5f)) // Darker for better focus
+                .background(Color.Black.copy(alpha = 0.4f))
                 .pointerInput(Unit) { detectTapGestures { onDismiss() } }
-                .padding(top = 56.dp, start = 24.dp, end = 24.dp),
-            contentAlignment = Alignment.TopCenter
+                .padding(20.dp),
+            contentAlignment = Alignment.TopCenter,
         ) {
             Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable(enabled = false) { /* Stop click propagation */ }
-                    .graphicsLayer {
-                        clip = true
-                        shape = RoundedCornerShape(24.dp)
-                        shadowElevation = 20.dp.toPx()
-                    },
-                shape = RoundedCornerShape(24.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(4.dp)
-                ),
-                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                elevation = CardDefaults.cardElevation(defaultElevation = 12.dp),
             ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(24.dp)
-                ) {
+                Column(modifier = Modifier.padding(20.dp)) {
                     when (state) {
-                        is WordInfoState.Loading -> {
-                            Box(
-                                Modifier
-                                    .fillMaxWidth()
-                                    .height(100.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                CircularProgressIndicator(strokeWidth = 3.dp)
-                            }
-                        }
+                        is WordInfoState.Loading -> CircularProgressIndicator(Modifier.align(Alignment.CenterHorizontally).size(40.dp))
 
                         is WordInfoState.NotFound -> {
-                            Text(
-                                "Definition Missing",
-                                style = MaterialTheme.typography.titleLarge,
-                                fontWeight = FontWeight.ExtraBold,
-                                color = MaterialTheme.colorScheme.error
-                            )
-                            Text(
-                                "We couldn't find '${state.word}' in your local dictionary.",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.padding(vertical = 8.dp)
-                            )
+                            Text("Not found", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.error)
+                            Text("The word '${state.word}' is missing from your dictionary.", style = MaterialTheme.typography.bodyMedium)
                             ActionSection(state.word, onOxfordClick)
                         }
 
                         is WordInfoState.Found -> {
-                            // Header Row: Word + Part of Speech Badge
+                            // Header: Lemma + POS (Compact)
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.Top
+                                verticalAlignment = Alignment.CenterVertically,
                             ) {
-                                Column(modifier = Modifier.weight(1f)) {
+                                Column {
+                                    Text(text = state.word.lemma, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
                                     Text(
-                                        text = state.word.lemma,
-                                        style = MaterialTheme.typography.headlineMedium,
-                                        fontWeight = FontWeight.Black,
-                                        color = MaterialTheme.colorScheme.onSurface
-                                    )
-                                    if (state.word.forms.isNotEmpty()) {
-                                        Text(
-                                            text = state.word.forms.joinToString(" • "),
-                                            style = MaterialTheme.typography.labelMedium,
-                                            color = MaterialTheme.colorScheme.primary,
-                                            letterSpacing = 1.sp
-                                        )
-                                    }
-                                }
-
-                                // Clean POS Badge
-                                Surface(
-                                    shape = CircleShape,
-                                    color = MaterialTheme.colorScheme.primaryContainer,
-                                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                                ) {
-                                    Text(
-                                        text = state.word.partOfSpeech.lowercase(),
-                                        modifier = Modifier.padding(
-                                            horizontal = 12.dp,
-                                            vertical = 4.dp
-                                        ),
-                                        style = MaterialTheme.typography.labelLarge,
-                                        fontWeight = FontWeight.Bold
+                                        text = "${state.word.partOfSpeech.uppercase()} • ${state.word.count} uses",
+                                        style = MaterialTheme.typography.labelMedium,
+                                        color = MaterialTheme.colorScheme.primary,
                                     )
                                 }
+                                // Subtle badge
+                                Text(
+                                    text = state.word.state.name.lowercase().replaceFirstChar { it.uppercase() },
+                                    style = MaterialTheme.typography.labelSmall,
+                                    modifier = Modifier.background(MaterialTheme.colorScheme.primaryContainer, CircleShape).padding(horizontal = 10.dp, vertical = 4.dp),
+                                )
                             }
 
-                            Spacer(Modifier.height(16.dp))
+                            Spacer(Modifier.height(12.dp))
 
-                            // Definition with better line height
                             Text(
-                                text = state.word.definition.ifEmpty { "No definition available." },
-                                style = MaterialTheme.typography.bodyLarge.copy(
-                                    lineHeight = 26.sp,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
+                                text = state.word.definition.ifEmpty { "No definition." },
+                                style = MaterialTheme.typography.bodyMedium.copy(lineHeight = 22.sp),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
 
-                            Spacer(Modifier.height(24.dp))
                             ActionSection(state.word.lemma, onOxfordClick)
                         }
-
                         else -> {}
                     }
                 }
@@ -316,30 +254,29 @@ private fun ActionSection(word: String, onOxfordClick: (String) -> Unit) {
         TextButton(
             onClick = { onOxfordClick(word) },
             shape = RoundedCornerShape(12.dp),
-            colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.secondary)
+            colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.secondary),
         ) {
             Text("Oxford Dictionary", fontWeight = FontWeight.Bold)
             Spacer(Modifier.width(8.dp))
             Icon(
                 Icons.AutoMirrored.Filled.OpenInNew,
                 contentDescription = null,
-                modifier = Modifier.size(16.dp)
+                modifier = Modifier.size(16.dp),
             )
         }
     }
 }
 
-
 @Composable
 fun ReaderSettingsPanel(
     visibility: Boolean,
     settings: ReaderSettings,
-    onIntent: (TextListUiIntent) -> Unit
+    onIntent: (TextListUiIntent) -> Unit,
 ) {
     AnimatedVisibility(
         visible = visibility,
         enter = slideInVertically(initialOffsetY = { -it }) + fadeIn(),
-        exit = slideOutVertically(targetOffsetY = { -it }) + fadeOut()
+        exit = slideOutVertically(targetOffsetY = { -it }) + fadeOut(),
     ) {
         Surface(
             modifier = Modifier
@@ -349,18 +286,18 @@ fun ReaderSettingsPanel(
             // Use a higher elevation or a specific container color for better contrast
             color = MaterialTheme.colorScheme.secondaryContainer,
             tonalElevation = 8.dp,
-            shadowElevation = 12.dp
+            shadowElevation = 12.dp,
         ) {
             Column(
                 modifier = Modifier.padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp) // Tighter vertical spacing
+                verticalArrangement = Arrangement.spacedBy(8.dp), // Tighter vertical spacing
             ) {
                 Text(
                     text = stringResource(R.string.appearance),
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onSecondaryContainer,
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(start = 4.dp, bottom = 4.dp)
+                    modifier = Modifier.padding(start = 4.dp, bottom = 4.dp),
                 )
 
                 SettingRow(stringResource(R.string.font_size), settings.fontSize) {
@@ -369,10 +306,10 @@ fun ReaderSettingsPanel(
                             settings.copy(
                                 fontSize = it.coerceIn(
                                     12,
-                                    36
-                                )
-                            )
-                        )
+                                    36,
+                                ),
+                            ),
+                        ),
                     )
                 }
 
@@ -382,10 +319,10 @@ fun ReaderSettingsPanel(
                             settings.copy(
                                 paragraphSpacing = it.coerceIn(
                                     0,
-                                    64
-                                )
-                            )
-                        )
+                                    64,
+                                ),
+                            ),
+                        ),
                     )
                 }
 
@@ -395,10 +332,10 @@ fun ReaderSettingsPanel(
                             settings.copy(
                                 horizontalPadding = it.coerceIn(
                                     0,
-                                    48
-                                )
-                            )
-                        )
+                                    48,
+                                ),
+                            ),
+                        ),
                     )
                 }
 
@@ -407,7 +344,7 @@ fun ReaderSettingsPanel(
                     modifier = Modifier
                         .align(Alignment.End)
                         .height(32.dp),
-                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.onSecondaryContainer)
+                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.onSecondaryContainer),
                 ) {
                     Text("Done", style = MaterialTheme.typography.labelLarge)
                 }
@@ -420,43 +357,43 @@ fun ReaderSettingsPanel(
 private fun SettingRow(
     label: String,
     value: Int,
-    onValueChange: (Int) -> Unit
+    onValueChange: (Int) -> Unit,
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .background(
                 color = MaterialTheme.colorScheme.surface.copy(alpha = 0.3f), // Subtle contrast
-                shape = RoundedCornerShape(16.dp)
+                shape = RoundedCornerShape(16.dp),
             )
             .padding(horizontal = 12.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
             text = label,
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.SemiBold,
-            color = MaterialTheme.colorScheme.onSecondaryContainer
+            color = MaterialTheme.colorScheme.onSecondaryContainer,
         )
 
         // Compact Control Block
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
         ) {
             FilledIconButton(
                 onClick = { onValueChange(value - 2) },
                 modifier = Modifier.size(32.dp),
                 colors = IconButtonDefaults.filledIconButtonColors(
                     containerColor = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.1f),
-                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-                )
+                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                ),
             ) {
                 Icon(
                     Icons.Default.Remove,
                     contentDescription = null,
-                    modifier = Modifier.size(16.dp)
+                    modifier = Modifier.size(16.dp),
                 )
             }
 
@@ -466,7 +403,7 @@ private fun SettingRow(
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSecondaryContainer,
-                modifier = Modifier.padding(horizontal = 8.dp)
+                modifier = Modifier.padding(horizontal = 8.dp),
             )
 
             FilledIconButton(
@@ -474,8 +411,8 @@ private fun SettingRow(
                 modifier = Modifier.size(32.dp),
                 colors = IconButtonDefaults.filledIconButtonColors(
                     containerColor = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.1f),
-                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-                )
+                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                ),
             ) {
                 Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(16.dp))
             }

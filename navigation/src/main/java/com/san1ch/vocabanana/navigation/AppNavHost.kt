@@ -2,8 +2,6 @@ package com.san1ch.vocabanana.navigation
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -27,26 +25,30 @@ import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
 @HiltViewModel
-class AppNavHostViewModel @Inject constructor(
+class AppNavHostViewModel
+@Inject
+constructor(
     val router: NavComponentAppRouterImpl,
-    private val repository: SettingsRepository // Injecting repository to read global theme
+    // Injecting repository to read global theme
+    private val repository: SettingsRepository,
 ) : ViewModel() {
-
     // Expose the global theme to the UI layer
-    val themeState: StateFlow<AppThemeMode> = repository.themeFlow
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = AppThemeMode.AUTO
-        )
+    val themeState: StateFlow<AppThemeMode> =
+        repository.themeFlow
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = AppThemeMode.AUTO,
+            )
 }
 
+@Suppress("ktlint:standard:function-naming")
 @Composable
 fun AppNavHost(
     modifier: Modifier = Modifier,
     navGraphBuilder: NavGraphBuilder.() -> Unit = {},
     startDestination: Route = MainRoute,
-    viewModel: AppNavHostViewModel = hiltViewModel()
+    viewModel: AppNavHostViewModel = hiltViewModel(),
 ) {
     val router = viewModel.router
 
@@ -54,11 +56,12 @@ fun AppNavHost(
     val themeMode by viewModel.themeState.collectAsStateWithLifecycle()
 
     // Determine whether to use dark theme based on system or user selection
-    val useDarkTheme = when (themeMode) {
-        AppThemeMode.AUTO -> isSystemInDarkTheme()
-        AppThemeMode.DARK -> true
-        AppThemeMode.LIGHT -> false
-    }
+    val useDarkTheme =
+        when (themeMode) {
+            AppThemeMode.AUTO -> isSystemInDarkTheme()
+            AppThemeMode.DARK -> true
+            AppThemeMode.LIGHT -> false
+        }
 
     // Passing the dynamically calculated value to your design system theme
     VocaBananaTheme(darkTheme = useDarkTheme) {
@@ -70,17 +73,18 @@ fun AppNavHost(
             }
         }
 
-        val navGraph = remember {
-            navController.createGraph(startDestination) {
-                buildAppNavGraph()
-                navGraphBuilder()
+        val navGraph =
+            remember {
+                navController.createGraph(startDestination) {
+                    buildAppNavGraph()
+                    navGraphBuilder()
+                }
             }
-        }
 
         NavHost(
             modifier = modifier.fillMaxSize(),
             navController = navController,
-            graph = navGraph
+            graph = navGraph,
         )
     }
 }

@@ -7,8 +7,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class NavComponentAppRouterImpl @Inject constructor() : AppRouter {
-
+class NavComponentAppRouterImpl
+@Inject
+constructor() : AppRouter {
     private val _navigationCommands = Channel<(NavController) -> Unit>(Channel.BUFFERED)
     val navigationCommands = _navigationCommands.receiveAsFlow()
 

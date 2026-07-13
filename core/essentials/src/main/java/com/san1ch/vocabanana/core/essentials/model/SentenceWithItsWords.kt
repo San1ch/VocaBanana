@@ -1,7 +1,5 @@
 package com.san1ch.vocabanana.core.essentials.model
 
-
-
 /**
  *  An object that contains words and sentence
  *  That needs for AI processing where I need to send words with context
@@ -9,9 +7,7 @@ package com.san1ch.vocabanana.core.essentials.model
  */
 data class SentenceWithItsWords(
     val words: List<String>,
-    val sentence: String
-){
-    fun wordsCount(): Int {
-        return words.size
-    }
+    val sentence: String,
+) {
+    fun wordsCount(): Int = words.size
 }

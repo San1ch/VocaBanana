@@ -20,7 +20,7 @@ class GenerateWordsFromTextUseCase @Inject constructor(
     private val textRepository: TextRepository,
     private val tps: TextProcessingService,
     private val wordRepository: WordRepository,
-    private val generateService: GenerateWordsFromTextService
+    private val generateService: GenerateWordsFromTextService,
 ) {
     operator fun invoke(textId: Int): Flow<GenerateWordsFromTextState> = flow {
         // Step 1: Resource Gathering
@@ -30,7 +30,7 @@ class GenerateWordsFromTextUseCase @Inject constructor(
             onFailure = {
                 emit(GenerateWordsFromTextState.Error(GenerateWordsFromTextResult.Error.TextNotFound))
                 return@flow
-            }
+            },
         )
         val wordFrequencies = tps.prepareText(text.content)
         val uniqueWords = wordFrequencies.keys.toList()
@@ -71,7 +71,7 @@ class GenerateWordsFromTextUseCase @Inject constructor(
     private suspend fun saveWordStats(
         textId: Int,
         uniqueWords: List<String>,
-        frequencies: Map<String, Int>
+        frequencies: Map<String, Int>,
     ) {
         val wordToDomainMap: Map<String, WordDomain> = wordRepository.getWordDomainsForWords(uniqueWords)
 
@@ -90,7 +90,7 @@ class GenerateWordsFromTextUseCase @Inject constructor(
             TextWordCount(
                 textId = textId,
                 wordId = lemmaId,
-                count = totalCount
+                count = totalCount,
             )
         }
 
@@ -101,7 +101,7 @@ class GenerateWordsFromTextUseCase @Inject constructor(
 class GenerateWordsFromTextService @Inject constructor(
     private val wordRepository: WordRepository,
     private val lemmatizationRepository: LemmatizationRepository,
-    private val lexiconRepository: LexiconRepository
+    private val lexiconRepository: LexiconRepository,
 ) {
     suspend fun filterByUserVocab(words: List<String>): List<String> {
         val userVocab = wordRepository.getAllLemmasAndForms().toSet()
@@ -124,7 +124,7 @@ class GenerateWordsFromTextService @Inject constructor(
     private suspend fun processLemmatizedPairs(
         words: List<String>,
         posMap: Map<String, LexiconDto>,
-        output: MutableList<WordDomain>
+        output: MutableList<WordDomain>,
     ): List<String> {
         val pairs = lemmatizationRepository.getWordLemmaPairs(words)
         pairs.forEach { addValidated(it.lemma, listOf(it.word), posMap, output) }
@@ -135,7 +135,7 @@ class GenerateWordsFromTextService @Inject constructor(
     private suspend fun processExistingLemmas(
         words: List<String>,
         posMap: Map<String, LexiconDto>,
-        output: MutableList<WordDomain>
+        output: MutableList<WordDomain>,
     ): List<String> {
         val lemmas = lemmatizationRepository.findExistingLemmas(words)
         lemmas.forEach { addValidated(it, emptyList(), posMap, output) }
@@ -145,7 +145,7 @@ class GenerateWordsFromTextService @Inject constructor(
     private suspend fun processLexiconWords(
         words: List<String>,
         posMap: Map<String, LexiconDto>,
-        output: MutableList<WordDomain>
+        output: MutableList<WordDomain>,
     ): List<String> {
         val existing = lexiconRepository.getExistingWords(words)
         existing.forEach { addValidated(it, emptyList(), posMap, output) }
@@ -155,7 +155,7 @@ class GenerateWordsFromTextService @Inject constructor(
     private fun processRemainingUnknowns(
         words: List<String>,
         posMap: Map<String, LexiconDto>,
-        output: MutableList<WordDomain>
+        output: MutableList<WordDomain>,
     ) {
         words.forEach { addValidated(it, emptyList(), posMap, output) }
     }
@@ -164,27 +164,26 @@ class GenerateWordsFromTextService @Inject constructor(
         lemma: String,
         forms: List<String>,
         posMap: Map<String, LexiconDto>,
-        output: MutableList<WordDomain>
+        output: MutableList<WordDomain>,
     ) {
         val dto = posMap[lemma]
         WordDomain.create(
             lemma = lemma,
             forms = forms,
             partOfSpeech = dto?.type?.toPartOfSpeech() ?: PartOfSpeech.UNKNOWN,
-            definition = dto?.definition ?: ""
+            definition = dto?.definition ?: "",
         ).fold(onSuccess = { output.add(it) }, onError = { })
     }
 }
 
 data class GenerateWordsFromTextData(
-    val remainedWords: List<String>
+    val remainedWords: List<String>,
 )
 
 data class FixedData(
     val uniqueWords: Map<String, Int>,
-    val userVocab: Set<String>
+    val userVocab: Set<String>,
 )
-
 
 sealed class GenerateWordsFromTextState {
     // We use data object for simple stages
@@ -201,7 +200,7 @@ sealed class GenerateWordsFromTextState {
 }
 
 sealed class GenerateWordsFromTextResult {
-    sealed class Success() : GenerateWordsFromTextResult() {
+    sealed class Success : GenerateWordsFromTextResult() {
         data class Words(val words: List<WordDomain>) : Success()
         object AllWordsAlreadyExists : Success()
     }

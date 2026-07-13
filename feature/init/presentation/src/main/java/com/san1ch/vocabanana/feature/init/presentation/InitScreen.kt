@@ -17,14 +17,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.san1ch.vocabanana.core.ui.compose.CollectUiEvents
+import com.san1ch.vocabanana.core.ui.compose.CollectResource
 
 @Composable
 fun InitScreen(
     viewModel: InitScreenViewModel = hiltViewModel(),
 ) {
-    CollectUiEvents(viewModel.events)
-    InitContent(onFinished = viewModel::finishInit )
+    CollectResource(viewModel.events)
+    InitContent(onFinished = viewModel::finishInit)
 }
 
 @Composable
@@ -33,16 +33,16 @@ fun InitContent(onFinished: () -> Unit) {
         Column(
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.Center,
         ) {
             Text(stringResource(R.string.test_init_screen))
             Spacer(modifier = Modifier.height(16.dp))
             Button(
-                onClick = onFinished
+                onClick = onFinished,
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                    contentDescription = "Next"
+                    contentDescription = "Next",
                 )
             }
         }

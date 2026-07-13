@@ -1,5 +1,6 @@
 plugins {
-    alias(libs.plugins.custom.android.library)
+    alias(libs.plugins.custom.android.compose.library)
+    alias(libs.plugins.custom.spotless)
     // __PLUGINS__
 }
 

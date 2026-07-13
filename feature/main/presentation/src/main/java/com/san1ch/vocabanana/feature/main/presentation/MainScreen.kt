@@ -43,13 +43,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.san1ch.vocabanana.core.ui.compose.CollectUiEvents
+import com.san1ch.vocabanana.core.ui.compose.CollectResource
 
 @Composable
 fun MainScreen(
-    viewModel: MainScreenViewModel = hiltViewModel()
+    viewModel: MainScreenViewModel = hiltViewModel(),
 ) {
-    CollectUiEvents(events = viewModel.events)
+    CollectResource(events = viewModel.events)
 
     val state by viewModel.uiState.collectAsState()
 
@@ -60,7 +60,7 @@ fun MainScreen(
 @Composable
 fun MainContent(
     onIntent: (MainUiIntent) -> Unit,
-    state: MainUiState
+    state: MainUiState,
 ) {
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -69,7 +69,7 @@ fun MainContent(
                 title = { Text(state.appName, fontWeight = FontWeight.Bold) },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface,
-                    titleContentColor = MaterialTheme.colorScheme.onSurface
+                    titleContentColor = MaterialTheme.colorScheme.onSurface,
                 ),
                 actions = {
                     if (BuildConfig.DEBUG) {
@@ -80,7 +80,7 @@ fun MainContent(
                     IconButton(onClick = { onIntent(MainUiIntent.NavigateToSettings) }) {
                         Icon(Icons.Default.Settings, contentDescription = "Settings")
                     }
-                }
+                },
             )
         },
     ) { paddingValues ->
@@ -88,19 +88,19 @@ fun MainContent(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(16.dp)
+                .padding(16.dp),
         ) {
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 item {
                     MenuCard(
                         title = stringResource(R.string.vocabulary),
                         icon = Icons.AutoMirrored.Filled.FormatListBulleted,
                         accentColor = MaterialTheme.colorScheme.primary,
-                        onClick = { onIntent(MainUiIntent.NavigateToVocabulary) }
+                        onClick = { onIntent(MainUiIntent.NavigateToVocabulary) },
                     )
                 }
                 item {
@@ -108,7 +108,7 @@ fun MainContent(
                         title = stringResource(R.string.texts),
                         icon = Icons.AutoMirrored.Filled.MenuBook,
                         accentColor = MaterialTheme.colorScheme.secondary,
-                        onClick = { onIntent(MainUiIntent.NavigateToTexts) }
+                        onClick = { onIntent(MainUiIntent.NavigateToTexts) },
                     )
                 }
             }
@@ -121,7 +121,7 @@ fun MenuCard(
     title: String,
     icon: ImageVector,
     accentColor: Color,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
     Card(
         modifier = Modifier
@@ -130,15 +130,17 @@ fun MenuCard(
             .clickable { onClick() },
         shape = MaterialTheme.shapes.large,
         colors = CardDefaults.cardColors(
-            containerColor = if (isSystemInDarkTheme())
+            containerColor = if (isSystemInDarkTheme()) {
                 MaterialTheme.colorScheme.surface
-            else Color.White
+            } else {
+                Color.White
+            },
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         border = BorderStroke(
             width = 1.dp,
-            color = accentColor.copy(alpha = 0.2f)
-        )
+            color = accentColor.copy(alpha = 0.2f),
+        ),
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             Surface(
@@ -148,7 +150,7 @@ fun MenuCard(
                     .height(4.dp)
                     .padding(bottom = 8.dp),
                 shape = CircleShape,
-                color = accentColor
+                color = accentColor,
             ) {}
 
             Column(
@@ -156,22 +158,22 @@ fun MenuCard(
                     .fillMaxSize()
                     .padding(16.dp),
                 verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Box(
                     modifier = Modifier
                         .size(48.dp)
                         .background(
                             color = accentColor.copy(alpha = 0.1f),
-                            shape = CircleShape
+                            shape = CircleShape,
                         ),
-                    contentAlignment = Alignment.Center
+                    contentAlignment = Alignment.Center,
                 ) {
                     Icon(
                         imageVector = icon,
                         contentDescription = null,
                         modifier = Modifier.size(24.dp),
-                        tint = accentColor
+                        tint = accentColor,
                     )
                 }
 
@@ -181,7 +183,7 @@ fun MenuCard(
                     text = title,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.ExtraBold,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = MaterialTheme.colorScheme.onSurface,
                 )
             }
         }

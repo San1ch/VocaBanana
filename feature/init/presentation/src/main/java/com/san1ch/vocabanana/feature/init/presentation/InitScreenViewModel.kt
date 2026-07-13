@@ -11,7 +11,7 @@ import javax.inject.Inject
 @HiltViewModel
 class InitScreenViewModel @Inject constructor(
     private val initRouter: InitRouter,
-    private val settingsRepository: SettingsRepository
+    private val settingsRepository: SettingsRepository,
 ) : BaseViewModel() {
     fun finishInit() {
         viewModelScope.launch(Dispatchers.IO) {

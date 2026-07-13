@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class TextDomainTest {
-
     @Test
     fun `create with valid data returns success`() {
         // Given
@@ -16,13 +15,14 @@ class TextDomainTest {
         val validText = "   Composition over inheritance.   "
 
         // When
-        val result = TextDomain.create(
-            id = 1,
-            name = validName,
-            text = validText,
-            lastScrollPosition = 0f,
-            lastReadTime = 123456L
-        )
+        val result =
+            TextDomain.create(
+                id = 1,
+                name = validName,
+                text = validText,
+                lastScrollPosition = 0f,
+                lastReadTime = 123456L,
+            )
 
         // Then
         assertTrue(result is ValidateResult.Success)
@@ -40,13 +40,14 @@ class TextDomainTest {
         val emptyName = "     "
 
         // When
-        val result = TextDomain.create(
-            id = 1,
-            name = emptyName,
-            text = "Valid content",
-            lastScrollPosition = 0f,
-            lastReadTime = 0L
-        )
+        val result =
+            TextDomain.create(
+                id = 1,
+                name = emptyName,
+                text = "Valid content",
+                lastScrollPosition = 0f,
+                lastReadTime = 0L,
+            )
 
         // Then
         assertTrue(result is ValidateResult.Error)
@@ -60,13 +61,14 @@ class TextDomainTest {
         val emptyText = "   \n   "
 
         // When
-        val result = TextDomain.create(
-            id = 1,
-            name = "Valid Title",
-            text = emptyText,
-            lastScrollPosition = 0f,
-            lastReadTime = 0L
-        )
+        val result =
+            TextDomain.create(
+                id = 1,
+                name = "Valid Title",
+                text = emptyText,
+                lastScrollPosition = 0f,
+                lastReadTime = 0L,
+            )
 
         // Then
         assertTrue(result is ValidateResult.Error)
@@ -81,13 +83,14 @@ class TextDomainTest {
         val rawContent = "   Untrusted Content   "
 
         // When
-        val textDomain = TextDomain.unsafeCreate(
-            id = 42,
-            name = rawName,
-            content = rawContent,
-            lastScrollPosition = 0.5f,
-            lastReadTime = 999L
-        )
+        val textDomain =
+            TextDomain.unsafeCreate(
+                id = 42,
+                name = rawName,
+                content = rawContent,
+                lastScrollPosition = 0.5f,
+                lastReadTime = 999L,
+            )
 
         // Then
         // unsafeCreate не повинен робити trim() або валідувати дані

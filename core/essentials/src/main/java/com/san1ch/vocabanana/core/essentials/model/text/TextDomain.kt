@@ -7,7 +7,6 @@ import com.san1ch.vocabanana.core.essentials.model.text.exception.TextValidateEm
 import com.san1ch.vocabanana.core.essentials.model.text.exception.TextValidateNameHasInvalidCharException
 import com.san1ch.vocabanana.core.essentials.model.text.exception.TextValidateTooLongException
 
-
 /**
  * Represents the metadata of a text.
  * This class contains only descriptive information, excluding the heavy content.
@@ -17,7 +16,7 @@ data class TextInfo(
     val id: Int,
     val name: String,
     val lastScrollPosition: Float,
-    val lastReadTime: Long
+    val lastReadTime: Long,
 )
 
 /**
@@ -27,7 +26,7 @@ data class TextInfo(
 @ConsistentCopyVisibility
 data class TextDomain private constructor(
     val info: TextInfo,
-    val content: String
+    val content: String,
 ) {
     // Helper properties for easy access to nested metadata
     val id: Int get() = info.id
@@ -37,37 +36,40 @@ data class TextDomain private constructor(
         /**
          * Creates a TextDomain object with full validation of name and content.
          * Use this for user input or any data that needs to be verified against business rules.
-         * Returns [com.san1ch.vocabanana.core.model.ValidateResult.Success] if valid, or [com.san1ch.vocabanana.core.model.ValidateResult.Error] with the failure reason.
+         * Returns [ValidateResult.Success] if valid, or [ValidateResult.Error] with the failure reason.
          */
         fun create(
             id: Int = 0,
             name: String,
             text: String,
             lastScrollPosition: Float,
-            lastReadTime: Long
+            lastReadTime: Long,
         ): ValidateResult<TextDomain> {
             // Validate the name against length and character rules
-            val validName = when (val nameResult = validateName(name)) {
-                is ValidateResult.Success -> nameResult.value
-                is ValidateResult.Error -> return ValidateResult.Error(nameResult.error)
-            }
+            val validName =
+                when (val nameResult = validateName(name)) {
+                    is ValidateResult.Success -> nameResult.value
+                    is ValidateResult.Error -> return ValidateResult.Error(nameResult.error)
+                }
 
             // Validate the text content (e.g., check if it's not empty)
-            val validText = when (val textResult = validateText(text)) {
-                is ValidateResult.Success -> textResult.value
-                is ValidateResult.Error -> return ValidateResult.Error(textResult.error)
-            }
+            val validText =
+                when (val textResult = validateText(text)) {
+                    is ValidateResult.Success -> textResult.value
+                    is ValidateResult.Error -> return ValidateResult.Error(textResult.error)
+                }
 
             return ValidateResult.Success(
                 TextDomain(
-                    info = TextInfo(
+                    info =
+                    TextInfo(
                         id = id,
                         name = validName,
                         lastScrollPosition = lastScrollPosition,
-                        lastReadTime = lastReadTime
+                        lastReadTime = lastReadTime,
                     ),
-                    content = validText
-                )
+                    content = validText,
+                ),
             )
         }
 
@@ -80,18 +82,17 @@ data class TextDomain private constructor(
             name: String,
             content: String,
             lastScrollPosition: Float,
-            lastReadTime: Long
-        ): TextDomain {
-            return TextDomain(
-                info = TextInfo(
-                    id = id,
-                    name = name,
-                    lastScrollPosition = lastScrollPosition,
-                    lastReadTime = lastReadTime
-                ),
-                content = content
-            )
-        }
+            lastReadTime: Long,
+        ): TextDomain = TextDomain(
+            info =
+            TextInfo(
+                id = id,
+                name = name,
+                lastScrollPosition = lastScrollPosition,
+                lastReadTime = lastReadTime,
+            ),
+            content = content,
+        )
 
         /**
          * Ensures the text is not empty or just whitespace.
@@ -124,8 +125,9 @@ data class TextDomain private constructor(
             return ValidateResult.Success(trimmed)
         }
 
-        private fun findFirstInvalidChar(input: String, regex: Regex): Char? {
-            return input.firstOrNull { !regex.matches(it.toString()) }
-        }
+        private fun findFirstInvalidChar(
+            input: String,
+            regex: Regex,
+        ): Char? = input.firstOrNull { !regex.matches(it.toString()) }
     }
 }

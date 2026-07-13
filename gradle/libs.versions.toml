@@ -35,7 +35,9 @@ androidx-test-ext-junit = "1.3.0"
 androidx-test-espresso = "3.7.0"
 
 mockk = "1.13.10"
-kotlinx-coroutines-test = "1.8.1"
+detekt = "1.23.8"
+
+spotless = "7.2.1"
 
 # Network
 
@@ -139,11 +141,18 @@ plugin-kotlin-android = { module = "org.jetbrains.kotlin.android:org.jetbrains.k
 plugin-kotlin-compose = { module = "org.jetbrains.kotlin.plugin.compose:org.jetbrains.kotlin.plugin.compose.gradle.plugin", version.ref = "kotlin" }
 plugin-jetbrains-kotlin-jvm = { module = "org.jetbrains.kotlin.jvm:org.jetbrains.kotlin.jvm.gradle.plugin", version.ref = "kotlin" }
 junit-jupiter = { group = "org.junit.jupiter", name = "junit-jupiter", version.ref = "junit-jupiter" }
+detekt = { module = "io.gitlab.arturbosch.detekt:io.gitlab.arturbosch.detekt.gradle.plugin", version.ref = "detekt" }
+spotless = { module = "com.diffplug.spotless:spotless-plugin-gradle", version.ref = "spotless" }
+plugin-ksp = { module = "com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin", version.ref = "ksp" }
+plugin-hilt = { module = "com.google.dagger.hilt.android:com.google.dagger.hilt.android.gradle.plugin", version.ref = "google-hilt" }
+
 
 [plugins]
 custom-android-application = { id = "custom-android-application" }
 custom-android-library = { id = "custom-android-library" }
 custom-kotlin-library = { id = "custom-kotlin-library" }
+custom-android-compose-library = { id = "custom-android-compose-library" }
+custom-spotless = { id = "custom-spotless" }
 
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }

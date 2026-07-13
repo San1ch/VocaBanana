@@ -8,23 +8,24 @@ import com.san1ch.vocabanana.navigation.TextListRoute
 import com.san1ch.vocabanana.navigation.VocabularyRoute
 import javax.inject.Inject
 
-
-class MainRouteImpl @Inject constructor(
-    private val appRouter: AppRouter
+class MainRouteImpl
+@Inject
+constructor(
+    private val appRouter: AppRouter,
 ) : MainRouter {
-    override fun launchMainSettings() {
+    override fun navigateToMainSettings() {
         appRouter.navigateTo(MainSettingsRoute)
     }
 
-    override fun launchVocabulary() {
+    override fun navigateToVocabulary() {
         appRouter.navigateTo(VocabularyRoute)
     }
 
-    override fun launchTextList() {
+    override fun navigateToTextList() {
         appRouter.navigateTo(TextListRoute)
     }
 
-    override fun launchDebug() {
+    override fun navigateToDebug() {
         appRouter.navigateTo(DebugRoute)
     }
 }

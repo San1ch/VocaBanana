@@ -5,3 +5,12 @@ allprojects {
         }
     }
 }
+
+tasks.register("checkEverything") {
+    group = "verification"
+    description = "Runs lint, ktlint, and unit tests for all modules."
+
+    dependsOn(subprojects.mapNotNull { it.tasks.findByName("spotlessApply") })
+
+    dependsOn(subprojects.mapNotNull { it.tasks.findByName("check") })
+}

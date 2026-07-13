@@ -7,12 +7,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.net.toUri
-import com.san1ch.vocabanana.core.ui.UiEvent
+import com.san1ch.vocabanana.core.ui.model.UiEvent
 import kotlinx.coroutines.flow.Flow
 
 @SuppressLint("LocalContextGetResourceValueCall")
 @Composable
-fun CollectUiEvents(
+fun CollectResource(
     events: Flow<UiEvent>,
 ) {
     val context = LocalContext.current
@@ -24,13 +24,13 @@ fun CollectUiEvents(
                     Toast.makeText(
                         context,
                         event.message,
-                        Toast.LENGTH_SHORT
+                        Toast.LENGTH_SHORT,
                     ).show()
                 is UiEvent.OpenUrl -> {
                     try {
                         val intent = Intent(
                             Intent.ACTION_VIEW,
-                            event.url.toUri()
+                            event.url.toUri(),
                         )
                         context.startActivity(intent)
                     } catch (e: Exception) {

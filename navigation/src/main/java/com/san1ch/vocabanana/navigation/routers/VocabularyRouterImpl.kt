@@ -5,8 +5,10 @@ import com.san1ch.vocabanana.navigation.AppRouter
 import com.san1ch.vocabanana.navigation.NewWordListRoute
 import javax.inject.Inject
 
-class VocabularyRouterImpl @Inject constructor(
-    private val appRouter: AppRouter
+class VocabularyRouterImpl
+@Inject
+constructor(
+    private val appRouter: AppRouter,
 ) : VocabularyRouter {
     override fun navigateBack() {
         appRouter.navigateBack()

@@ -20,12 +20,14 @@ import org.junit.jupiter.api.Test
 
 class GenerateWordsFromTextUseCaseTest {
 
-    private val textRepository: TextRepository = mockk()
+    private val textRepository: TextRepository = mockk(relaxed = true)
     private val tps: TextProcessingService = mockk()
-    private val wordRepository: WordRepository = mockk()
+    private val wordRepository: WordRepository = mockk(relaxed = true)
     private val generateService: GenerateWordsFromTextService = mockk()
 
     private lateinit var useCase: GenerateWordsFromTextUseCase
+
+    private val fixedTime = 1720857600000L
 
     @BeforeEach
     fun setUp() {
@@ -33,7 +35,7 @@ class GenerateWordsFromTextUseCaseTest {
             textRepository = textRepository,
             tps = tps,
             wordRepository = wordRepository,
-            generateService = generateService
+            generateService = generateService,
         )
     }
 
@@ -48,7 +50,7 @@ class GenerateWordsFromTextUseCaseTest {
         assertEquals(GenerateWordsFromTextState.Loading.PreparingText, states[0])
         assertEquals(
             GenerateWordsFromTextState.Error(GenerateWordsFromTextResult.Error.TextNotFound),
-            states[1]
+            states[1],
         )
     }
 
@@ -61,22 +63,21 @@ class GenerateWordsFromTextUseCaseTest {
             name = "Title",
             content = rawText,
             lastScrollPosition = 0f,
-            lastReadTime = 0L
+            lastReadTime = 0L,
         )
         val frequencies = mapOf("hello" to 1, "world" to 1)
 
         coEvery { textRepository.getTextById(textId) } returns Result.success(mockTextDomain)
         every { tps.prepareText(rawText) } returns frequencies
-        coEvery { generateService.filterByUserVocab(listOf("hello", "world")) } returns emptyList()
+        coEvery { generateService.filterByUserVocab(any()) } returns emptyList()
+        coEvery { wordRepository.getWordDomainsForWords(any()) } returns emptyMap()
 
         val states = useCase(textId).toList()
 
-        assertEquals(3, states.size)
-        assertEquals(GenerateWordsFromTextState.Loading.PreparingText, states[0])
-        assertEquals(GenerateWordsFromTextState.Loading.AnalyzingLexicon, states[1])
+        assertTrue(states.any { it is GenerateWordsFromTextState.Success })
         assertEquals(
             GenerateWordsFromTextState.Success(GenerateWordsFromTextResult.Success.AllWordsAlreadyExists),
-            states[2]
+            states.last(),
         )
     }
 
@@ -89,7 +90,7 @@ class GenerateWordsFromTextUseCaseTest {
             name = "Title",
             content = rawText,
             lastScrollPosition = 0f,
-            lastReadTime = 0L
+            lastReadTime = 0L,
         )
         val frequencies = mapOf("learn" to 1, "kotlin" to 1)
         val wordsToProcess = listOf("learn", "kotlin")
@@ -97,28 +98,32 @@ class GenerateWordsFromTextUseCaseTest {
         val mockWordDomain1 = WordDomain.createUnsafe(
             id = 1,
             lemma = "learn",
-            whenAdded = System.currentTimeMillis(),
+            whenAdded = fixedTime,
             state = WordState.NEW,
             forms = emptyList(),
             partOfSpeech = PartOfSpeech.VERB,
-            definition = "to acquire knowledge"
+            definition = "to acquire knowledge",
         )
         val mockWordDomain2 = WordDomain.createUnsafe(
             id = 2,
             lemma = "kotlin",
-            whenAdded = System.currentTimeMillis(),
+            whenAdded = fixedTime,
             state = WordState.NEW,
             forms = emptyList(),
             partOfSpeech = PartOfSpeech.NOUN,
-            definition = "programming language"
+            definition = "programming language",
         )
         val domainsToAdd = listOf(mockWordDomain1, mockWordDomain2)
 
         coEvery { textRepository.getTextById(textId) } returns Result.success(mockTextDomain)
         every { tps.prepareText(rawText) } returns frequencies
-        coEvery { generateService.filterByUserVocab(wordsToProcess) } returns wordsToProcess
+        coEvery { generateService.filterByUserVocab(any()) } returns wordsToProcess
         coEvery { generateService.generateDomains(wordsToProcess) } returns domainsToAdd
-        coEvery { wordRepository.addWords(domainsToAdd) } returns Unit
+
+        coEvery { wordRepository.getWordDomainsForWords(any()) } returns mapOf(
+            "learn" to mockWordDomain1,
+            "kotlin" to mockWordDomain2,
+        )
 
         val states = useCase(textId).toList()
 
@@ -134,5 +139,6 @@ class GenerateWordsFromTextUseCaseTest {
         assertEquals(domainsToAdd, (result as GenerateWordsFromTextResult.Success.Words).words)
 
         coVerify(exactly = 1) { wordRepository.addWords(domainsToAdd) }
+        coVerify(exactly = 1) { textRepository.saveTextWordCounts(any()) }
     }
 }

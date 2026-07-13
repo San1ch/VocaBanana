@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.custom.kotlin.library)
+    alias(libs.plugins.custom.spotless)
 }
 
 tasks.test {
@@ -9,7 +10,7 @@ tasks.test {
 dependencies {
     implementation(libs.javax.inject)
     implementation(libs.kotlinx.coroutines.core)
-    //all for test
+    // all for test
 
     testImplementation(projects.core.essentials)
     testImplementation(libs.javax.inject)

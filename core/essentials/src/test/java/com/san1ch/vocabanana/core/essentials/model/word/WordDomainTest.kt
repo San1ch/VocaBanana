@@ -6,17 +6,17 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
 class WordDomainTest {
-
     @Test
     fun `create with valid lemma returns success`() {
         // Given
         val validLemma = "apple"
 
         // When
-        val result = WordDomain.create(
-            lemma = validLemma,
-            partOfSpeech = PartOfSpeech.NOUN
-        )
+        val result =
+            WordDomain.create(
+                lemma = validLemma,
+                partOfSpeech = PartOfSpeech.NOUN,
+            )
 
         // Then
         Assertions.assertTrue(result is ValidateResult.Success)
@@ -30,10 +30,11 @@ class WordDomainTest {
         val emptyLemma = "   "
 
         // When
-        val result = WordDomain.create(
-            lemma = emptyLemma,
-            partOfSpeech = PartOfSpeech.NOUN
-        )
+        val result =
+            WordDomain.create(
+                lemma = emptyLemma,
+                partOfSpeech = PartOfSpeech.NOUN,
+            )
 
         // Then
         Assertions.assertTrue(result is ValidateResult.Error)
@@ -44,15 +45,16 @@ class WordDomainTest {
     @Test
     fun `addForms merges existing and new forms uniquely`() {
         // Given
-        val word = WordDomain.createUnsafe(
-            id = 1,
-            lemma = "run",
-            whenAdded = 0L,
-            state = WordState.NEW,
-            forms = listOf("runs"),
-            partOfSpeech = PartOfSpeech.VERB,
-            definition = ""
-        )
+        val word =
+            WordDomain.createUnsafe(
+                id = 1,
+                lemma = "run",
+                whenAdded = 0L,
+                state = WordState.NEW,
+                forms = listOf("runs"),
+                partOfSpeech = PartOfSpeech.VERB,
+                definition = "",
+            )
 
         // When
         val updatedWord = word.addForms(listOf("running", "runs"))

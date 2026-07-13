@@ -1,6 +1,5 @@
 package com.san1ch.vocabanana.feature.vocabulary.presentation
 
-
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
@@ -53,27 +52,27 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.san1ch.vocabanana.core.essentials.model.word.WordState
-import com.san1ch.vocabanana.core.ui.StateObserver
-import com.san1ch.vocabanana.core.ui.WordUi
-import com.san1ch.vocabanana.core.ui.compose.CollectUiEvents
+import com.san1ch.vocabanana.core.ui.compose.CollectResource
 import com.san1ch.vocabanana.core.ui.compose.SearchBarField
-import com.san1ch.vocabanana.core.ui.AppColor
+import com.san1ch.vocabanana.core.ui.model.WordUi
+import com.san1ch.vocabanana.core.ui.state.ResourceObserver
+import com.san1ch.vocabanana.core.ui.theme.AppColor
 
 @Composable
 fun NewWordListScreen(
-    viewModel: NewWordListScreenViewModel = hiltViewModel()
+    viewModel: NewWordListScreenViewModel = hiltViewModel(),
 ) {
-    CollectUiEvents(
-        events = viewModel.events
+    CollectResource(
+        events = viewModel.events,
     )
 
-    val state by viewModel.uiState.collectAsState()
+    val state by viewModel.resource.collectAsState()
 
-    StateObserver(state.words) { words ->
+    ResourceObserver(state.words) { words ->
         NewWordListContent(
             state = state,
             words = words,
-            onIntent = viewModel::onIntent
+            onIntent = viewModel::onIntent,
         )
     }
 }
@@ -83,7 +82,7 @@ fun NewWordListScreen(
 fun NewWordListContent(
     state: NewWordListState,
     words: List<WordUi>,
-    onIntent: (NewWordListIntent) -> Unit
+    onIntent: (NewWordListIntent) -> Unit,
 ) {
     var isSearchVisible by rememberSaveable { mutableStateOf(false) }
 
@@ -95,7 +94,7 @@ fun NewWordListContent(
             Column(
                 modifier = Modifier
                     .animateContentSize()
-                    .background(MaterialTheme.colorScheme.surface)
+                    .background(MaterialTheme.colorScheme.surface),
             ) {
                 TopAppBar(
                     title = { Text(stringResource(R.string.new_words_title)) },
@@ -108,12 +107,12 @@ fun NewWordListContent(
                         IconButton(onClick = { isSearchVisible = !isSearchVisible }) {
                             Icon(
                                 imageVector = if (isSearchVisible) Icons.Default.FilterList else Icons.Default.Search,
-                                contentDescription = "Toggle Search"
+                                contentDescription = "Toggle Search",
                             )
                         }
                         Text("${words.size}", style = MaterialTheme.typography.labelLarge)
                         Spacer(Modifier.width(16.dp))
-                    }
+                    },
                 )
 
                 SearchBarField(
@@ -122,26 +121,26 @@ fun NewWordListContent(
                         localSearchQuery = newText
                         onIntent(NewWordListIntent.UpdateSearchQuery(newText))
                     },
-                    isVisible = isSearchVisible
+                    isVisible = isSearchVisible,
                 )
 
                 LegendHeader()
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
             }
-        }
+        },
     ) { padding ->
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding),
-            contentPadding = PaddingValues(12.dp)
+            contentPadding = PaddingValues(12.dp),
         ) {
             items(words, key = { it.id }) { word ->
                 NewWordItem(
                     word = word,
                     onStateSelected = { newState ->
                         onIntent(NewWordListIntent.ChangeWordState(word.id, newState))
-                    }
+                    },
                 )
             }
         }
@@ -152,11 +151,11 @@ fun NewWordListContent(
 fun LegendHeader() {
     Surface(
         color = if (isSystemInDarkTheme()) MaterialTheme.colorScheme.surface else Color.White,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
     ) {
         Row(
             modifier = Modifier.padding(12.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly
+            horizontalArrangement = Arrangement.SpaceEvenly,
         ) {
             LegendItem(AppColor.NotKnow, stringResource(R.string.word_state_not_known))
             LegendItem(AppColor.Learn, stringResource(R.string.word_state_learn))
@@ -172,7 +171,7 @@ fun LegendItem(color: Color, label: String) {
         Box(
             Modifier
                 .size(12.dp)
-                .background(color, CircleShape)
+                .background(color, CircleShape),
         )
         Spacer(Modifier.width(4.dp))
         Text(label, style = MaterialTheme.typography.bodySmall)
@@ -190,9 +189,11 @@ fun NewWordItem(word: WordUi, onStateSelected: (WordState) -> Unit) {
             .animateContentSize(),
         onClick = { expanded = !expanded },
         colors = CardDefaults.cardColors(
-            containerColor = if (isSystemInDarkTheme())
+            containerColor = if (isSystemInDarkTheme()) {
                 MaterialTheme.colorScheme.surface
-            else Color.White
+            } else {
+                Color.White
+            },
         ),
     ) {
         Column {
@@ -200,32 +201,32 @@ fun NewWordItem(word: WordUi, onStateSelected: (WordState) -> Unit) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(80.dp),
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Column(
                     modifier = Modifier
                         .weight(1f)
                         .padding(start = 16.dp, end = 8.dp),
-                    verticalArrangement = Arrangement.Center
+                    verticalArrangement = Arrangement.Center,
                 ) {
                     Text(text = word.lemma, style = MaterialTheme.typography.titleLarge)
                     Text(
                         text = word.partOfSpeech,
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.outline
+                        color = MaterialTheme.colorScheme.outline,
                     )
                 }
 
                 Surface(
                     shape = CircleShape,
                     color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f),
-                    modifier = Modifier.padding(horizontal = 12.0.dp)
+                    modifier = Modifier.padding(horizontal = 12.0.dp),
                 ) {
                     Text(
                         text = "×${word.count}",
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
                     )
                 }
 
@@ -234,7 +235,7 @@ fun NewWordItem(word: WordUi, onStateSelected: (WordState) -> Unit) {
                     onStateSelected = onStateSelected,
                     modifier = Modifier
                         .fillMaxHeight()
-                        .width(80.dp)
+                        .width(80.dp),
                 )
             }
 
@@ -243,12 +244,12 @@ fun NewWordItem(word: WordUi, onStateSelected: (WordState) -> Unit) {
                     HorizontalDivider(Modifier.padding(bottom = 12.dp))
                     DetailSection(
                         stringResource(R.string.forms_uppercase),
-                        word.forms.joinToString(", ")
+                        word.forms.joinToString(", "),
                     )
                     if (word.definition.isNotBlank()) {
                         DetailSection(
                             stringResource(R.string.definition_uppercase),
-                            word.definition
+                            word.definition,
                         )
                     }
                 }
@@ -263,7 +264,7 @@ fun DetailSection(label: String, content: String) {
         Text(
             label,
             style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.secondary
+            color = MaterialTheme.colorScheme.secondary,
         )
         Text(content, style = MaterialTheme.typography.bodyMedium)
     }
@@ -273,28 +274,28 @@ fun DetailSection(label: String, content: String) {
 fun WindowsStyleSelector(
     currentState: WordState,
     onStateSelected: (WordState) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Column(modifier.background(Color.Black.copy(alpha = 0.05f))) {
         Row(Modifier.weight(1f)) {
             Quadrant(AppColor.NotKnow, currentState == WordState.NOT_KNOWN) {
                 onStateSelected(
-                    WordState.NOT_KNOWN
+                    WordState.NOT_KNOWN,
                 )
             }
             Quadrant(
                 AppColor.Learn,
-                currentState == WordState.LEARNING
+                currentState == WordState.LEARNING,
             ) { onStateSelected(WordState.LEARNING) }
         }
         Row(Modifier.weight(1f)) {
             Quadrant(
                 AppColor.Known,
-                currentState == WordState.KNOWN
+                currentState == WordState.KNOWN,
             ) { onStateSelected(WordState.KNOWN) }
             Quadrant(
                 AppColor.Ignore,
-                currentState == WordState.IGNORED
+                currentState == WordState.IGNORED,
             ) { onStateSelected(WordState.IGNORED) }
         }
     }
@@ -308,14 +309,16 @@ private fun RowScope.Quadrant(color: Color, isSelected: Boolean, onClick: () -> 
             .fillMaxHeight()
             .background(if (isSelected) color else color.copy(alpha = 0.2f))
             .clickable(onClick = onClick),
-        contentAlignment = Alignment.Center
+        contentAlignment = Alignment.Center,
     ) {
-        if (isSelected) Icon(
-            Icons.Default.Check,
-            null,
-            tint = Color.White,
-            modifier = Modifier.size(20.dp)
-        )
+        if (isSelected) {
+            Icon(
+                Icons.Default.Check,
+                null,
+                tint = Color.White,
+                modifier = Modifier.size(20.dp),
+            )
+        }
     }
 }
 
@@ -323,7 +326,7 @@ private fun RowScope.Quadrant(color: Color, isSelected: Boolean, onClick: () -> 
 fun RowScope.LogoQuadrant(
     color: Color,
     isSelected: Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
     Box(
         modifier = Modifier
@@ -331,14 +334,14 @@ fun RowScope.LogoQuadrant(
             .fillMaxHeight()
             .background(if (isSelected) color else color.copy(alpha = 0.7f))
             .clickable(onClick = onClick),
-        contentAlignment = Alignment.Center
+        contentAlignment = Alignment.Center,
     ) {
         if (isSelected) {
             Icon(
                 imageVector = Icons.Default.Check,
                 contentDescription = null,
                 tint = Color.White,
-                modifier = Modifier.size(20.dp)
+                modifier = Modifier.size(20.dp),
             )
         }
     }

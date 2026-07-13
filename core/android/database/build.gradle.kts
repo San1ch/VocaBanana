@@ -1,9 +1,8 @@
 plugins {
     alias(libs.plugins.custom.android.library)
+    alias(libs.plugins.custom.spotless)
     alias(libs.plugins.hilt)
     alias(libs.plugins.ksp)
-
-
 }
 
 android {

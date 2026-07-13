@@ -1,6 +1,5 @@
 package com.san1ch.vocabanana.feature.mainsettings.presentation
 
-
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -41,24 +40,23 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.san1ch.vocabanana.core.essentials.model.AppThemeMode
-import com.san1ch.vocabanana.core.ui.compose.CollectUiEvents
-
+import com.san1ch.vocabanana.core.ui.compose.CollectResource
 
 // The actions the user can take
 
 @Composable
 fun SettingsScreen(
-    viewModel: SettingsScreenViewModel = hiltViewModel()
+    viewModel: SettingsScreenViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
-    CollectUiEvents(
-        events = viewModel.events
+    CollectResource(
+        events = viewModel.events,
     )
 
     SettingsContent(
         state = state,
-        onIntent = viewModel::onIntent
+        onIntent = viewModel::onIntent,
     )
 }
 
@@ -66,7 +64,7 @@ fun SettingsScreen(
 @Composable
 fun SettingsContent(
     state: SettingsUiState,
-    onIntent: (SettingsIntent) -> Unit
+    onIntent: (SettingsIntent) -> Unit,
 ) {
     Scaffold(
         topBar = {
@@ -76,15 +74,15 @@ fun SettingsContent(
                     IconButton(onClick = { onIntent(SettingsIntent.BackClicked) }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
                     }
-                }
+                },
             )
-        }
+        },
     ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .verticalScroll(rememberScrollState())
+                .verticalScroll(rememberScrollState()),
         ) {
             SettingsSectionTitle(title = stringResource(R.string.appearance))
 
@@ -95,7 +93,7 @@ fun SettingsContent(
                 onOptionSelected = { label ->
                     val theme = AppThemeMode.entries.find { it.label == label } ?: AppThemeMode.AUTO
                     onIntent(SettingsIntent.ChangeTheme(theme))
-                }
+                },
             )
         }
     }
@@ -108,7 +106,7 @@ private fun SettingsSectionTitle(title: String) {
         text = title,
         style = MaterialTheme.typography.labelLarge,
         color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
     )
 }
 
@@ -116,7 +114,7 @@ private fun SettingsSectionTitle(title: String) {
 private fun SettingsClickableItem(
     label: String,
     onClick: (() -> Unit)? = null,
-    control: @Composable (() -> Unit)? = null
+    control: @Composable (() -> Unit)? = null,
 ) {
     Row(
         modifier = Modifier
@@ -124,12 +122,12 @@ private fun SettingsClickableItem(
             .heightIn(min = 64.dp)
             .clickable(enabled = onClick != null) { onClick?.invoke() }
             .padding(horizontal = 16.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
             text = label,
             modifier = Modifier.weight(1f),
-            style = MaterialTheme.typography.bodyLarge
+            style = MaterialTheme.typography.bodyLarge,
         )
         control?.invoke()
     }
@@ -140,7 +138,7 @@ private fun SettingsDropdownItem(
     label: String,
     currentValue: String,
     options: List<String>,
-    onOptionSelected: (String) -> Unit
+    onOptionSelected: (String) -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
 
@@ -156,7 +154,7 @@ private fun SettingsDropdownItem(
 
                 DropdownMenu(
                     expanded = expanded,
-                    onDismissRequest = { expanded = false }
+                    onDismissRequest = { expanded = false },
                 ) {
                     options.forEach { option ->
                         DropdownMenuItem(
@@ -164,12 +162,12 @@ private fun SettingsDropdownItem(
                             onClick = {
                                 onOptionSelected(option)
                                 expanded = false
-                            }
+                            },
                         )
                     }
                 }
             }
-        }
+        },
     )
 }
 
@@ -177,7 +175,7 @@ private fun SettingsDropdownItem(
 private fun SettingsSliderItem(
     label: String,
     value: Float,
-    onValueChange: (Float) -> Unit
+    onValueChange: (Float) -> Unit,
 ) {
     Column(modifier = Modifier.padding(16.dp)) {
         Text(text = label, style = MaterialTheme.typography.bodyLarge)
@@ -190,11 +188,11 @@ private fun SettingsInputItem(
     label: String,
     value: String,
     onValueChange: (String) -> Unit,
-    placeholder: String
+    placeholder: String,
 ) {
     Row(
         modifier = Modifier.padding(16.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(text = label, modifier = Modifier.weight(1f))
         TextField(
@@ -203,7 +201,7 @@ private fun SettingsInputItem(
             placeholder = { Text(placeholder) },
             modifier = Modifier.width(150.dp),
             singleLine = true,
-            colors = TextFieldDefaults.colors(focusedContainerColor = Color.Transparent)
+            colors = TextFieldDefaults.colors(focusedContainerColor = Color.Transparent),
         )
     }
 }

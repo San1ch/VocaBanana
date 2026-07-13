@@ -20,15 +20,10 @@ object PreferencesModule {
     @Provides
     @Singleton
     fun provideDataStore(
-        @ApplicationContext context: Context
-    ): DataStore<Preferences> {
-        return context.dataStore
-    }
+        @ApplicationContext context: Context,
+    ): DataStore<Preferences> = context.dataStore
 
     @Provides
     @Singleton
-    fun provideSettingsRepository(dataStore: DataStore<Preferences>): SettingsRepository {
-        return DataStoreSettingsRepository(dataStore)
-    }
-
+    fun provideSettingsRepository(dataStore: DataStore<Preferences>): SettingsRepository = DataStoreSettingsRepository(dataStore)
 }

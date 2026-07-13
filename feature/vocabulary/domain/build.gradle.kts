@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.custom.kotlin.library)
+    alias(libs.plugins.custom.spotless)
 }
 
 dependencies {
@@ -13,4 +14,3 @@ dependencies {
     testImplementation(libs.mockk)
     testImplementation(libs.kotlinx.coroutines.test)
 }
-

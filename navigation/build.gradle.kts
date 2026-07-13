@@ -1,25 +1,18 @@
 plugins {
-    alias(libs.plugins.custom.android.library)
-    alias(libs.plugins.hilt)
-    alias(libs.plugins.ksp)
+    alias(libs.plugins.custom.android.compose.library)
+    alias(libs.plugins.custom.spotless)
     alias(libs.plugins.kotlin.serialization)
-    alias(libs.plugins.kotlin.compose)
 }
 
 android {
     namespace = "com.san1ch.vocabanana.navigation"
 
-    buildFeatures {
-        compose = true
-    }
-
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.10"
     }
 }
-
 dependencies {
-    //Modules
+    // Modules
     implementation(projects.core.essentials)
     implementation(projects.core.ui)
 
@@ -31,7 +24,7 @@ dependencies {
     implementation(projects.feature.mainsettings.presentation)
     implementation(projects.feature.word.presentation)
 
-    //serialization
+    // serialization
     implementation(libs.kotlinx.serialization.json)
 
     implementation(libs.androidx.navigation.compose)

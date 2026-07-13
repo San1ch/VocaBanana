@@ -1,9 +1,9 @@
 package com.san1ch.vocabanana.core.android.database.word.repository
 
-import com.san1ch.vocabanana.core.android.database.word.toDomain
-import com.san1ch.vocabanana.core.android.database.word.toWordEntity
 import com.san1ch.vocabanana.core.android.database.word.local.WordDao
 import com.san1ch.vocabanana.core.android.database.word.model.WordToLemmaPair
+import com.san1ch.vocabanana.core.android.database.word.toDomain
+import com.san1ch.vocabanana.core.android.database.word.toWordEntity
 import com.san1ch.vocabanana.core.essentials.exceptions.RepositoryNoDataByRequestException
 import com.san1ch.vocabanana.core.essentials.model.word.FilterType
 import com.san1ch.vocabanana.core.essentials.model.word.WordDomain
@@ -14,15 +14,14 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
-class WordRepositoryRoomImpl @Inject constructor(
-    private val wordDao: WordDao
+class WordRepositoryImpl @Inject constructor(
+    private val wordDao: WordDao,
 ) : WordRepository {
 
     override fun getWords(
         wordIds: FilterType<Int>,
-        states: FilterType<WordState>
+        states: FilterType<WordState>,
     ): Flow<List<WordDomain>> {
-
         val idsIncluded = when (wordIds) {
             is FilterType.Include -> wordIds.items
             else -> emptyList()
@@ -51,20 +50,22 @@ class WordRepositoryRoomImpl @Inject constructor(
             filterIds = wordIds is FilterType.Include,
             excludeIds = wordIds is FilterType.Exclude,
             filterStates = states is FilterType.Include,
-            excludeStates = states is FilterType.Exclude
+            excludeStates = states is FilterType.Exclude,
         )
             .distinctUntilChanged()
             .map { list -> list.map { it.toDomain() } }
     }
-
 
     override suspend fun updateWord(word: WordDomain) {
         wordDao.insertWord(word.toWordEntity())
     }
 
     override suspend fun syncWordWithDatabase(word: WordDomain) {
-        val existing = if (word.id != 0) wordDao.getWordWithFormsById(word.id)
-        else wordDao.getWordWithFormsByLemma(word.lemma)
+        val existing = if (word.id != 0) {
+            wordDao.getWordWithFormsById(word.id)
+        } else {
+            wordDao.getWordWithFormsByLemma(word.lemma)
+        }
 
         if (existing != null) {
             val updated = existing.toDomain().addForms(word.forms)
@@ -91,16 +92,15 @@ class WordRepositoryRoomImpl @Inject constructor(
         toSave.values.forEach { wordDao.insertWordWithForms(it.toWordEntity(), it.forms) }
     }
 
-    override suspend fun getWordById(id: Int): Result<WordDomain> {
-        return wordDao.getWordWithFormsById(id)?.let { Result.success(it.toDomain()) }
-            ?: Result.failure(RepositoryNoDataByRequestException())
-    }
+    override suspend fun getWordById(id: Int): Result<WordDomain> = wordDao.getWordWithFormsById(id)?.let { Result.success(it.toDomain()) }
+        ?: Result.failure(RepositoryNoDataByRequestException())
 
-    override suspend fun getWordByWord(word: String): Result<WordDomain> {
-        return wordDao.getWordByAnyForm(word.trim().lowercase())?.let {
-            Result.success(it.toDomain())
-        } ?: Result.failure(RepositoryNoDataByRequestException())
-    }
+    override suspend fun getWordByWord(word: String): Result<WordDomain> = wordDao.getWordByAnyForm(word.trim().lowercase())?.let {
+        Result.success(it.toDomain())
+    } ?: Result.failure(RepositoryNoDataByRequestException())
+
+    override suspend fun getIdByWord(word: String): Result<Int> = wordDao.getWordIdByAnyForm(word.trim().lowercase())?.let { Result.success(it) }
+        ?: Result.failure(RepositoryNoDataByRequestException())
 
     override suspend fun getLemmasForWords(words: List<String>): Map<String, String> {
         if (words.isEmpty()) return emptyMap()
@@ -108,10 +108,8 @@ class WordRepositoryRoomImpl @Inject constructor(
         return databasePairs.associate { pair -> pair.word to pair.lemma }
     }
 
-    override suspend fun getAllLemmasAndForms(): List<String> {
-        return wordDao.getAllWordsList().flatMap { item ->
-            listOf(item.word.lemma) + item.forms.map { it.form }
-        }
+    override suspend fun getAllLemmasAndForms(): List<String> = wordDao.getAllWordsList().flatMap { item ->
+        listOf(item.word.lemma) + item.forms.map { it.form }
     }
 
     override suspend fun getExistingWords(words: List<String>): Set<String> {
@@ -121,9 +119,7 @@ class WordRepositoryRoomImpl @Inject constructor(
         return (lemmas + forms).toSet()
     }
 
-    override suspend fun getWordDomainsForWords(words: List<String>): Map<String, WordDomain> {
-        return wordDao.getWordsByLemmas(words).map { it.toDomain() }.associateBy { it.lemma }
-    }
+    override suspend fun getWordDomainsForWords(words: List<String>): Map<String, WordDomain> = wordDao.getWordsByLemmas(words).map { it.toDomain() }.associateBy { it.lemma }
 
     override suspend fun deleteWord(word: WordDomain) = wordDao.deleteWord(word.toWordEntity())
 

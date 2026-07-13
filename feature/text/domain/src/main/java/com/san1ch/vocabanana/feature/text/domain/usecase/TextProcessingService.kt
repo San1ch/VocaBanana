@@ -27,13 +27,11 @@ class TextProcessingService @Inject constructor() {
         "can", "could", "will", "would", "shall", "should", "may", "might", "must",
 
         // Common Adverbs/Markers
-        "not", "no", "yes", "too", "very", "just", "only", "well", "even", "now", "then", "there", "here"
+        "not", "no", "yes", "too", "very", "just", "only", "well", "even", "now", "then", "there", "here",
     )
 
-    fun String.removeSurroundingPunctuation(): String {
-        return this.dropWhile { !it.isLetter() }
-            .dropLastWhile { !it.isLetter() }
-    }
+    fun String.removeSurroundingPunctuation(): String = this.dropWhile { !it.isLetter() }
+        .dropLastWhile { !it.isLetter() }
 
     fun prepareText(text: String): Map<String, Int> {
         // 1. Normalize quotes to a single format
@@ -49,8 +47,11 @@ class TextProcessingService @Inject constructor() {
                 // 3. Expand contractions so they are counted as base words
                 when {
                     w.endsWith("n't") -> {
-                        if (w == "can't") listOf("can", "not")
-                        else listOf(w.removeSuffix("n't"), "not")
+                        if (w == "can't") {
+                            listOf("can", "not")
+                        } else {
+                            listOf(w.removeSuffix("n't"), "not")
+                        }
                     }
 
                     w.endsWith("'re") -> listOf(w.removeSuffix("'re"), "are")
@@ -69,7 +70,6 @@ class TextProcessingService @Inject constructor() {
             .eachCount()
     }
 
-
     fun normalizeGrammar(text: String): String {
         var result = text.replace('’', '\'').replace('`', '\'')
 
@@ -78,7 +78,7 @@ class TextProcessingService @Inject constructor() {
             "'ve" to " have",
             "'ll" to " will",
             "n't" to " not",
-            "'m" to " am"
+            "'m" to " am",
         )
 
         directExpansions.forEach { (shorthand, full) ->
