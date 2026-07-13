@@ -10,7 +10,15 @@ tasks.register("checkEverything") {
     group = "verification"
     description = "Runs lint, ktlint, and unit tests for all modules."
 
-    dependsOn(subprojects.mapNotNull { it.tasks.findByName("spotlessApply") })
+    val spotlessApplyTasks = subprojects.mapNotNull { it.tasks.findByName("spotlessApply") }
+    val checkTasks = subprojects.mapNotNull { it.tasks.findByName("check") }
 
-    dependsOn(subprojects.mapNotNull { it.tasks.findByName("check") })
+    dependsOn(spotlessApplyTasks)
+    dependsOn(checkTasks)
+
+    checkTasks.forEach { checkTask ->
+        spotlessApplyTasks.forEach { spotlessTask ->
+            checkTask.mustRunAfter(spotlessTask)
+        }
+    }
 }
