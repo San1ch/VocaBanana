@@ -4,6 +4,7 @@ import androidx.lifecycle.viewModelScope
 import com.san1ch.vocabanana.core.essentials.model.ReaderSettings
 import com.san1ch.vocabanana.core.essentials.model.word.FilterType
 import com.san1ch.vocabanana.core.essentials.model.word.WordQuery
+import com.san1ch.vocabanana.core.essentials.model.word.WordState
 import com.san1ch.vocabanana.core.essentials.repositories.SettingsRepository
 import com.san1ch.vocabanana.core.essentials.repositories.TextRepository
 import com.san1ch.vocabanana.core.essentials.repositories.WordRepository
@@ -88,6 +89,8 @@ class TextListScreenViewModel @Inject constructor(
                 _uiState.update { it.copy(readerSettings = intent.settings) }
                 saveReaderSettings(intent.settings)
             }
+            TextListUiIntent.CloseFilter -> setHighlightFilterVisibility(false)
+            is TextListUiIntent.SelectWordState -> changeHighlightFilterState
 
             // --- Deletion Logic ---
             is TextListUiIntent.SelectTextToDelete -> selectTextToDelete(intent.textId)
@@ -257,7 +260,11 @@ sealed class TextListUiIntent {
     // --- Reader Settings ---
     object ShowRenderSettings : TextListUiIntent()
     object CloseReaderSettings : TextListUiIntent()
+    object CloseFilter : TextListUiIntent()
+    class SelectWordState(wordState: WordState): TextListUiIntent()
+
     data class ChangePageSettings(val settings: ReaderSettings) : TextListUiIntent()
+
 }
 
 data class TextListUiState(
@@ -270,6 +277,8 @@ data class TextListUiState(
     val textItems: List<TextPreview> = emptyList(),
     val selectedText: TextUi? = null,
     val readerSettings: ReaderSettings = ReaderSettings(),
+    val selectedWordStates: Set<WordState> = emptySet(),
+    val showFilter: Boolean = false,
 
     // --- Word & Dictionary Logic ---
     val wordInfoState: WordInfoState = WordInfoState.Hidden,

@@ -190,6 +190,13 @@ fun TextListContent(
             settings = state.readerSettings,
             onIntent = onIntent,
         )
+
+        WordStateFilterPopup(
+            isVisible = state.showFilter,
+            selectedStates = state.selectedWordStates,
+            onDismiss = { onIntent(TextListUiIntent.CloseFilter) },
+            onStateSelected = { onIntent(TextListUiIntent.SelectWordState(it)) },
+        )
     }
 }
 
@@ -200,8 +207,14 @@ private fun TopBarActions(
     isSwipeAttempted: Boolean,
     onLockClick: () -> Unit,
     onPageSettings: () -> Unit,
+    onShowFilter: () -> Unit,
 ) {
     Row {
+        AnimatedVisibility(visible = currentPage == 1, enter = fadeIn(), exit = fadeOut()) {
+            IconButton(onClick = onShowFilter) {
+                Icon(Icons.Default.Add, contentDescription = "Filter States")
+            }
+        }
         AnimatedVisibility(visible = currentPage == 1, enter = fadeIn(), exit = fadeOut()) {
             IconButton(onClick = onLockClick) {
                 AnimatedLockIcon(isLocked = isLocked, isSwipeAttempted = isSwipeAttempted)

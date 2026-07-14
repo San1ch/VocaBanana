@@ -24,6 +24,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.Add
@@ -33,6 +34,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilledIconButton
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
@@ -59,7 +61,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.PopupProperties
 import com.san1ch.vocabanana.core.essentials.model.ReaderSettings
+import com.san1ch.vocabanana.core.essentials.model.word.WordState
 import com.san1ch.vocabanana.core.ui.model.TextUi
 import com.san1ch.vocabanana.feature.text.presentation.R
 import com.san1ch.vocabanana.feature.text.presentation.TextListUiIntent
@@ -197,11 +201,24 @@ fun WordInfoPopup(
             ) {
                 Column(modifier = Modifier.padding(20.dp)) {
                     when (state) {
-                        is WordInfoState.Loading -> CircularProgressIndicator(Modifier.align(Alignment.CenterHorizontally).size(40.dp))
+                        is WordInfoState.Loading -> CircularProgressIndicator(
+                            Modifier
+                                .align(
+                                    Alignment.CenterHorizontally
+                                )
+                                .size(40.dp)
+                        )
 
                         is WordInfoState.NotFound -> {
-                            Text("Not found", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.error)
-                            Text("The word '${state.word}' is missing from your dictionary.", style = MaterialTheme.typography.bodyMedium)
+                            Text(
+                                "Not found",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.error
+                            )
+                            Text(
+                                "The word '${state.word}' is missing from your dictionary.",
+                                style = MaterialTheme.typography.bodyMedium
+                            )
                             ActionSection(state.word, onOxfordClick)
                         }
 
@@ -213,7 +230,11 @@ fun WordInfoPopup(
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
                                 Column {
-                                    Text(text = state.word.lemma, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                                    Text(
+                                        text = state.word.lemma,
+                                        style = MaterialTheme.typography.headlineSmall,
+                                        fontWeight = FontWeight.Bold
+                                    )
                                     Text(
                                         text = "${state.word.partOfSpeech.uppercase()} • ${state.word.count} uses",
                                         style = MaterialTheme.typography.labelMedium,
@@ -222,9 +243,15 @@ fun WordInfoPopup(
                                 }
                                 // Subtle badge
                                 Text(
-                                    text = state.word.state.name.lowercase().replaceFirstChar { it.uppercase() },
+                                    text = state.word.state.name.lowercase()
+                                        .replaceFirstChar { it.uppercase() },
                                     style = MaterialTheme.typography.labelSmall,
-                                    modifier = Modifier.background(MaterialTheme.colorScheme.primaryContainer, CircleShape).padding(horizontal = 10.dp, vertical = 4.dp),
+                                    modifier = Modifier
+                                        .background(
+                                            MaterialTheme.colorScheme.primaryContainer,
+                                            CircleShape
+                                        )
+                                        .padding(horizontal = 10.dp, vertical = 4.dp),
                                 )
                             }
 
@@ -238,6 +265,7 @@ fun WordInfoPopup(
 
                             ActionSection(state.word.lemma, onOxfordClick)
                         }
+
                         else -> {}
                     }
                 }
@@ -263,6 +291,64 @@ private fun ActionSection(word: String, onOxfordClick: (String) -> Unit) {
                 contentDescription = null,
                 modifier = Modifier.size(16.dp),
             )
+        }
+    }
+}
+
+@Composable
+fun WordStateFilterPopup(
+    isVisible: Boolean,
+    selectedStates: Set<WordState>,
+    onDismiss: () -> Unit,
+    onStatesChanged: (Set<WordState>) -> Unit,
+) {
+    if (isVisible) {
+        androidx.compose.ui.window.Popup(
+            onDismissRequest = onDismiss,
+            properties = PopupProperties(focusable = true)
+        ) {
+            Surface(
+                modifier = Modifier
+                    .size(width = 300.dp, height = 400.dp)
+                    .padding(8.dp),
+                shape = MaterialTheme.shapes.medium,
+                shadowElevation = 8.dp,
+                color = MaterialTheme.colorScheme.surface
+            ) {
+                Column(
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .verticalScroll(androidx.compose.foundation.rememberScrollState())
+                ) {
+                    Text(
+                        text = "Highlight States",
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+
+                    WordState.entries.forEach { state ->
+                        val isSelected = selectedStates.contains(state)
+                        FilterChip(
+                            modifier = Modifier.fillMaxWidth(),
+                            selected = isSelected,
+                            onClick = {
+                                val newSelection = if (isSelected) {
+                                    selectedStates - state
+                                } else {
+                                    selectedStates + state
+                                }
+                                onStatesChanged(newSelection)
+                            },
+                            label = {
+                                Text(
+                                    state.name.replace("_", " ").lowercase()
+                                        .replaceFirstChar { it.uppercase() }
+                                )
+                            }
+                        )
+                    }
+                }
+            }
         }
     }
 }

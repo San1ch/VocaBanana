@@ -15,8 +15,6 @@ import com.san1ch.vocabanana.core.essentials.model.text.exception.TextValidateTo
 data class TextInfo(
     val id: Int,
     val name: String,
-    val lastScrollPosition: Float,
-    val lastReadTime: Long,
 )
 
 /**
@@ -25,7 +23,7 @@ data class TextInfo(
  */
 @ConsistentCopyVisibility
 data class TextDomain private constructor(
-    val info: TextInfo,
+    private val info: TextInfo,
     val content: String,
 ) {
     // Helper properties for easy access to nested metadata
