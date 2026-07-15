@@ -38,6 +38,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.san1ch.vocabanana.core.essentials.model.constants.TextConstant
@@ -90,7 +92,11 @@ fun AddTextScreen(
         onPasteClick = {
             val pastedText = clipboardManager.primaryClip?.getItemAt(0)?.text?.toString()
             if (!pastedText.isNullOrBlank()) {
-                viewModel.onIntent(AddTextUiIntent.ContentChanged(pastedText))
+                val newTextFieldValue = TextFieldValue(
+                    text = pastedText,
+                    selection = TextRange(pastedText.length)
+                )
+                viewModel.onIntent(AddTextUiIntent.ContentChanged(newTextFieldValue))
             }
         },
         onCopyClick = {
@@ -167,7 +173,7 @@ fun AddTextContent(
             } else {
                 OutlinedTextField(
                     value = state.content,
-                    onValueChange = { onIntent(AddTextUiIntent.ContentChanged(it.text)) },
+                    onValueChange = { onIntent(AddTextUiIntent.ContentChanged(it)) },
                     label = {
                         Text(
                             if (state.isLoadingFile) {

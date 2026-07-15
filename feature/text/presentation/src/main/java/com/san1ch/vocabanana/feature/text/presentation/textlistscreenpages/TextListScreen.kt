@@ -14,7 +14,6 @@ fun TextListScreen(
     CollectResource(viewModel.events)
 
     val state by viewModel.uiState.collectAsState()
-
     TextListContent(
         state = state,
         onIntent = viewModel::onIntent,

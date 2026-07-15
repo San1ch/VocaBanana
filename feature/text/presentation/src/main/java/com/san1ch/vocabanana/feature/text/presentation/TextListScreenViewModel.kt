@@ -1,21 +1,22 @@
 package com.san1ch.vocabanana.feature.text.presentation
 
 import androidx.lifecycle.viewModelScope
-import com.san1ch.vocabanana.core.essentials.model.ReaderSettings
+import com.san1ch.vocabanana.core.essentials.model.TextAppearanceSettings
 import com.san1ch.vocabanana.core.essentials.model.word.FilterType
 import com.san1ch.vocabanana.core.essentials.model.word.WordQuery
-import com.san1ch.vocabanana.core.essentials.repositories.SettingsRepository
 import com.san1ch.vocabanana.core.essentials.repositories.TextRepository
 import com.san1ch.vocabanana.core.essentials.repositories.WordRepository
 import com.san1ch.vocabanana.core.essentials.usecases.GetWordsWithCountUseCase
 import com.san1ch.vocabanana.core.ui.BaseViewModel
-import com.san1ch.vocabanana.core.ui.model.TextPreview
-import com.san1ch.vocabanana.core.ui.model.TextUi
 import com.san1ch.vocabanana.core.ui.model.UiEvent
 import com.san1ch.vocabanana.core.ui.model.WordUi
-import com.san1ch.vocabanana.core.ui.model.toPreview
 import com.san1ch.vocabanana.core.ui.model.toUi
-import com.san1ch.vocabanana.feature.text.domain.GenerateWordsFromTextUseCase
+import com.san1ch.vocabanana.feature.text.domain.ReadingStateRepository
+import com.san1ch.vocabanana.feature.text.domain.model.TextListItem
+import com.san1ch.vocabanana.feature.text.domain.model.TextListPreview
+import com.san1ch.vocabanana.feature.text.domain.usecase.GenerateWordsFromTextUseCase
+import com.san1ch.vocabanana.feature.text.domain.usecase.GetTextListItemUseCase
+import com.san1ch.vocabanana.feature.text.domain.usecase.GetTextPreviewsUseCase
 import com.san1ch.vocabanana.feature.text.presentation.mapper.GenerateWordsFromTextUiMapper
 import com.san1ch.vocabanana.feature.text.presentation.model.GenerateWordsFromTextUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -34,8 +35,10 @@ import javax.inject.Inject
 class TextListScreenViewModel @Inject constructor(
     private val textRepository: TextRepository,
     private val wordRepository: WordRepository,
+    private val readingStateRepository: ReadingStateRepository,
     private val generateWordsFromText: GenerateWordsFromTextUseCase,
-    private val settingsRepository: SettingsRepository,
+    private val getTextPreviewsUseCase: GetTextPreviewsUseCase,
+    private val getTextListItemUseCase: GetTextListItemUseCase,
     private val router: TextListRouter,
     private val generateWordsFromTextUiMapper: GenerateWordsFromTextUiMapper,
     private val getWordsWithCountUseCase: GetWordsWithCountUseCase,
@@ -49,18 +52,9 @@ class TextListScreenViewModel @Inject constructor(
     private var saveJob: Job? = null
 
     init {
-        observeTexts()
-        observeSettings()
+        observeTextPreviews()
     }
 
-    private fun observeSettings() {
-        viewModelScope.launch(Dispatchers.IO) {
-            // 3. Collect from DataStore and update UI state automatically
-            settingsRepository.readerSettingsFlow.collect { settings ->
-                _uiState.update { it.copy(readerSettings = settings) }
-            }
-        }
-    }
 
     // 2. The single entry point for all UI actions
     fun onIntent(intent: TextListUiIntent) {
@@ -70,7 +64,7 @@ class TextListScreenViewModel @Inject constructor(
             is TextListUiIntent.PageChanged -> updatePage(intent.page)
 
             // --- Text Selection & Reading ---
-            is TextListUiIntent.SelectText -> selectText(intent.id)
+            is TextListUiIntent.SelectText -> selectTextItemData(intent.id)
             is TextListUiIntent.ClearSelection -> clearSelection()
             is TextListUiIntent.UpdateProgress -> updateProgress(intent.id, intent.progress)
             is TextListUiIntent.ToggleLock -> toggleLock()
@@ -85,7 +79,6 @@ class TextListScreenViewModel @Inject constructor(
             is TextListUiIntent.ShowRenderSettings -> setRenderSettingsVisibility(true)
             is TextListUiIntent.CloseReaderSettings -> setRenderSettingsVisibility(false)
             is TextListUiIntent.ChangePageSettings -> {
-                _uiState.update { it.copy(readerSettings = intent.settings) }
                 saveReaderSettings(intent.settings)
             }
 
@@ -103,35 +96,43 @@ class TextListScreenViewModel @Inject constructor(
     // --- Private Logic (Reducers) ---
 
     // --- Reading Mode & Content Selection ---
-    private fun observeTexts() {
+    private fun observeTextPreviews() {
         viewModelScope.launch {
-            textRepository.getTexts().collect { list ->
-                _uiState.update { it.copy(textItems = list.map { it.toPreview() }) }
+            getTextPreviewsUseCase().collect { list ->
+                _uiState.update { uiState -> uiState.copy(textItems = list) }
             }
         }
     }
 
-    private fun selectText(id: Int) {
+    private fun selectTextItemData(id: Int) {
         viewModelScope.launch(Dispatchers.IO) {
-            textRepository.getTextById(id)
-                .onSuccess { text ->
-                    _uiState.update { it.copy(selectedText = text.toUi()) }
+            launch {
+                getTextListItemUseCase(id).collect { text ->
+                    _uiState.update { it.copy(selectedText = text) }
                 }
-                .onFailure {
-                    // TODO Process it
+            }
+            launch {
+                textRepository.getContentById(id).collect { content ->
+                    _uiState.update { it.copy(textContent = content) }
                 }
+            }
         }
     }
 
     private fun clearSelection() {
-        _uiState.update { it.copy(selectedText = null) }
+        _uiState.update { it.copy(selectedText = null, textContent = emptyList()) }
     }
 
     private fun updateProgress(textId: Int, position: Float) {
         saveJob?.cancel()
         saveJob = viewModelScope.launch(Dispatchers.IO) {
             delay(500)
-            textRepository.updateProgress(textId, position, System.currentTimeMillis())
+            readingStateRepository.updateReadingState(textId) { readingState ->
+                readingState.copy(
+                    lastScrollPosition = position,
+                    lastReadTime = System.currentTimeMillis()
+                )
+            }
         }
     }
 
@@ -142,7 +143,13 @@ class TextListScreenViewModel @Inject constructor(
         viewModelScope.launch {
             wordRepository.getIdByWord(word)
                 .onSuccess { result ->
-                    val word = getWordsWithCountUseCase(WordQuery(wordIds = FilterType.Include<Int>(listOf(result)))).map {
+                    val word = getWordsWithCountUseCase(
+                        WordQuery(
+                            wordIds = FilterType.Include<Int>(
+                                listOf(result)
+                            )
+                        )
+                    ).map {
                         it[0]
                     }.first()
                     _uiState.update {
@@ -206,14 +213,23 @@ class TextListScreenViewModel @Inject constructor(
     private fun deleteText() {
         viewModelScope.launch(Dispatchers.IO) {
             val idToDelete = _uiState.value.selectedTextIdToDelete ?: return@launch
-            textRepository.deleteText(idToDelete)
+            textRepository.deleteTexts(listOf(idToDelete))
             clearTextIdToDelete()
         }
     }
 
-    private fun saveReaderSettings(settings: ReaderSettings) {
+    private fun saveReaderSettings(settings: TextAppearanceSettings) {
+        val textId = uiState.value.selectedText?.id ?: return
+
         viewModelScope.launch {
-            settingsRepository.saveReaderSettings(settings)
+            readingStateRepository.updateReadingState(textId) { readingState ->
+                readingState.copy(
+                    fontSize = settings.fontSize,
+                    lineSpacing = settings.lineSpacing,
+                    paragraphSpacing = settings.paragraphSpacing,
+                    horizontalPadding = settings.horizontalPadding
+                )
+            }
         }
     }
 
@@ -257,7 +273,7 @@ sealed class TextListUiIntent {
     // --- Reader Settings ---
     object ShowRenderSettings : TextListUiIntent()
     object CloseReaderSettings : TextListUiIntent()
-    data class ChangePageSettings(val settings: ReaderSettings) : TextListUiIntent()
+    data class ChangePageSettings(val settings: TextAppearanceSettings) : TextListUiIntent()
 }
 
 data class TextListUiState(
@@ -267,9 +283,9 @@ data class TextListUiState(
     val isLocked: Boolean = false,
 
     // --- Content (The "List" and the "Reader") ---
-    val textItems: List<TextPreview> = emptyList(),
-    val selectedText: TextUi? = null,
-    val readerSettings: ReaderSettings = ReaderSettings(),
+    val textItems: List<TextListPreview> = emptyList(),
+    val selectedText: TextListItem? = null,
+    val textContent: List<String> = emptyList(),
 
     // --- Word & Dictionary Logic ---
     val wordInfoState: WordInfoState = WordInfoState.Hidden,

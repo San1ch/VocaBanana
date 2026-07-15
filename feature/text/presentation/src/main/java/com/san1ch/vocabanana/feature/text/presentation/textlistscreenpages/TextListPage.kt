@@ -36,14 +36,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.san1ch.vocabanana.core.ui.model.TextPreview
 import com.san1ch.vocabanana.core.ui.toFormattedDate
+import com.san1ch.vocabanana.feature.text.domain.model.TextListPreview
 import com.san1ch.vocabanana.feature.text.presentation.R
 import com.san1ch.vocabanana.feature.text.presentation.TextListUiIntent
 
 @Composable
 fun TextListPage(
-    items: List<TextPreview>,
+    items: List<TextListPreview>,
     onIntent: (TextListUiIntent) -> Unit,
     onNavigateToReader: () -> Unit,
 ) {
@@ -75,9 +75,9 @@ fun TextListPage(
 
 @Composable
 private fun TextLazyItem(
-    item: TextPreview,
+    item: TextListPreview,
     onClick: () -> Unit,
-    onDelete: (TextPreview) -> Unit,
+    onDelete: (TextListPreview) -> Unit,
 ) {
     Card(
         modifier = Modifier

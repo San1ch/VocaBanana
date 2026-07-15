@@ -59,8 +59,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.san1ch.vocabanana.core.essentials.model.ReaderSettings
-import com.san1ch.vocabanana.core.ui.model.TextUi
+import com.san1ch.vocabanana.core.essentials.model.TextAppearanceSettings
+import com.san1ch.vocabanana.feature.text.domain.model.TextListItem
 import com.san1ch.vocabanana.feature.text.presentation.R
 import com.san1ch.vocabanana.feature.text.presentation.TextListUiIntent
 import com.san1ch.vocabanana.feature.text.presentation.WordInfoState
@@ -69,48 +69,47 @@ import com.san1ch.vocabanana.feature.text.presentation.data.tokenize
 
 @Composable
 fun TextReaderPage(
-    text: TextUi?,
-    settings: ReaderSettings,
+    text: TextListItem?,
+    content: List<String>?,
     onIntent: (TextListUiIntent) -> Unit,
 ) {
     val listState = rememberLazyListState()
     var isScrollRestored by remember(text?.id) { mutableStateOf(false) }
 
-    LaunchedEffect(text?.id, text?.paragraphs?.size) {
-        if (text != null && text.paragraphs.isNotEmpty() && !isScrollRestored) {
-            val savedProgress = text.lastScrollPosition
-            if (savedProgress > 0f) {
-                val targetIndex = (savedProgress * text.paragraphs.size).toInt()
-                listState.scrollToItem(targetIndex.coerceIn(0, text.paragraphs.size - 1))
-            }
+    // Restore scroll position
+    LaunchedEffect(text?.lastScrollPosition, content?.size) {
+        if (text != null && content != null && content.isNotEmpty() && !isScrollRestored) {
+            val savedProgress = text.lastScrollPosition ?: 0f
+            val targetIndex = (savedProgress * content.size).toInt()
+            listState.scrollToItem(targetIndex.coerceIn(0, content.size - 1))
             isScrollRestored = true
         }
     }
 
+    // Save progress
     LaunchedEffect(listState.firstVisibleItemIndex) {
-        if (text != null && isScrollRestored) {
-            val totalItems = listState.layoutInfo.totalItemsCount
-            if (totalItems > 0) {
-                val progress = listState.firstVisibleItemIndex.toFloat() / totalItems
-                onIntent(TextListUiIntent.UpdateProgress(text.id, progress))
-            }
+        if (text != null && content != null && content.isNotEmpty() && isScrollRestored) {
+            val progress = listState.firstVisibleItemIndex.toFloat() / content.size
+            onIntent(TextListUiIntent.UpdateProgress(text.id, progress))
         }
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        if (text == null) {
+        if (text == null || content == null) {
             CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
         } else {
+            // Безпечне отримання налаштувань
+            val settings = text.textAppearanceSettings
+
             LazyColumn(
                 state = listState,
                 modifier = Modifier.fillMaxSize(),
-                // Apply dynamic padding from settings
                 contentPadding = PaddingValues(
                     horizontal = settings.horizontalPadding.dp,
                     vertical = 16.dp,
                 ),
             ) {
-                items(text.paragraphs) { paragraph ->
+                items(content) { paragraph ->
                     ParagraphViewItem(
                         paragraphText = paragraph,
                         settings = settings,
@@ -126,7 +125,7 @@ fun TextReaderPage(
 @Composable
 fun ParagraphViewItem(
     paragraphText: String,
-    settings: ReaderSettings,
+    settings: TextAppearanceSettings,
     onWordClick: (String) -> Unit,
 ) {
     val textColor = MaterialTheme.colorScheme.onSurface
@@ -270,7 +269,7 @@ private fun ActionSection(word: String, onOxfordClick: (String) -> Unit) {
 @Composable
 fun ReaderSettingsPanel(
     visibility: Boolean,
-    settings: ReaderSettings,
+    settings: TextAppearanceSettings,
     onIntent: (TextListUiIntent) -> Unit,
 ) {
     AnimatedVisibility(

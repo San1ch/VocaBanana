@@ -11,10 +11,4 @@ data class TextEntity(
 
     @ColumnInfo(name = "content_path")
     val contentPath: String,
-
-    @ColumnInfo(name = "last_scroll_position")
-    val lastScrollPosition: Float,
-
-    @ColumnInfo(name = "last_read_time")
-    val lastReadTime: Long,
 )

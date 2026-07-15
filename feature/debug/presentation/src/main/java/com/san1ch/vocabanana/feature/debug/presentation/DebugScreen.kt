@@ -19,8 +19,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.san1ch.vocabanana.core.essentials.model.text.TextPreview
 import com.san1ch.vocabanana.core.ui.compose.CollectResource
-import com.san1ch.vocabanana.core.ui.model.TextPreview
 import com.san1ch.vocabanana.core.ui.state.ResourceObserver
 
 sealed class DebugIntent {
@@ -70,7 +70,7 @@ fun DebugContent(
                 FilterChip(
                     selected = selectedId == text.id,
                     onClick = { onIntent(DebugIntent.SelectText(text.id)) },
-                    label = { Text(text.title) },
+                    label = { Text(text.name) },
                 )
             }
         }

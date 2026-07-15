@@ -10,6 +10,9 @@ android {
 }
 
 dependencies {
+    // features
+    implementation(projects.feature.text.domain)
+
     implementation(projects.core.essentials)
     implementation(projects.core.ui)
 

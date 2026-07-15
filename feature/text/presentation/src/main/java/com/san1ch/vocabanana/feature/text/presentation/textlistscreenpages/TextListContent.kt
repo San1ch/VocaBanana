@@ -48,6 +48,7 @@ import androidx.compose.ui.platform.LocalViewConfiguration
 import androidx.compose.ui.platform.ViewConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.san1ch.vocabanana.core.essentials.model.TextAppearanceSettings
 import com.san1ch.vocabanana.core.ui.compose.AnimatedTitle
 import com.san1ch.vocabanana.core.ui.compose.DeleteConfirmDialog
 import com.san1ch.vocabanana.feature.text.presentation.R
@@ -142,14 +143,14 @@ fun TextListContent(
                         .pointerInput(state.isLocked) {
                             if (state.isLocked) {
                                 detectDragGestures { change, dragAmount ->
-                                    if (abs(dragAmount.x) > (abs(dragAmount.y))) {
+                                    if (abs(dragAmount.x) > abs(dragAmount.y)) {
                                         onIntent(TextListUiIntent.NotifySwipeBlocked)
                                         change.consume()
                                     }
                                 }
                             }
                         },
-                    userScrollEnabled = state.selectedText != null && !state.isLocked,
+                    userScrollEnabled = !state.isLocked && (pagerState.currentPage == 0 || state.selectedText != null),
                 ) { pageIndex ->
                     when (TextListScreenPage.fromIndex(pageIndex)) {
                         TextListScreenPage.MyTexts ->
@@ -162,7 +163,7 @@ fun TextListContent(
                             )
 
                         TextListScreenPage.TextReader ->
-                            TextReaderPage(state.selectedText, state.readerSettings, onIntent)
+                            TextReaderPage(state.selectedText, state.textContent, onIntent)
 
                         TextListScreenPage.Settings ->
                             TextSettingsPage(state.generatingState, onIntent)
@@ -187,7 +188,7 @@ fun TextListContent(
 
         ReaderSettingsPanel(
             visibility = state.showSettings,
-            settings = state.readerSettings,
+            settings = state.selectedText?.textAppearanceSettings ?: TextAppearanceSettings(),
             onIntent = onIntent,
         )
     }
@@ -223,7 +224,10 @@ private fun AnimatedLockIcon(isLocked: Boolean, isSwipeAttempted: Boolean) {
         else -> MaterialTheme.colorScheme.onSurfaceVariant
     }
 
-    val animatedColor by animateColorAsState(targetValue = targetColor, label = stringResource(R.string.lockcolor))
+    val animatedColor by animateColorAsState(
+        targetValue = targetColor,
+        label = stringResource(R.string.lockcolor)
+    )
     val iconPainter =
         rememberVectorPainter(if (isLocked) Icons.Default.Lock else Icons.Default.LockOpen)
 
