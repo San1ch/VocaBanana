@@ -27,7 +27,7 @@ class ReadingStateRepositoryImpl @Inject constructor(
         id: Int,
         transform: (ReadingState) -> ReadingState
     ) {
-        val currentState = readingStateDao.getReadingStateById(id) ?: return
+        val currentState = readingStateDao.getReadingStateById(id) ?: ReadingState(id).toEntity()
         val newState = transform(currentState.toDomain())
         readingStateDao.insertReadingState(newState.toEntity())
     }

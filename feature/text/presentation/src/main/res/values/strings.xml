@@ -29,6 +29,7 @@
     <string name="last_read">Last read: %1$s</string>
     <string name="appearance">Appearance</string>
     <string name="font_size">Font Size</string>
+    <string name="paragraph_spacing">Paragraph Spacing</string>
     <string name="line_spacing">Line Spacing</string>
     <string name="side_margins">Side Margins</string>
     <string name="vocabulary_generator">Vocabulary Generator</string>
