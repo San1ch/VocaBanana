@@ -21,13 +21,11 @@ class CreateTextUseCase @Inject constructor(
             val result = TextDomain.create(
                 name = textName,
                 text = content,
-                lastScrollPosition = 0f,
-                lastReadTime = 0L,
             )
         ) {
             is ValidateResult.Error -> Result.failure(result.error)
             is ValidateResult.Success -> {
-                textRepository.saveText(result.value)
+                textRepository.saveTexts(listOf(result.value))
                 Result.success(Unit)
             }
         }

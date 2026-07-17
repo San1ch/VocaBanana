@@ -1,4 +1,4 @@
-package com.san1ch.vocabanana.feature.text.presentation.textlistscreenpages
+package com.san1ch.vocabanana.feature.text.presentation.textlist.textlistscreenpages
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
@@ -42,8 +42,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.san1ch.vocabanana.feature.text.presentation.R
-import com.san1ch.vocabanana.feature.text.presentation.TextListUiIntent
 import com.san1ch.vocabanana.feature.text.presentation.model.GenerateWordsFromTextUiState
+import com.san1ch.vocabanana.feature.text.presentation.textlist.TextListUiIntent
 
 @Composable
 fun TextSettingsPage(
@@ -94,7 +94,7 @@ fun TextSettingsPage(
                 }
 
                 Button(
-                    onClick = { onIntent(TextListUiIntent.GenerateWords) },
+                    onClick = { onIntent(TextListUiIntent.Dictionary.GenerateWords) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(56.dp),

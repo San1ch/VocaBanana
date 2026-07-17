@@ -2,12 +2,12 @@ package com.san1ch.vocabanana.feature.debug.presentation
 
 import android.util.Log
 import androidx.lifecycle.viewModelScope
+import com.san1ch.vocabanana.core.essentials.model.text.toBasicPreview
 import com.san1ch.vocabanana.core.essentials.model.word.FilterType
 import com.san1ch.vocabanana.core.essentials.model.word.WordQuery
 import com.san1ch.vocabanana.core.essentials.repositories.TextRepository
 import com.san1ch.vocabanana.core.essentials.repositories.WordRepository
 import com.san1ch.vocabanana.core.ui.BaseViewModel
-import com.san1ch.vocabanana.core.ui.model.toPreview
 import com.san1ch.vocabanana.core.ui.state.Resource
 import com.san1ch.vocabanana.core.ui.state.asResource
 import com.san1ch.vocabanana.feature.debug.domain.DebugAssistant
@@ -32,7 +32,7 @@ constructor(
     val textsState =
         textRepository
             .getTexts()
-            .map { list -> list.map { it.toPreview() } }
+            .map { list -> list.map { it.toBasicPreview() } }
             .asResource()
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), Resource.Loading)
 

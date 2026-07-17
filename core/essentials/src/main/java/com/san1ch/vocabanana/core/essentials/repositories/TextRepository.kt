@@ -1,26 +1,20 @@
 package com.san1ch.vocabanana.core.essentials.repositories
 
 import com.san1ch.vocabanana.core.essentials.model.text.TextDomain
+import com.san1ch.vocabanana.core.essentials.model.text.TextInfo
 import com.san1ch.vocabanana.core.essentials.model.text.TextWordCount
 import com.san1ch.vocabanana.core.essentials.model.word.FilterType
 import kotlinx.coroutines.flow.Flow
 
 interface TextRepository {
     fun getWordIdsByTextIds(textIds: FilterType<Int>): Flow<List<Int>>
-
+    fun getContentById(id: Int): Flow<List<String>>
     fun getTexts(): Flow<List<TextDomain>>
-
-    suspend fun getTextById(id: Int): Result<TextDomain>
-
-    fun saveText(text: TextDomain)
-
-    suspend fun deleteText(textId: Int)
-
-    suspend fun updateProgress(
-        id: Int,
-        position: Float,
-        time: Long,
-    )
+    suspend fun getTextsByIds(ids: List<Int>): List<TextDomain>
+    fun getTextsMetadata(): Flow<List<TextInfo>>
+    fun getTextMetadataByIdFlow(id: Int): Flow<TextInfo?>
+    fun saveTexts(texts: List<TextDomain>)
+    suspend fun deleteTexts(textIds: List<Int>)
 
     fun isTextNameUnique(name: String): Boolean
 

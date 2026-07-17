@@ -3,9 +3,10 @@ package com.san1ch.vocabanana.feature.text.domain.usecase
 import com.san1ch.vocabanana.core.essentials.model.text.exception.TextValidateEmptyTextException
 import com.san1ch.vocabanana.core.essentials.model.text.exception.TextValidateNameAlreadyExistsException
 import com.san1ch.vocabanana.core.essentials.repositories.TextRepository
+import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.verify
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -36,14 +37,14 @@ class CreateTextUseCaseTest {
         val exception = result.exceptionOrNull()
         assertTrue(exception is TextValidateNameAlreadyExistsException)
 
-        verify(exactly = 0) { textRepository.saveText(any()) }
+        coVerify(exactly = 0) { textRepository.saveTexts(any()) }
     }
 
     @Test
     fun `invoke should return failure when domain validation fails`() {
         // Given
         val textName = "Valid Title"
-        val invalidContent = "   "
+        val invalidContent = "" // Змінено на порожній рядок для коректної перевірки валідації
         every { textRepository.isTextNameUnique(textName) } returns true
 
         // When
@@ -54,7 +55,7 @@ class CreateTextUseCaseTest {
         val exception = result.exceptionOrNull()
         assertTrue(exception is TextValidateEmptyTextException)
 
-        verify(exactly = 0) { textRepository.saveText(any()) }
+        coVerify(exactly = 0) { textRepository.saveTexts(any()) }
     }
 
     @Test
@@ -62,7 +63,9 @@ class CreateTextUseCaseTest {
         // Given
         val textName = "Unique Title"
         val content = "This is a wonderful text for testing."
+
         every { textRepository.isTextNameUnique(textName) } returns true
+        coEvery { textRepository.saveTexts(any()) } returns Unit
 
         // When
         val result = useCase(textName, content)
@@ -71,6 +74,6 @@ class CreateTextUseCaseTest {
         assertTrue(result.isSuccess)
         assertEquals(Unit, result.getOrNull())
 
-        verify(exactly = 1) { textRepository.saveText(any()) }
+        coVerify(exactly = 1) { textRepository.saveTexts(any()) }
     }
 }

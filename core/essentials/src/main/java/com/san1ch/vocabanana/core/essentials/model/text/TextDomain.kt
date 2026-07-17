@@ -40,8 +40,6 @@ data class TextDomain private constructor(
             id: Int = 0,
             name: String,
             text: String,
-            lastScrollPosition: Float,
-            lastReadTime: Long,
         ): ValidateResult<TextDomain> {
             // Validate the name against length and character rules
             val validName =
@@ -63,8 +61,6 @@ data class TextDomain private constructor(
                     TextInfo(
                         id = id,
                         name = validName,
-                        lastScrollPosition = lastScrollPosition,
-                        lastReadTime = lastReadTime,
                     ),
                     content = validText,
                 ),
@@ -79,15 +75,11 @@ data class TextDomain private constructor(
             id: Int = 0,
             name: String,
             content: String,
-            lastScrollPosition: Float,
-            lastReadTime: Long,
         ): TextDomain = TextDomain(
             info =
             TextInfo(
                 id = id,
                 name = name,
-                lastScrollPosition = lastScrollPosition,
-                lastReadTime = lastReadTime,
             ),
             content = content,
         )

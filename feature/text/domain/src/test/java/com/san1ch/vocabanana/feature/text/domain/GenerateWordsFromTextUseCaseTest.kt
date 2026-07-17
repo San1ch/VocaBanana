@@ -6,6 +6,10 @@ import com.san1ch.vocabanana.core.essentials.model.word.WordDomain
 import com.san1ch.vocabanana.core.essentials.model.word.WordState
 import com.san1ch.vocabanana.core.essentials.repositories.TextRepository
 import com.san1ch.vocabanana.core.essentials.repositories.WordRepository
+import com.san1ch.vocabanana.feature.text.domain.usecase.GenerateWordsFromTextResult
+import com.san1ch.vocabanana.feature.text.domain.usecase.GenerateWordsFromTextService
+import com.san1ch.vocabanana.feature.text.domain.usecase.GenerateWordsFromTextState
+import com.san1ch.vocabanana.feature.text.domain.usecase.GenerateWordsFromTextUseCase
 import com.san1ch.vocabanana.feature.text.domain.usecase.TextProcessingService
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -42,7 +46,7 @@ class GenerateWordsFromTextUseCaseTest {
     @Test
     fun `invoke should emit TextNotFound error state when text repository fails`() = runBlocking {
         val textId = 1
-        coEvery { textRepository.getTextById(textId) } returns Result.failure(Exception("Not found"))
+        coEvery { textRepository.getTextsByIds(listOf(textId)) } returns emptyList()
 
         val states = useCase(textId).toList()
 
@@ -62,12 +66,10 @@ class GenerateWordsFromTextUseCaseTest {
             id = textId,
             name = "Title",
             content = rawText,
-            lastScrollPosition = 0f,
-            lastReadTime = 0L,
         )
         val frequencies = mapOf("hello" to 1, "world" to 1)
 
-        coEvery { textRepository.getTextById(textId) } returns Result.success(mockTextDomain)
+        coEvery { textRepository.getTextsByIds(listOf(textId)) } returns listOf(mockTextDomain)
         every { tps.prepareText(rawText) } returns frequencies
         coEvery { generateService.filterByUserVocab(any()) } returns emptyList()
         coEvery { wordRepository.getWordDomainsForWords(any()) } returns emptyMap()
@@ -89,8 +91,6 @@ class GenerateWordsFromTextUseCaseTest {
             id = textId,
             name = "Title",
             content = rawText,
-            lastScrollPosition = 0f,
-            lastReadTime = 0L,
         )
         val frequencies = mapOf("learn" to 1, "kotlin" to 1)
         val wordsToProcess = listOf("learn", "kotlin")
@@ -115,7 +115,7 @@ class GenerateWordsFromTextUseCaseTest {
         )
         val domainsToAdd = listOf(mockWordDomain1, mockWordDomain2)
 
-        coEvery { textRepository.getTextById(textId) } returns Result.success(mockTextDomain)
+        coEvery { textRepository.getTextsByIds(listOf(textId)) } returns listOf(mockTextDomain)
         every { tps.prepareText(rawText) } returns frequencies
         coEvery { generateService.filterByUserVocab(any()) } returns wordsToProcess
         coEvery { generateService.generateDomains(wordsToProcess) } returns domainsToAdd

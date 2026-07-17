@@ -1,8 +1,8 @@
 package com.san1ch.vocabanana.feature.text.presentation.mapper
 
 import com.san1ch.vocabanana.core.essentials.resources.featureproviders.TextStringProvider
-import com.san1ch.vocabanana.feature.text.domain.GenerateWordsFromTextResult
-import com.san1ch.vocabanana.feature.text.domain.GenerateWordsFromTextState
+import com.san1ch.vocabanana.feature.text.domain.usecase.GenerateWordsFromTextResult
+import com.san1ch.vocabanana.feature.text.domain.usecase.GenerateWordsFromTextState
 import com.san1ch.vocabanana.feature.text.presentation.model.GenerateWordsFromTextUiResult
 import com.san1ch.vocabanana.feature.text.presentation.model.GenerateWordsFromTextUiState
 import javax.inject.Inject

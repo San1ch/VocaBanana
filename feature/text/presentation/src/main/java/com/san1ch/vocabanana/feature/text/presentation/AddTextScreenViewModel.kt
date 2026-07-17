@@ -28,7 +28,7 @@ class AddTextScreenViewModel @Inject constructor(
     fun onIntent(intent: AddTextUiIntent) {
         when (intent) {
             is AddTextUiIntent.TitleChanged -> updateTitle(intent.title)
-            is AddTextUiIntent.ContentChanged -> updateContent(TextFieldValue(intent.content))
+            is AddTextUiIntent.ContentChanged -> updateContent(intent.content)
             is AddTextUiIntent.FileLoaded -> handleFileLoaded(intent.fileName, intent.content)
             is AddTextUiIntent.StartLoadingFile -> _uiState.update { it.copy(isLoadingFile = true) }
             is AddTextUiIntent.ClearClicked -> clearFields()
@@ -93,7 +93,7 @@ data class AddTextUiState(
 
 sealed class AddTextUiIntent {
     data class TitleChanged(val title: String) : AddTextUiIntent()
-    data class ContentChanged(val content: String) : AddTextUiIntent()
+    data class ContentChanged(val content: TextFieldValue) : AddTextUiIntent()
     object StartLoadingFile : AddTextUiIntent()
     data class FileLoaded(val fileName: String, val content: String) : AddTextUiIntent()
 

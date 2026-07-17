@@ -1,4 +1,4 @@
-package com.san1ch.vocabanana.feature.text.presentation.textlistscreenpages
+package com.san1ch.vocabanana.feature.text.presentation.textlist.textlistscreenpages
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
@@ -48,11 +48,12 @@ import androidx.compose.ui.platform.LocalViewConfiguration
 import androidx.compose.ui.platform.ViewConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.san1ch.vocabanana.core.essentials.model.TextAppearanceSettings
 import com.san1ch.vocabanana.core.ui.compose.AnimatedTitle
 import com.san1ch.vocabanana.core.ui.compose.DeleteConfirmDialog
 import com.san1ch.vocabanana.feature.text.presentation.R
-import com.san1ch.vocabanana.feature.text.presentation.TextListUiIntent
-import com.san1ch.vocabanana.feature.text.presentation.TextListUiState
+import com.san1ch.vocabanana.feature.text.presentation.textlist.TextListUiIntent
+import com.san1ch.vocabanana.feature.text.presentation.textlist.TextListUiState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.abs
@@ -92,11 +93,11 @@ fun TextListContent(
     }
 
     LaunchedEffect(pagerState.currentPage) {
-        onIntent(TextListUiIntent.PageChanged(pagerState.currentPage))
+        onIntent(TextListUiIntent.Navigation.PageChanged(pagerState.currentPage))
     }
 
     SetupSwipeLockEffects(state.isSwipeAttempted) {
-        onIntent(TextListUiIntent.ResetSwipeAttempt)
+        onIntent(TextListUiIntent.Reader.ResetSwipeAttempt)
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -120,9 +121,9 @@ fun TextListContent(
                                 currentPage = state.pagerPage,
                                 isLocked = state.isLocked,
                                 isSwipeAttempted = state.isSwipeAttempted,
-                                onLockClick = { onIntent(TextListUiIntent.ToggleLock) },
+                                onLockClick = { onIntent(TextListUiIntent.Reader.ToggleLock) },
                                 onPageSettings = {
-                                    onIntent(TextListUiIntent.ShowRenderSettings)
+                                    onIntent(TextListUiIntent.Navigation.ShowRenderSettings)
                                 },
                             )
                         },
@@ -131,7 +132,7 @@ fun TextListContent(
                 floatingActionButton = {
                     FabAnimated(
                         visible = state.pagerPage == 0,
-                        onClick = { onIntent(TextListUiIntent.NavigateToAddText) },
+                        onClick = { onIntent(TextListUiIntent.Navigation.NavigateToAddText) },
                     )
                 },
             ) { paddingValues ->
@@ -142,14 +143,14 @@ fun TextListContent(
                         .pointerInput(state.isLocked) {
                             if (state.isLocked) {
                                 detectDragGestures { change, dragAmount ->
-                                    if (abs(dragAmount.x) > (abs(dragAmount.y))) {
-                                        onIntent(TextListUiIntent.NotifySwipeBlocked)
+                                    if (abs(dragAmount.x) > abs(dragAmount.y)) {
+                                        onIntent(TextListUiIntent.Reader.NotifySwipeBlocked)
                                         change.consume()
                                     }
                                 }
                             }
                         },
-                    userScrollEnabled = state.selectedText != null && !state.isLocked,
+                    userScrollEnabled = !state.isLocked && (pagerState.currentPage == 0 || state.selectedText != null),
                 ) { pageIndex ->
                     when (TextListScreenPage.fromIndex(pageIndex)) {
                         TextListScreenPage.MyTexts ->
@@ -162,7 +163,7 @@ fun TextListContent(
                             )
 
                         TextListScreenPage.TextReader ->
-                            TextReaderPage(state.selectedText, state.readerSettings, onIntent)
+                            TextReaderPage(state.selectedText, state.textContent, onIntent)
 
                         TextListScreenPage.Settings ->
                             TextSettingsPage(state.generatingState, onIntent)
@@ -173,21 +174,21 @@ fun TextListContent(
 
         DeleteConfirmDialog(
             item = state.selectedTextIdToDelete,
-            onDismiss = { onIntent(TextListUiIntent.ClearTextIdToDelete) },
+            onDismiss = { onIntent(TextListUiIntent.Management.ClearTextIdToDelete) },
             onConfirm = { text ->
-                onIntent(TextListUiIntent.DeleteText)
+                onIntent(TextListUiIntent.Management.DeleteText)
             },
         )
 
         WordInfoPopup(
             state = state.wordInfoState,
-            onDismiss = { onIntent(TextListUiIntent.CloseWordInfo) },
-            onOxfordClick = { onIntent(TextListUiIntent.OxfordMoreInfo(it)) },
+            onDismiss = { onIntent(TextListUiIntent.Dictionary.CloseWordInfo) },
+            onOxfordClick = { onIntent(TextListUiIntent.Dictionary.OxfordMoreInfo(it)) },
         )
 
         ReaderSettingsPanel(
             visibility = state.showSettings,
-            settings = state.readerSettings,
+            settings = state.selectedText?.textAppearanceSettings ?: TextAppearanceSettings(),
             onIntent = onIntent,
         )
 
@@ -236,7 +237,10 @@ private fun AnimatedLockIcon(isLocked: Boolean, isSwipeAttempted: Boolean) {
         else -> MaterialTheme.colorScheme.onSurfaceVariant
     }
 
-    val animatedColor by animateColorAsState(targetValue = targetColor, label = stringResource(R.string.lockcolor))
+    val animatedColor by animateColorAsState(
+        targetValue = targetColor,
+        label = stringResource(R.string.lockcolor),
+    )
     val iconPainter =
         rememberVectorPainter(if (isLocked) Icons.Default.Lock else Icons.Default.LockOpen)
 
