@@ -1,4 +1,4 @@
-package com.san1ch.vocabanana.feature.text.domain
+package com.san1ch.vocabanana.feature.text.domain.usecase
 
 import com.san1ch.vocabanana.core.essentials.model.LexiconDto
 import com.san1ch.vocabanana.core.essentials.model.fold
@@ -11,7 +11,6 @@ import com.san1ch.vocabanana.core.essentials.repositories.LemmatizationRepositor
 import com.san1ch.vocabanana.core.essentials.repositories.LexiconRepository
 import com.san1ch.vocabanana.core.essentials.repositories.TextRepository
 import com.san1ch.vocabanana.core.essentials.repositories.WordRepository
-import com.san1ch.vocabanana.feature.text.domain.usecase.TextProcessingService
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
@@ -25,13 +24,11 @@ class GenerateWordsFromTextUseCase @Inject constructor(
     operator fun invoke(textId: Int): Flow<GenerateWordsFromTextState> = flow {
         // Step 1: Resource Gathering
         emit(GenerateWordsFromTextState.Loading.PreparingText)
-        val text: TextDomain = textRepository.getTextById(textId).fold(
-            onSuccess = { it },
-            onFailure = {
-                emit(GenerateWordsFromTextState.Error(GenerateWordsFromTextResult.Error.TextNotFound))
-                return@flow
-            },
-        )
+        val text: TextDomain = textRepository.getTextsByIds(listOf(textId)).firstOrNull() ?: run {
+            emit(GenerateWordsFromTextState.Error(GenerateWordsFromTextResult.Error.TextNotFound))
+            return@flow
+        }
+
         val wordFrequencies = tps.prepareText(text.content)
         val uniqueWords = wordFrequencies.keys.toList()
 

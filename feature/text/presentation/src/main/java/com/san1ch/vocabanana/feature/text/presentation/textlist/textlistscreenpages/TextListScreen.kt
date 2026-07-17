@@ -1,11 +1,11 @@
-package com.san1ch.vocabanana.feature.text.presentation.textlistscreenpages
+package com.san1ch.vocabanana.feature.text.presentation.textlist.textlistscreenpages
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.san1ch.vocabanana.core.ui.compose.CollectResource
-import com.san1ch.vocabanana.feature.text.presentation.TextListScreenViewModel
+import com.san1ch.vocabanana.feature.text.presentation.textlist.TextListScreenViewModel
 
 @Composable
 fun TextListScreen(
@@ -14,7 +14,6 @@ fun TextListScreen(
     CollectResource(viewModel.events)
 
     val state by viewModel.uiState.collectAsState()
-
     TextListContent(
         state = state,
         onIntent = viewModel::onIntent,

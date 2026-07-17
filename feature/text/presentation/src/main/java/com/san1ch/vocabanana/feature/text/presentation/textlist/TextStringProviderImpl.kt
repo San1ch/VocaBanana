@@ -1,7 +1,8 @@
-package com.san1ch.vocabanana.feature.text.presentation
+package com.san1ch.vocabanana.feature.text.presentation.textlist
 
 import android.content.Context
 import com.san1ch.vocabanana.core.essentials.resources.featureproviders.TextStringProvider
+import com.san1ch.vocabanana.feature.text.presentation.R
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 
@@ -39,7 +40,11 @@ class TextStringProviderImpl @Inject constructor(
     override val generateWordsTextNotFound: String
         get() = context.getString(R.string.gen_words_text_not_found)
 
-    override fun generateWordsNotAllNewWordsAdded(added: Int, total: Int): String = context.getString(R.string.gen_words_partial, added, total)
+    override fun generateWordsNotAllNewWordsAdded(added: Int, total: Int): String = context.getString(
+        R.string.gen_words_partial,
+        added,
+        total,
+    )
 
     override fun generateWordsUnknownError(message: String): String = context.getString(R.string.gen_words_unknown, message)
     override val generateWordsSuccess: String

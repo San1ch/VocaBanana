@@ -20,15 +20,12 @@ class TextDomainTest {
                 id = 1,
                 name = validName,
                 text = validText,
-                lastScrollPosition = 0f,
-                lastReadTime = 123456L,
             )
 
         // Then
         assertTrue(result is ValidateResult.Success)
         val textDomain = (result as ValidateResult.Success).value
 
-        // Перевіряємо, що trim() спрацював
         assertEquals("Clean Architecture Guide", textDomain.name)
         assertEquals("Composition over inheritance.", textDomain.content)
         assertEquals(1, textDomain.id)
@@ -45,8 +42,6 @@ class TextDomainTest {
                 id = 1,
                 name = emptyName,
                 text = "Valid content",
-                lastScrollPosition = 0f,
-                lastReadTime = 0L,
             )
 
         // Then
@@ -66,8 +61,6 @@ class TextDomainTest {
                 id = 1,
                 name = "Valid Title",
                 text = emptyText,
-                lastScrollPosition = 0f,
-                lastReadTime = 0L,
             )
 
         // Then
@@ -88,12 +81,9 @@ class TextDomainTest {
                 id = 42,
                 name = rawName,
                 content = rawContent,
-                lastScrollPosition = 0.5f,
-                lastReadTime = 999L,
             )
 
         // Then
-        // unsafeCreate не повинен робити trim() або валідувати дані
         assertEquals(rawName, textDomain.name)
         assertEquals(rawContent, textDomain.content)
         assertEquals(42, textDomain.id)

@@ -1,4 +1,4 @@
-package com.san1ch.vocabanana.feature.text.presentation.textlistscreenpages
+package com.san1ch.vocabanana.feature.text.presentation.textlist.textlistscreenpages
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -32,14 +33,16 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -59,62 +62,67 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.san1ch.vocabanana.core.essentials.model.ReaderSettings
-import com.san1ch.vocabanana.core.ui.model.TextUi
+import com.san1ch.vocabanana.core.essentials.model.TextAppearanceSettings
+import com.san1ch.vocabanana.feature.text.domain.model.TextListItem
 import com.san1ch.vocabanana.feature.text.presentation.R
-import com.san1ch.vocabanana.feature.text.presentation.TextListUiIntent
-import com.san1ch.vocabanana.feature.text.presentation.WordInfoState
 import com.san1ch.vocabanana.feature.text.presentation.data.TextToken
 import com.san1ch.vocabanana.feature.text.presentation.data.tokenize
+import com.san1ch.vocabanana.feature.text.presentation.textlist.TextListUiIntent
+import com.san1ch.vocabanana.feature.text.presentation.textlist.WordInfoState
 
 @Composable
 fun TextReaderPage(
-    text: TextUi?,
-    settings: ReaderSettings,
+    text: TextListItem?,
+    content: List<String>?,
     onIntent: (TextListUiIntent) -> Unit,
 ) {
     val listState = rememberLazyListState()
     var isScrollRestored by remember(text?.id) { mutableStateOf(false) }
 
-    LaunchedEffect(text?.id, text?.paragraphs?.size) {
-        if (text != null && text.paragraphs.isNotEmpty() && !isScrollRestored) {
-            val savedProgress = text.lastScrollPosition
-            if (savedProgress > 0f) {
-                val targetIndex = (savedProgress * text.paragraphs.size).toInt()
-                listState.scrollToItem(targetIndex.coerceIn(0, text.paragraphs.size - 1))
-            }
+    // Restore scroll position
+    LaunchedEffect(text?.lastScrollPosition, content?.size) {
+        if (text != null && content != null && content.isNotEmpty() && !isScrollRestored) {
+            val savedProgress = text.lastScrollPosition ?: 0f
+            val targetIndex = (savedProgress * content.size).toInt()
+            listState.scrollToItem(targetIndex.coerceIn(0, content.size - 1))
             isScrollRestored = true
         }
     }
 
+    // Save progress
     LaunchedEffect(listState.firstVisibleItemIndex) {
-        if (text != null && isScrollRestored) {
-            val totalItems = listState.layoutInfo.totalItemsCount
-            if (totalItems > 0) {
-                val progress = listState.firstVisibleItemIndex.toFloat() / totalItems
-                onIntent(TextListUiIntent.UpdateProgress(text.id, progress))
-            }
+        if (text != null && content != null && content.isNotEmpty() && isScrollRestored) {
+            val progress = listState.firstVisibleItemIndex.toFloat() / content.size
+            onIntent(TextListUiIntent.Reader.UpdateProgress(text.id, progress))
         }
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        if (text == null) {
+        if (text == null || content == null) {
             CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
         } else {
+            // Безпечне отримання налаштувань
+            val settings = text.textAppearanceSettings
+
             LazyColumn(
                 state = listState,
                 modifier = Modifier.fillMaxSize(),
-                // Apply dynamic padding from settings
                 contentPadding = PaddingValues(
                     horizontal = settings.horizontalPadding.dp,
                     vertical = 16.dp,
                 ),
             ) {
-                items(text.paragraphs) { paragraph ->
+                items(content) { paragraph ->
                     ParagraphViewItem(
                         paragraphText = paragraph,
                         settings = settings,
-                        onWordClick = { word -> onIntent(TextListUiIntent.WordClicked(word)) },
+                        onWordClick = { word ->
+                            onIntent(
+                                TextListUiIntent.Dictionary.WordClicked(
+                                    word,
+                                ),
+                            )
+                        },
                     )
                     Spacer(modifier = Modifier.height(settings.paragraphSpacing.dp))
                 }
@@ -126,7 +134,7 @@ fun TextReaderPage(
 @Composable
 fun ParagraphViewItem(
     paragraphText: String,
-    settings: ReaderSettings,
+    settings: TextAppearanceSettings,
     onWordClick: (String) -> Unit,
 ) {
     val textColor = MaterialTheme.colorScheme.onSurface
@@ -161,10 +169,9 @@ fun ParagraphViewItem(
 
     Text(
         text = annotatedString,
-        // Apply dynamic font size and line height
         style = MaterialTheme.typography.bodyLarge.copy(
             fontSize = settings.fontSize.sp,
-            lineHeight = (settings.fontSize * 1.5).sp,
+            lineHeight = (settings.fontSize + settings.lineSpacing).sp,
         ),
         modifier = Modifier.fillMaxWidth(),
     )
@@ -186,8 +193,9 @@ fun WordInfoPopup(
                 .fillMaxSize()
                 .background(Color.Black.copy(alpha = 0.4f))
                 .pointerInput(Unit) { detectTapGestures { onDismiss() } }
-                .padding(20.dp),
-            contentAlignment = Alignment.TopCenter,
+                .padding(20.dp)
+                .statusBarsPadding(),
+            contentAlignment = Alignment.Center,
         ) {
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -197,11 +205,24 @@ fun WordInfoPopup(
             ) {
                 Column(modifier = Modifier.padding(20.dp)) {
                     when (state) {
-                        is WordInfoState.Loading -> CircularProgressIndicator(Modifier.align(Alignment.CenterHorizontally).size(40.dp))
+                        is WordInfoState.Loading -> CircularProgressIndicator(
+                            Modifier
+                                .align(
+                                    Alignment.CenterHorizontally,
+                                )
+                                .size(40.dp),
+                        )
 
                         is WordInfoState.NotFound -> {
-                            Text("Not found", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.error)
-                            Text("The word '${state.word}' is missing from your dictionary.", style = MaterialTheme.typography.bodyMedium)
+                            Text(
+                                "Not found",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.error,
+                            )
+                            Text(
+                                "The word '${state.word}' is missing from your dictionary.",
+                                style = MaterialTheme.typography.bodyMedium,
+                            )
                             ActionSection(state.word, onOxfordClick)
                         }
 
@@ -213,7 +234,11 @@ fun WordInfoPopup(
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
                                 Column {
-                                    Text(text = state.word.lemma, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                                    Text(
+                                        text = state.word.lemma,
+                                        style = MaterialTheme.typography.headlineSmall,
+                                        fontWeight = FontWeight.Bold,
+                                    )
                                     Text(
                                         text = "${state.word.partOfSpeech.uppercase()} • ${state.word.count} uses",
                                         style = MaterialTheme.typography.labelMedium,
@@ -222,9 +247,15 @@ fun WordInfoPopup(
                                 }
                                 // Subtle badge
                                 Text(
-                                    text = state.word.state.name.lowercase().replaceFirstChar { it.uppercase() },
+                                    text = state.word.state.name.lowercase()
+                                        .replaceFirstChar { it.uppercase() },
                                     style = MaterialTheme.typography.labelSmall,
-                                    modifier = Modifier.background(MaterialTheme.colorScheme.primaryContainer, CircleShape).padding(horizontal = 10.dp, vertical = 4.dp),
+                                    modifier = Modifier
+                                        .background(
+                                            MaterialTheme.colorScheme.primaryContainer,
+                                            CircleShape,
+                                        )
+                                        .padding(horizontal = 10.dp, vertical = 4.dp),
                                 )
                             }
 
@@ -238,6 +269,7 @@ fun WordInfoPopup(
 
                             ActionSection(state.word.lemma, onOxfordClick)
                         }
+
                         else -> {}
                     }
                 }
@@ -267,86 +299,52 @@ private fun ActionSection(word: String, onOxfordClick: (String) -> Unit) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReaderSettingsPanel(
     visibility: Boolean,
-    settings: ReaderSettings,
+    settings: TextAppearanceSettings,
     onIntent: (TextListUiIntent) -> Unit,
 ) {
-    AnimatedVisibility(
-        visible = visibility,
-        enter = slideInVertically(initialOffsetY = { -it }) + fadeIn(),
-        exit = slideOutVertically(targetOffsetY = { -it }) + fadeOut(),
-    ) {
-        Surface(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 8.dp),
-            shape = RoundedCornerShape(28.dp),
-            // Use a higher elevation or a specific container color for better contrast
-            color = MaterialTheme.colorScheme.secondaryContainer,
-            tonalElevation = 8.dp,
-            shadowElevation = 12.dp,
+    if (visibility) {
+        ModalBottomSheet(
+            onDismissRequest = { onIntent(TextListUiIntent.Navigation.CloseReaderSettings) },
+            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+            containerColor = MaterialTheme.colorScheme.surface,
+            dragHandle = {
+                Box(
+                    modifier = Modifier
+                        .padding(top = 12.dp)
+                        .width(32.dp)
+                        .height(4.dp)
+                        .background(MaterialTheme.colorScheme.outlineVariant, CircleShape),
+                )
+            },
         ) {
             Column(
-                modifier = Modifier.padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp), // Tighter vertical spacing
+                modifier = Modifier
+                    .padding(horizontal = 20.dp)
+                    .padding(bottom = 32.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 Text(
-                    text = stringResource(R.string.appearance),
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onSecondaryContainer,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(start = 4.dp, bottom = 4.dp),
+                    text = "Reader Settings",
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.padding(vertical = 8.dp),
                 )
 
                 SettingRow(stringResource(R.string.font_size), settings.fontSize) {
-                    onIntent(
-                        TextListUiIntent.ChangePageSettings(
-                            settings.copy(
-                                fontSize = it.coerceIn(
-                                    12,
-                                    36,
-                                ),
-                            ),
-                        ),
-                    )
+                    onIntent(TextListUiIntent.Reader.ChangePageSettings(settings.copy(fontSize = it.coerceIn(12, 36))))
                 }
-
-                SettingRow(stringResource(R.string.line_spacing), settings.paragraphSpacing) {
-                    onIntent(
-                        TextListUiIntent.ChangePageSettings(
-                            settings.copy(
-                                paragraphSpacing = it.coerceIn(
-                                    0,
-                                    64,
-                                ),
-                            ),
-                        ),
-                    )
+                SettingRow(stringResource(R.string.line_spacing), settings.lineSpacing) {
+                    onIntent(TextListUiIntent.Reader.ChangePageSettings(settings.copy(lineSpacing = it.coerceIn(0, 24))))
                 }
-
+                SettingRow(stringResource(R.string.paragraph_spacing), settings.paragraphSpacing) {
+                    onIntent(TextListUiIntent.Reader.ChangePageSettings(settings.copy(paragraphSpacing = it.coerceIn(0, 64))))
+                }
                 SettingRow(stringResource(R.string.side_margins), settings.horizontalPadding) {
-                    onIntent(
-                        TextListUiIntent.ChangePageSettings(
-                            settings.copy(
-                                horizontalPadding = it.coerceIn(
-                                    0,
-                                    48,
-                                ),
-                            ),
-                        ),
-                    )
-                }
-
-                TextButton(
-                    onClick = { onIntent(TextListUiIntent.CloseReaderSettings) },
-                    modifier = Modifier
-                        .align(Alignment.End)
-                        .height(32.dp),
-                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.onSecondaryContainer),
-                ) {
-                    Text("Done", style = MaterialTheme.typography.labelLarge)
+                    onIntent(TextListUiIntent.Reader.ChangePageSettings(settings.copy(horizontalPadding = it.coerceIn(0, 48))))
                 }
             }
         }
@@ -362,59 +360,47 @@ private fun SettingRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(
-                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.3f), // Subtle contrast
-                shape = RoundedCornerShape(16.dp),
-            )
-            .padding(horizontal = 12.dp, vertical = 8.dp),
+            .padding(vertical = 4.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
             text = label,
             style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.SemiBold,
-            color = MaterialTheme.colorScheme.onSecondaryContainer,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
 
-        // Compact Control Block
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             FilledIconButton(
                 onClick = { onValueChange(value - 2) },
-                modifier = Modifier.size(32.dp),
+                modifier = Modifier.size(28.dp),
                 colors = IconButtonDefaults.filledIconButtonColors(
-                    containerColor = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.1f),
-                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    contentColor = MaterialTheme.colorScheme.onSurface,
                 ),
             ) {
-                Icon(
-                    Icons.Default.Remove,
-                    contentDescription = null,
-                    modifier = Modifier.size(16.dp),
-                )
+                Icon(Icons.Default.Remove, null, modifier = Modifier.size(12.dp))
             }
 
-            // Value label stays right between the buttons
             Text(
                 text = value.toString(),
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSecondaryContainer,
-                modifier = Modifier.padding(horizontal = 8.dp),
+                style = MaterialTheme.typography.labelLarge,
+                modifier = Modifier.width(24.dp),
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
             )
 
             FilledIconButton(
                 onClick = { onValueChange(value + 2) },
-                modifier = Modifier.size(32.dp),
+                modifier = Modifier.size(28.dp),
                 colors = IconButtonDefaults.filledIconButtonColors(
-                    containerColor = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.1f),
-                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    contentColor = MaterialTheme.colorScheme.onSurface,
                 ),
             ) {
-                Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(16.dp))
+                Icon(Icons.Default.Add, null, modifier = Modifier.size(12.dp))
             }
         }
     }

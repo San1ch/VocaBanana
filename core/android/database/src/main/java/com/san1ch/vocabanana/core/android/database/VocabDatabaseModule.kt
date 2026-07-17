@@ -2,6 +2,7 @@ package com.san1ch.vocabanana.core.android.database
 
 import android.content.Context
 import androidx.room.Room
+import com.san1ch.vocabanana.core.android.database.feature.text.ReadingStateDao
 import com.san1ch.vocabanana.core.android.database.language.lemmatiazation.LemmaDao
 import com.san1ch.vocabanana.core.android.database.language.lemmatiazation.LemmatizationDatabase
 import com.san1ch.vocabanana.core.android.database.language.lexicon.LexiconDatabase
@@ -66,5 +67,8 @@ object VocabDatabaseModule {
 
     @Provides
     fun provideTextWordCountDao(appDatabase: AppDatabase): TextWordCountDao = appDatabase.textWordCountDao()
+
+    @Provides
+    fun provideReadingStateDao(appDatabase: AppDatabase): ReadingStateDao = appDatabase.readingStateDao()
 // [PROVIDES_END]
 }

@@ -15,8 +15,6 @@ import com.san1ch.vocabanana.core.essentials.model.text.exception.TextValidateTo
 data class TextInfo(
     val id: Int,
     val name: String,
-    val lastScrollPosition: Float,
-    val lastReadTime: Long,
 )
 
 /**
@@ -25,7 +23,7 @@ data class TextInfo(
  */
 @ConsistentCopyVisibility
 data class TextDomain private constructor(
-    val info: TextInfo,
+    private val info: TextInfo,
     val content: String,
 ) {
     // Helper properties for easy access to nested metadata
@@ -42,8 +40,6 @@ data class TextDomain private constructor(
             id: Int = 0,
             name: String,
             text: String,
-            lastScrollPosition: Float,
-            lastReadTime: Long,
         ): ValidateResult<TextDomain> {
             // Validate the name against length and character rules
             val validName =
@@ -65,8 +61,6 @@ data class TextDomain private constructor(
                     TextInfo(
                         id = id,
                         name = validName,
-                        lastScrollPosition = lastScrollPosition,
-                        lastReadTime = lastReadTime,
                     ),
                     content = validText,
                 ),
@@ -81,15 +75,11 @@ data class TextDomain private constructor(
             id: Int = 0,
             name: String,
             content: String,
-            lastScrollPosition: Float,
-            lastReadTime: Long,
         ): TextDomain = TextDomain(
             info =
             TextInfo(
                 id = id,
                 name = name,
-                lastScrollPosition = lastScrollPosition,
-                lastReadTime = lastReadTime,
             ),
             content = content,
         )
