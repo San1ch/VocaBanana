@@ -13,5 +13,5 @@ data class ReadingState(
     val paragraphSpacing: Int = 16,
     val horizontalPadding: Int = 16,
 
-    val activeWordStates: Set<WordState> = emptySet()
+    val activeWordStates: Set<WordState> = emptySet(),
 )

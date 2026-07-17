@@ -14,6 +14,6 @@ abstract class ReadingStateModule {
     @Binds
     @Singleton
     abstract fun bindReadingStateRepository(
-        readingStateRepositoryImpl: ReadingStateRepositoryImpl
+        readingStateRepositoryImpl: ReadingStateRepositoryImpl,
     ): ReadingStateRepository
 }

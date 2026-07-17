@@ -4,7 +4,6 @@ import com.san1ch.vocabanana.core.android.database.text.local.TextDao
 import com.san1ch.vocabanana.core.android.database.text.local.TextEntity
 import com.san1ch.vocabanana.core.android.database.text.local.TextWordCountDao
 import com.san1ch.vocabanana.core.android.database.text.local.toEntity
-import com.san1ch.vocabanana.core.android.database.text.toDomain
 import com.san1ch.vocabanana.core.android.database.text.toDomainUnsafe
 import com.san1ch.vocabanana.core.essentials.extentionfuncs.toParagraphs
 import com.san1ch.vocabanana.core.essentials.model.text.TextDomain
@@ -14,7 +13,6 @@ import com.san1ch.vocabanana.core.essentials.model.word.FilterType
 import com.san1ch.vocabanana.core.essentials.repositories.FileStorage
 import com.san1ch.vocabanana.core.essentials.repositories.TextRepository
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
@@ -47,22 +45,18 @@ class TextRepositoryImpl @Inject constructor(
             )
     }
 
-    override fun getContentById(id: Int): Flow<List<String>> {
-        return textDao.getTextByIdFlow(id).map { entity ->
-            entity?.let {
-                fileStorage.loadText(it.contentPath).toParagraphs()
-            } ?: emptyList()
-        }
+    override fun getContentById(id: Int): Flow<List<String>> = textDao.getTextByIdFlow(id).map { entity ->
+        entity?.let {
+            fileStorage.loadText(it.contentPath).toParagraphs()
+        } ?: emptyList()
     }
 
     override fun getTextsMetadata(): Flow<List<TextInfo>> = textDao.getTexts().map { list ->
         list.map { entity -> TextInfo(entity.id, entity.name) }
     }
 
-    override fun getTextMetadataByIdFlow(id: Int): Flow<TextInfo?> {
-        return textDao.getTextByIdFlow(id).map { entity ->
-            entity?.let { TextInfo(it.id, it.name) }
-        }
+    override fun getTextMetadataByIdFlow(id: Int): Flow<TextInfo?> = textDao.getTextByIdFlow(id).map { entity ->
+        entity?.let { TextInfo(it.id, it.name) }
     }
 
     override fun getTexts(): Flow<List<TextDomain>> = textDao.getTexts().map { list ->

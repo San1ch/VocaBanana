@@ -13,6 +13,5 @@ data class TextListItem(
 
     val textAppearanceSettings: TextAppearanceSettings,
 
-    val activeWordStates: Set<WordState>
+    val activeWordStates: Set<WordState>,
 )
-

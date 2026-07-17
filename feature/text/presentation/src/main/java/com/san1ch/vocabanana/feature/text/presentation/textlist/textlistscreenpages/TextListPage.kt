@@ -1,4 +1,4 @@
-package com.san1ch.vocabanana.feature.text.presentation.textlistscreenpages
+package com.san1ch.vocabanana.feature.text.presentation.textlist.textlistscreenpages
 
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.BorderStroke
@@ -39,7 +39,7 @@ import androidx.compose.ui.unit.dp
 import com.san1ch.vocabanana.core.ui.toFormattedDate
 import com.san1ch.vocabanana.feature.text.domain.model.TextListPreview
 import com.san1ch.vocabanana.feature.text.presentation.R
-import com.san1ch.vocabanana.feature.text.presentation.TextListUiIntent
+import com.san1ch.vocabanana.feature.text.presentation.textlist.TextListUiIntent
 
 @Composable
 fun TextListPage(
@@ -61,11 +61,11 @@ fun TextListPage(
                 TextLazyItem(
                     item = item,
                     onClick = {
-                        onIntent(TextListUiIntent.SelectText(item.id))
+                        onIntent(TextListUiIntent.Reader.SelectText(item.id))
                         onNavigateToReader()
                     },
                     onDelete = {
-                        onIntent(TextListUiIntent.SelectTextToDelete(item.id))
+                        onIntent(TextListUiIntent.Management.SelectTextToDelete(item.id))
                     },
                 )
             }

@@ -14,9 +14,9 @@ import com.san1ch.vocabanana.feature.text.domain.model.ReadingState
             entity = TextEntity::class,
             parentColumns = ["id"],
             childColumns = ["textId"],
-            onDelete = ForeignKey.CASCADE
-        )
-    ]
+            onDelete = ForeignKey.CASCADE,
+        ),
+    ],
 )
 data class ReadingStateEntity(
     @PrimaryKey val textId: Int,
@@ -29,10 +29,8 @@ data class ReadingStateEntity(
     val paragraphSpacing: Int,
     val horizontalPadding: Int,
 
-    val activeWordStates: Set<WordState>
+    val activeWordStates: Set<WordState>,
 )
-
-
 
 fun ReadingStateEntity.toDomain() = ReadingState(
     textId = textId,
@@ -42,9 +40,8 @@ fun ReadingStateEntity.toDomain() = ReadingState(
     lineSpacing = lineSpacing,
     paragraphSpacing = paragraphSpacing,
     horizontalPadding = horizontalPadding,
-    activeWordStates = activeWordStates
+    activeWordStates = activeWordStates,
 )
-
 
 fun ReadingState.toEntity() = ReadingStateEntity(
     textId = textId,
@@ -54,5 +51,5 @@ fun ReadingState.toEntity() = ReadingStateEntity(
     lineSpacing = lineSpacing,
     paragraphSpacing = paragraphSpacing,
     horizontalPadding = horizontalPadding,
-    activeWordStates = activeWordStates
+    activeWordStates = activeWordStates,
 )

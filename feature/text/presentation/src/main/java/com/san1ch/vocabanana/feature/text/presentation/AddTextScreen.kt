@@ -94,7 +94,7 @@ fun AddTextScreen(
             if (!pastedText.isNullOrBlank()) {
                 val newTextFieldValue = TextFieldValue(
                     text = pastedText,
-                    selection = TextRange(pastedText.length)
+                    selection = TextRange(pastedText.length),
                 )
                 viewModel.onIntent(AddTextUiIntent.ContentChanged(newTextFieldValue))
             }

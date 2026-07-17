@@ -11,23 +11,21 @@ import javax.inject.Inject
 
 class GetTextPreviewsUseCase @Inject constructor(
     private val readingStateRepository: ReadingStateRepository,
-    private val textRepository: TextRepository
+    private val textRepository: TextRepository,
 ) {
-    operator fun invoke(): Flow<List<TextListPreview>> {
-        return combine(
-            textRepository.getTextsMetadata(),
-            readingStateRepository.getAllReadingStateFlow
-        ) { allMetadata, readingStates ->
+    operator fun invoke(): Flow<List<TextListPreview>> = combine(
+        textRepository.getTextsMetadata(),
+        readingStateRepository.getAllReadingStateFlow,
+    ) { allMetadata, readingStates ->
 
-            val stateMap = readingStates.associateBy { it.textId }
+        val stateMap = readingStates.associateBy { it.textId }
 
-            allMetadata.map { meta ->
-                val state = stateMap[meta.id]
-                TextListPreview(
-                    textPreview = TextPreview(meta.id, meta.name),
-                    lastReadTime = state?.lastReadTime ?: 0L
-                )
-            }
+        allMetadata.map { meta ->
+            val state = stateMap[meta.id]
+            TextListPreview(
+                textPreview = TextPreview(meta.id, meta.name),
+                lastReadTime = state?.lastReadTime ?: 0L,
+            )
         }
     }
 }

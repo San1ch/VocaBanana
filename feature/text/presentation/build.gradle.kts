@@ -22,6 +22,7 @@ dependencies {
 
     implementation(libs.google.hilt)
     implementation(libs.androidx.hilt.navigation.compose)
+    implementation(libs.androidx.foundation.layout)
     ksp(libs.google.hilt.compiler)
 
     implementation(libs.androidx.material.icons.extended)

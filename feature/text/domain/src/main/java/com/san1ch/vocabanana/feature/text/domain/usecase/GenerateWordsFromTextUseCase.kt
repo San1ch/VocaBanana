@@ -28,7 +28,7 @@ class GenerateWordsFromTextUseCase @Inject constructor(
             emit(GenerateWordsFromTextState.Error(GenerateWordsFromTextResult.Error.TextNotFound))
             return@flow
         }
-        
+
         val wordFrequencies = tps.prepareText(text.content)
         val uniqueWords = wordFrequencies.keys.toList()
 

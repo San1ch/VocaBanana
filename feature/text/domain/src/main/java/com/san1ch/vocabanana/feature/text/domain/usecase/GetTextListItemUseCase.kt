@@ -7,12 +7,11 @@ import com.san1ch.vocabanana.feature.text.domain.model.TextListItem
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
 class GetTextListItemUseCase @Inject constructor(
     private val textRepository: TextRepository,
-    private val readingStateRepository: ReadingStateRepository
+    private val readingStateRepository: ReadingStateRepository,
 ) {
     operator fun invoke(textId: Int): Flow<TextListItem> {
         val metadataFlow = textRepository.getTextMetadataByIdFlow(textId)
@@ -30,11 +29,10 @@ class GetTextListItemUseCase @Inject constructor(
                     fontSize = state.fontSize,
                     lineSpacing = state.lineSpacing,
                     paragraphSpacing = state.paragraphSpacing,
-                    horizontalPadding = state.horizontalPadding
+                    horizontalPadding = state.horizontalPadding,
                 ),
-                activeWordStates = state.activeWordStates
+                activeWordStates = state.activeWordStates,
             )
         }.distinctUntilChanged()
     }
 }
-

@@ -6,13 +6,12 @@ import com.san1ch.vocabanana.core.essentials.model.word.toWordState
 
 class Converters {
     @TypeConverter
-    fun fromWordStateSet(value: Set<WordState>): String {
-        return value.joinToString(",") { it.value.toString() }
-    }
+    fun fromWordStateSet(value: Set<WordState>): String = value.joinToString(",") { it.value.toString() }
 
     @TypeConverter
-    fun toWordStateSet(value: String): Set<WordState> {
-        return if (value.isEmpty()) emptySet()
-        else value.split(",").map { it.toInt().toWordState() }.toSet()
+    fun toWordStateSet(value: String): Set<WordState> = if (value.isEmpty()) {
+        emptySet()
+    } else {
+        value.split(",").map { it.toInt().toWordState() }.toSet()
     }
 }

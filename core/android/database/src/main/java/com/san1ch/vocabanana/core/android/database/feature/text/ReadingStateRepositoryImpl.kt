@@ -7,12 +7,10 @@ import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class ReadingStateRepositoryImpl @Inject constructor(
-    private val readingStateDao: ReadingStateDao
+    private val readingStateDao: ReadingStateDao,
 ) : ReadingStateRepository {
-    override fun getReadingStateByIdFlow(id: Int): Flow<ReadingState> {
-        return readingStateDao.getReadingStateByIdFlow(id).map { entity ->
-            entity?.toDomain() ?: ReadingState(id)
-        }
+    override fun getReadingStateByIdFlow(id: Int): Flow<ReadingState> = readingStateDao.getReadingStateByIdFlow(id).map { entity ->
+        entity?.toDomain() ?: ReadingState(id)
     }
 
     override val getAllReadingStateFlow: Flow<List<ReadingState>> get() = readingStateDao.getAllReadingStateFlow().map { list ->
@@ -25,12 +23,10 @@ class ReadingStateRepositoryImpl @Inject constructor(
 
     override suspend fun updateReadingState(
         id: Int,
-        transform: (ReadingState) -> ReadingState
+        transform: (ReadingState) -> ReadingState,
     ) {
-        val currentState = readingStateDao.getReadingStateById(id) ?: return
+        val currentState = readingStateDao.getReadingStateById(id) ?: ReadingState(id).toEntity()
         val newState = transform(currentState.toDomain())
         readingStateDao.insertReadingState(newState.toEntity())
     }
-
-
 }

@@ -1,7 +1,6 @@
 package com.san1ch.vocabanana.core.essentials.repositories
 
 import com.san1ch.vocabanana.core.essentials.model.AppThemeMode
-import com.san1ch.vocabanana.core.essentials.model.TextAppearanceSettings
 import kotlinx.coroutines.flow.Flow
 
 interface SettingsRepository {

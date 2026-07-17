@@ -4,7 +4,6 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import com.san1ch.vocabanana.core.android.database.text.TextMetadataProjection
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -14,6 +13,7 @@ interface TextDao {
 
     @Query("SELECT * FROM texts WHERE id = :id")
     fun getTextByIdFlow(id: Int): Flow<TextEntity?>
+
     @Query("SELECT * FROM texts WHERE id IN (:ids)")
     suspend fun getTextsByIds(ids: List<Int>): List<TextEntity>
 

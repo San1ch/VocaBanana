@@ -1,6 +1,5 @@
 package com.san1ch.vocabanana.feature.text.domain
 
-import com.san1ch.vocabanana.core.essentials.model.TextAppearanceSettings
 import com.san1ch.vocabanana.feature.text.domain.model.ReadingState
 import kotlinx.coroutines.flow.Flow
 
@@ -11,6 +10,6 @@ interface ReadingStateRepository {
     suspend fun setReadingState(readingState: ReadingState)
     suspend fun updateReadingState(
         id: Int,
-        transform: (ReadingState) -> ReadingState
+        transform: (ReadingState) -> ReadingState,
     )
 }

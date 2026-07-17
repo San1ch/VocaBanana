@@ -20,5 +20,4 @@ interface ReadingStateDao {
 
     @Query("SELECT * FROM reading_states")
     fun getAllReadingStateFlow(): Flow<List<ReadingStateEntity>>
-
 }

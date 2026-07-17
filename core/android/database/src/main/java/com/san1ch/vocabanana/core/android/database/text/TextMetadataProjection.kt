@@ -4,15 +4,15 @@ import com.san1ch.vocabanana.core.essentials.model.text.TextInfo
 
 data class TextMetadataProjection(
     val id: Int,
-    val name: String
+    val name: String,
 )
 
 fun TextMetadataProjection.toDomain(): TextInfo = TextInfo(
     id = id,
-    name = name
+    name = name,
 )
 
 fun TextInfo.toEntity(): TextMetadataProjection = TextMetadataProjection(
     id = id,
-    name = name
+    name = name,
 )
