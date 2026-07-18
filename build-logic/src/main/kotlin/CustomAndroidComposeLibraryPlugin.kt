@@ -42,6 +42,9 @@ class CustomAndroidComposeLibraryPlugin : Plugin<Project> {
                             "proguard-rules.pro"
                         )
                     }
+                    create("fastRelease") {
+                        initWith(getByName("release"))
+                    }
                 }
             }
 

@@ -29,6 +29,9 @@ class CustomAndroidLibraryPlugin : Plugin<Project> {
                             "proguard-rules.pro"
                         )
                     }
+                    create("fastRelease") {
+                        initWith(getByName("release"))
+                    }
                 }
 
                 buildFeatures {

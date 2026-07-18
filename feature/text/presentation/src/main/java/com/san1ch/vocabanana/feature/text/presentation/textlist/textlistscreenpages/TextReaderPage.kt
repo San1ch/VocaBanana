@@ -25,38 +25,24 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilledIconButton
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextLinkStyles
@@ -65,40 +51,42 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.PopupProperties
 import com.san1ch.vocabanana.core.essentials.model.TextAppearanceSettings
 import com.san1ch.vocabanana.core.essentials.model.word.WordState
+import com.san1ch.vocabanana.core.ui.theme.LocalDarkTheme
 import com.san1ch.vocabanana.feature.text.domain.model.TextListItem
-import com.san1ch.vocabanana.feature.text.presentation.R
 import com.san1ch.vocabanana.feature.text.presentation.data.TextToken
-import com.san1ch.vocabanana.feature.text.presentation.data.tokenize
+import com.san1ch.vocabanana.feature.text.presentation.data.toReadingStateColor
 import com.san1ch.vocabanana.feature.text.presentation.textlist.TextListUiIntent
 import com.san1ch.vocabanana.feature.text.presentation.textlist.WordInfoState
 
 @Composable
 fun TextReaderPage(
     text: TextListItem?,
-    content: List<String>?,
+    content: List<List<TextToken>>?,
     onIntent: (TextListUiIntent) -> Unit,
+    currentActiveState: Set<WordState>,
 ) {
     val listState = rememberLazyListState()
-    var isScrollRestored by remember(text?.id) { mutableStateOf(false) }
 
     // Restore scroll position
-    LaunchedEffect(text?.lastScrollPosition, content?.size) {
-        if (text != null && content != null && content.isNotEmpty() && !isScrollRestored) {
+    LaunchedEffect(text?.id) {
+        if (text != null && content != null && content.isNotEmpty()) {
             val savedProgress = text.lastScrollPosition ?: 0f
             val targetIndex = (savedProgress * content.size).toInt()
             listState.scrollToItem(targetIndex.coerceIn(0, content.size - 1))
-            isScrollRestored = true
         }
     }
 
     // Save progress
     LaunchedEffect(listState.firstVisibleItemIndex) {
-        if (text != null && content != null && content.isNotEmpty() && isScrollRestored) {
+        if (text != null && content != null && content.isNotEmpty()) {
             val progress = listState.firstVisibleItemIndex.toFloat() / content.size
-            onIntent(TextListUiIntent.Reader.UpdateProgress(text.id, progress))
+
+            val currentProgress = text.lastScrollPosition ?: 0f
+            if (kotlin.math.abs(progress - currentProgress) > 0.001f) {
+                onIntent(TextListUiIntent.Reader.UpdateProgress(text.id, progress))
+            }
         }
     }
 
@@ -127,6 +115,7 @@ fun TextReaderPage(
                                 ),
                             )
                         },
+                        currentActiveState = currentActiveState,
                     )
                     Spacer(modifier = Modifier.height(settings.paragraphSpacing.dp))
                 }
@@ -137,28 +126,30 @@ fun TextReaderPage(
 
 @Composable
 fun ParagraphViewItem(
-    paragraphText: String,
+    paragraphText: List<TextToken>,
     settings: TextAppearanceSettings,
     onWordClick: (String) -> Unit,
+    currentActiveState: Set<WordState>,
 ) {
     val textColor = MaterialTheme.colorScheme.onSurface
-    val highlightColor = MaterialTheme.colorScheme.primary
-
-    val annotatedString = remember(paragraphText, textColor, highlightColor) {
+    val isLightTheme = !LocalDarkTheme.current
+    println("isLight: $isLightTheme")
+    val annotatedString = remember(currentActiveState, paragraphText, textColor, isLightTheme) {
         buildAnnotatedString {
-            val tokens = paragraphText.tokenize()
-            tokens.forEach { token ->
+            paragraphText.forEach { token ->
                 when (token) {
                     is TextToken.Word -> {
+                        val isStateActive = currentActiveState.contains(token.state)
+                        val stateColor = if (isStateActive) {
+                            token.state.toReadingStateColor(isLightTheme, textColor)
+                        } else {
+                            textColor
+                        }
                         withLink(
                             LinkAnnotation.Clickable(
                                 tag = "WORD",
                                 styles = TextLinkStyles(
-                                    style = SpanStyle(color = textColor),
-                                    pressedStyle = SpanStyle(
-                                        color = highlightColor,
-                                        fontWeight = FontWeight.Bold,
-                                    ),
+                                    style = SpanStyle(color = stateColor, fontWeight = if (isStateActive) FontWeight.Bold else null),
                                 ),
                                 linkInteractionListener = { onWordClick(token.text) },
                             ),
@@ -299,171 +290,6 @@ private fun ActionSection(word: String, onOxfordClick: (String) -> Unit) {
                 contentDescription = null,
                 modifier = Modifier.size(16.dp),
             )
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun ReaderSettingsPanel(
-    visibility: Boolean,
-    settings: TextAppearanceSettings,
-    onIntent: (TextListUiIntent) -> Unit,
-) {
-    if (visibility) {
-        ModalBottomSheet(
-            onDismissRequest = { onIntent(TextListUiIntent.Navigation.CloseReaderSettings) },
-            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-            containerColor = MaterialTheme.colorScheme.surface,
-            dragHandle = {
-                Box(
-                    modifier = Modifier
-                        .padding(top = 12.dp)
-                        .width(32.dp)
-                        .height(4.dp)
-                        .background(MaterialTheme.colorScheme.outlineVariant, CircleShape),
-                )
-            },
-        ) {
-            Column(
-                modifier = Modifier
-                    .padding(horizontal = 20.dp)
-                    .padding(bottom = 32.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                Text(
-                    text = "Reader Settings",
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.padding(vertical = 8.dp),
-                )
-
-                SettingRow(stringResource(R.string.font_size), settings.fontSize) {
-                    onIntent(TextListUiIntent.Reader.ChangePageSettings(settings.copy(fontSize = it.coerceIn(12, 36))))
-                }
-                SettingRow(stringResource(R.string.line_spacing), settings.lineSpacing) {
-                    onIntent(TextListUiIntent.Reader.ChangePageSettings(settings.copy(lineSpacing = it.coerceIn(0, 24))))
-                }
-                SettingRow(stringResource(R.string.paragraph_spacing), settings.paragraphSpacing) {
-                    onIntent(TextListUiIntent.Reader.ChangePageSettings(settings.copy(paragraphSpacing = it.coerceIn(0, 64))))
-                }
-                SettingRow(stringResource(R.string.side_margins), settings.horizontalPadding) {
-                    onIntent(TextListUiIntent.Reader.ChangePageSettings(settings.copy(horizontalPadding = it.coerceIn(0, 48))))
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun SettingRow(
-    label: String,
-    value: Int,
-    onValueChange: (Int) -> Unit,
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            FilledIconButton(
-                onClick = { onValueChange(value - 2) },
-                modifier = Modifier.size(28.dp),
-                colors = IconButtonDefaults.filledIconButtonColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                    contentColor = MaterialTheme.colorScheme.onSurface,
-                ),
-            ) {
-                Icon(Icons.Default.Remove, null, modifier = Modifier.size(12.dp))
-            }
-
-            Text(
-                text = value.toString(),
-                style = MaterialTheme.typography.labelLarge,
-                modifier = Modifier.width(24.dp),
-                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-            )
-
-            FilledIconButton(
-                onClick = { onValueChange(value + 2) },
-                modifier = Modifier.size(28.dp),
-                colors = IconButtonDefaults.filledIconButtonColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                    contentColor = MaterialTheme.colorScheme.onSurface,
-                ),
-            ) {
-                Icon(Icons.Default.Add, null, modifier = Modifier.size(12.dp))
-            }
-        }
-    }
-}
-
-@Composable
-fun WordStateFilterPopup(
-    isVisible: Boolean,
-    selectedStates: Set<WordState>,
-    onDismiss: () -> Unit,
-    onStatesChanged: (Set<WordState>) -> Unit,
-) {
-    if (isVisible) {
-        androidx.compose.ui.window.Popup(
-            onDismissRequest = onDismiss,
-            properties = PopupProperties(focusable = true)
-        ) {
-            Surface(
-                modifier = Modifier
-                    .size(width = 300.dp, height = 400.dp)
-                    .padding(8.dp),
-                shape = MaterialTheme.shapes.medium,
-                shadowElevation = 8.dp,
-                color = MaterialTheme.colorScheme.surface
-            ) {
-                Column(
-                    modifier = Modifier
-                        .padding(16.dp)
-                        .verticalScroll(androidx.compose.foundation.rememberScrollState())
-                ) {
-                    Text(
-                        text = "Highlight States",
-                        style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.padding(bottom = 16.dp)
-                    )
-
-                    WordState.entries.forEach { state ->
-                        val isSelected = selectedStates.contains(state)
-                        FilterChip(
-                            modifier = Modifier.fillMaxWidth(),
-                            selected = isSelected,
-                            onClick = {
-                                val newSelection = if (isSelected) {
-                                    selectedStates - state
-                                } else {
-                                    selectedStates + state
-                                }
-                                onStatesChanged(newSelection)
-                            },
-                            label = {
-                                Text(
-                                    state.name.replace("_", " ").lowercase()
-                                        .replaceFirstChar { it.uppercase() }
-                                )
-                            }
-                        )
-                    }
-                }
-            }
         }
     }
 }

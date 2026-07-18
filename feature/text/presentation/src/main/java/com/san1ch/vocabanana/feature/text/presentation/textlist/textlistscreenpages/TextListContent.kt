@@ -92,8 +92,8 @@ fun TextListContent(
         }
     }
 
-    LaunchedEffect(pagerState.currentPage) {
-        onIntent(TextListUiIntent.Navigation.PageChanged(pagerState.currentPage))
+    LaunchedEffect(pagerState.settledPage) {
+        onIntent(TextListUiIntent.Navigation.PageChanged(pagerState.settledPage))
     }
 
     SetupSwipeLockEffects(state.isSwipeAttempted) {
@@ -119,7 +119,7 @@ fun TextListContent(
                         actions = {
                             TopBarActions(
                                 currentPage = state.pagerPage,
-                                isLocked = state.isLocked,
+                                isLocked = state.isLockedByReaderLocker,
                                 isSwipeAttempted = state.isSwipeAttempted,
                                 onLockClick = { onIntent(TextListUiIntent.Reader.ToggleLock) },
                                 onPageSettings = {
@@ -140,8 +140,8 @@ fun TextListContent(
                     state = pagerState,
                     modifier = Modifier
                         .padding(paddingValues)
-                        .pointerInput(state.isLocked) {
-                            if (state.isLocked) {
+                        .pointerInput(state.isLockedByReaderLocker) {
+                            if (state.isLockedByReaderLocker) {
                                 detectDragGestures { change, dragAmount ->
                                     if (abs(dragAmount.x) > abs(dragAmount.y)) {
                                         onIntent(TextListUiIntent.Reader.NotifySwipeBlocked)
@@ -150,7 +150,7 @@ fun TextListContent(
                                 }
                             }
                         },
-                    userScrollEnabled = !state.isLocked && (pagerState.currentPage == 0 || state.selectedText != null),
+                    userScrollEnabled = !state.isLockedByReaderLocker && (pagerState.currentPage != 0 || state.selectedText != null),
                 ) { pageIndex ->
                     when (TextListScreenPage.fromIndex(pageIndex)) {
                         TextListScreenPage.MyTexts ->
@@ -163,7 +163,12 @@ fun TextListContent(
                             )
 
                         TextListScreenPage.TextReader ->
-                            TextReaderPage(state.selectedText, state.textContent, onIntent)
+                            TextReaderPage(
+                                state.selectedText,
+                                state.textContent,
+                                onIntent,
+                                state.selectedText?.activeWordStates ?: emptySet(),
+                            )
 
                         TextListScreenPage.Settings ->
                             TextSettingsPage(state.generatingState, onIntent)
@@ -190,13 +195,8 @@ fun TextListContent(
             visibility = state.showSettings,
             settings = state.selectedText?.textAppearanceSettings ?: TextAppearanceSettings(),
             onIntent = onIntent,
-        )
-
-        WordStateFilterPopup(
-            isVisible = state.showFilter,
-            selectedStates = state.selectedWordStates,
-            onDismiss = { onIntent(TextListUiIntent.CloseFilter) },
-            onStateSelected = { onIntent(TextListUiIntent.SelectWordState(it)) },
+            selectedStates = state.selectedText?.activeWordStates ?: emptySet(),
+            onStatesSave = { onIntent(TextListUiIntent.Reader.ChangeWordStates(it)) },
         )
     }
 }
@@ -208,14 +208,8 @@ private fun TopBarActions(
     isSwipeAttempted: Boolean,
     onLockClick: () -> Unit,
     onPageSettings: () -> Unit,
-    onShowFilter: () -> Unit,
 ) {
     Row {
-        AnimatedVisibility(visible = currentPage == 1, enter = fadeIn(), exit = fadeOut()) {
-            IconButton(onClick = onShowFilter) {
-                Icon(Icons.Default.Add, contentDescription = "Filter States")
-            }
-        }
         AnimatedVisibility(visible = currentPage == 1, enter = fadeIn(), exit = fadeOut()) {
             IconButton(onClick = onLockClick) {
                 AnimatedLockIcon(isLocked = isLocked, isSwipeAttempted = isSwipeAttempted)

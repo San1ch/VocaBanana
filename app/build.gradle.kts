@@ -14,20 +14,6 @@ android {
         versionName = "1.0"
     }
 
-    buildTypes {
-        getByName("release") {
-            isMinifyEnabled = true
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro",
-            )
-        }
-        getByName("debug") {
-            applicationIdSuffix = ".debug"
-            resValue("string", "app_name", "Vocab (Debug)")
-        }
-    }
-
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
