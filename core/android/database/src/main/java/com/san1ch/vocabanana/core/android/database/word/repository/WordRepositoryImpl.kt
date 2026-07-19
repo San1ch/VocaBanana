@@ -108,6 +108,20 @@ class WordRepositoryImpl @Inject constructor(
         return databasePairs.associate { pair -> pair.word to pair.lemma }
     }
 
+    override suspend fun getWordStatesMapForText(words: List<String>): Map<String, WordState> {
+        if (words.isEmpty()) return emptyMap()
+
+        val lemmaMap = getLemmasForWords(words)
+
+        val uniqueLemmas = lemmaMap.values.distinct()
+        val lemmaStates = wordDao.getWordsByLemmas(uniqueLemmas)
+            .associate { it.word.lemma to WordState.entries.getOrElse(it.word.state) { WordState.NEW } }
+
+        return lemmaMap.mapValues { (_, lemma) ->
+            lemmaStates[lemma] ?: WordState.NEW
+        }
+    }
+
     override suspend fun getAllLemmasAndForms(): List<String> = wordDao.getAllWordsList().flatMap { item ->
         listOf(item.word.lemma) + item.forms.map { it.form }
     }

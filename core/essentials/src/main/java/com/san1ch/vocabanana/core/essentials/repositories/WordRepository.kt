@@ -34,6 +34,7 @@ interface WordRepository {
 
     suspend fun getWordById(id: Int): Result<WordDomain>
 
+    suspend fun getWordStatesMapForText(words: List<String>): Map<String, WordState>
     suspend fun getWordDomainsForWords(words: List<String>): Map<String, WordDomain>
 
     suspend fun getAllLemmasAndForms(): List<String>

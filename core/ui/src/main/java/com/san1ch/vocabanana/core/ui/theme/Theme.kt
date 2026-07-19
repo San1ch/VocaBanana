@@ -9,7 +9,9 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
@@ -37,7 +39,7 @@ private val LightColorScheme = lightColorScheme(
     primaryContainer = Color(0xFFFFE135),
     onPrimaryContainer = Color(0xFF221B00),
 
-    background = Color(0xFFF6F3ED),
+    background = BananaOnPrimary,
     surface = Color(0xFFFFFBFF),
 
     onBackground = Color(0xFF1D1B16),
@@ -45,6 +47,8 @@ private val LightColorScheme = lightColorScheme(
 
     outlineVariant = Color(0xFFE6E2D9),
 )
+
+val LocalDarkTheme = staticCompositionLocalOf { false }
 
 @Composable
 fun VocaBananaTheme(
@@ -57,6 +61,7 @@ fun VocaBananaTheme(
             val context = LocalContext.current
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
+
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
     }
@@ -74,10 +79,11 @@ fun VocaBananaTheme(
         }
     }
     // ----------------------------------------------
-
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = Typography,
-        content = content,
-    )
+    CompositionLocalProvider(LocalDarkTheme provides darkTheme) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            typography = Typography,
+            content = content,
+        )
+    }
 }

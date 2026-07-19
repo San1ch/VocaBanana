@@ -3,7 +3,7 @@ package com.san1ch.vocabanana.core.ui.theme
 import androidx.compose.ui.graphics.Color
 
 val BananaPrimary = Color(0xFF6D5E00)
-val BananaOnPrimary = Color(0xFFFFFFFF)
+val BananaOnPrimary = Color(0xFFF6F3ED)
 val BananaContainer = Color(0xFFFFE97B)
 
 // Dark Mode Colors (Soft & Glowing)
@@ -25,4 +25,28 @@ object MileStoneColor {
     val Fluent = Color(0xFF20BF55)
     val Professional = Color(0xFF5F0A87)
     val Mastery = Color(0xFFFFD700)
+}
+
+interface ReadingColor {
+    val new: Color
+    val learning: Color
+    val known: Color
+    val notKnown: Color
+    val ignored: Color
+}
+
+object LightReadingColor : ReadingColor {
+    override val new = Color(0xFF173746)
+    override val learning = Color(0xFF696128)
+    override val known = Color(0xFF406744)
+    override val notKnown = Color(0xFF752D2D)
+    override val ignored = BananaBackgroundDark
+}
+
+object DarkReadingColor : ReadingColor {
+    override val new = Color(0xFF58B7E3)
+    override val learning = Color(0xFFFFE97B)
+    override val known = Color(0xFFA8E4AD)
+    override val notKnown = Color(0xFFE35858)
+    override val ignored = BananaOnPrimary
 }

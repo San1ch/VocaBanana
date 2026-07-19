@@ -1,6 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="CompilerConfiguration">
-    <bytecodeTargetLevel target="17" />
+    <bytecodeTargetLevel target="17">
+      <module name="build-logic" target="21" />
+      <module name="build-logic.main" target="21" />
+      <module name="build-logic.test" target="21" />
+      <module name="VocaBanana.app" target="21" />
+      <module name="VocaBanana.core.android.commonandroid" target="21" />
+      <module name="VocaBanana.core.android.database" target="21" />
+      <module name="VocaBanana.core.ui" target="21" />
+      <module name="VocaBanana.feature.debug.presentation" target="21" />
+      <module name="VocaBanana.feature.init.presentation" target="21" />
+      <module name="VocaBanana.feature.main.presentation" target="21" />
+      <module name="VocaBanana.feature.mainsettings.presentation" target="21" />
+      <module name="VocaBanana.feature.text.presentation" target="21" />
+      <module name="VocaBanana.feature.vocabulary.presentation" target="21" />
+      <module name="VocaBanana.feature.word.presentation" target="21" />
+      <module name="VocaBanana.navigation" target="21" />
+    </bytecodeTargetLevel>
   </component>
 </project>

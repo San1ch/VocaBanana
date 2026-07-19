@@ -33,7 +33,7 @@ class TextListDictionaryHandler @Inject constructor(
     ) {
         when (intent) {
             is TextListUiIntent.Dictionary.WordClicked -> {
-                selectWord(
+                selectPopExtraInfo(
                     word = intent.word,
                     scope = scope,
                     updateState = updateState,
@@ -61,7 +61,7 @@ class TextListDictionaryHandler @Inject constructor(
             }
         }
     }
-    private fun selectWord(
+    private fun selectPopExtraInfo(
         word: String,
         scope: CoroutineScope,
         updateState: ((TextListUiState) -> TextListUiState) -> Unit,

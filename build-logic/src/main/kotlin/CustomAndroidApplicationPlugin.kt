@@ -34,6 +34,13 @@ class CustomAndroidApplicationPlugin : Plugin<Project> {
                         applicationIdSuffix = ".debug"
                         resValue("string", "app_name", "Vocab (Debug)")
                     }
+                    create("fastRelease") {
+                        initWith(getByName("release"))
+                        matchingFallbacks.add("release")
+                        signingConfig = signingConfigs.getByName("debug")
+                        applicationIdSuffix = ".fastrelease"
+                        resValue("string", "app_name", "Vocab (Fast Release)")
+                    }
                 }
 
                 compileOptions {

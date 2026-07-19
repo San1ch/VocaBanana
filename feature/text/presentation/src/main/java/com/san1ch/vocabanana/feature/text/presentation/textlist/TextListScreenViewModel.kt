@@ -2,10 +2,12 @@ package com.san1ch.vocabanana.feature.text.presentation.textlist
 
 import androidx.lifecycle.viewModelScope
 import com.san1ch.vocabanana.core.essentials.model.TextAppearanceSettings
+import com.san1ch.vocabanana.core.essentials.model.word.WordState
 import com.san1ch.vocabanana.core.ui.BaseViewModel
 import com.san1ch.vocabanana.core.ui.model.WordUi
 import com.san1ch.vocabanana.feature.text.domain.model.TextListItem
 import com.san1ch.vocabanana.feature.text.domain.model.TextListPreview
+import com.san1ch.vocabanana.feature.text.presentation.data.TextToken
 import com.san1ch.vocabanana.feature.text.presentation.model.GenerateWordsFromTextUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -51,6 +53,7 @@ sealed class TextListUiIntent {
         object ToggleLock : Reader()
         object NotifySwipeBlocked : Reader()
         object ResetSwipeAttempt : Reader()
+        data class ChangeWordStates(val states: Set<WordState>) : Reader()
         data class ChangePageSettings(val settings: TextAppearanceSettings) : Reader()
     }
 
@@ -73,12 +76,12 @@ data class TextListUiState(
     // --- Navigation & Global Layout ---
     val pagerPage: Int = 0,
     val showSettings: Boolean = false,
-    val isLocked: Boolean = false,
+    val isLockedByReaderLocker: Boolean = false,
 
     // --- Content (The "List" and the "Reader") ---
     val textItems: List<TextListPreview> = emptyList(),
     val selectedText: TextListItem? = null,
-    val textContent: List<String> = emptyList(),
+    val textContent: List<List<TextToken>> = emptyList(),
 
     // --- Word & Dictionary Logic ---
     val wordInfoState: WordInfoState = WordInfoState.Hidden,

@@ -55,7 +55,15 @@ AND (:excludeStates = 0 OR state NOT IN (:statesExcluded))
     )
     suspend fun getWordByAnyForm(word: String): WordWithForms?
 
-    @Query("SELECT id FROM words WHERE lemma = :word")
+    @Query(
+        """
+    SELECT w.id
+    FROM words w
+    LEFT JOIN word_forms wf ON w.id = wf.wordId
+    WHERE wf.form = :word OR w.lemma = :word
+    LIMIT 1
+""",
+    )
     suspend fun getWordIdByAnyForm(word: String): Int?
 
     @Transaction

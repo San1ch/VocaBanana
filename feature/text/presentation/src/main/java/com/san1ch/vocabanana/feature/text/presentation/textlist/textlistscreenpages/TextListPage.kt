@@ -82,7 +82,7 @@ private fun TextLazyItem(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 12.dp, vertical = 6.dp) // Added breathing room
+            .padding(horizontal = 12.dp, vertical = 6.dp)
             .clickable { onClick() },
         shape = MaterialTheme.shapes.medium,
         colors = CardDefaults.cardColors(
@@ -99,10 +99,9 @@ private fun TextLazyItem(
         ),
     ) {
         Row(
-            modifier = Modifier.height(IntrinsicSize.Min), // Essential for the vertical bar
+            modifier = Modifier.height(IntrinsicSize.Min),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            // 1. Accent Bar - Using Secondary to distinguish from Vocabulary
             Box(
                 modifier = Modifier
                     .width(6.dp)
@@ -124,7 +123,6 @@ private fun TextLazyItem(
 
                 Spacer(modifier = Modifier.height(4.dp))
 
-                // 2. Metadata: Labeling the date for better clarity
                 Text(
                     text = stringResource(R.string.last_read, item.lastReadTime.toFormattedDate()),
                     style = MaterialTheme.typography.bodySmall,
@@ -132,7 +130,6 @@ private fun TextLazyItem(
                 )
             }
 
-            // 3. Delete Action - Subtle so it doesn't distract
             IconButton(
                 onClick = { onDelete(item) },
                 modifier = Modifier.padding(end = 8.dp),
