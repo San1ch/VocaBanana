@@ -5,10 +5,10 @@ import com.san1ch.vocabanana.core.essentials.model.TextAppearanceSettings
 import com.san1ch.vocabanana.core.essentials.model.word.WordState
 import com.san1ch.vocabanana.core.ui.BaseViewModel
 import com.san1ch.vocabanana.core.ui.model.WordUi
-import com.san1ch.vocabanana.feature.text.domain.model.TextListItem
+import com.san1ch.vocabanana.core.ui.state.Resource
 import com.san1ch.vocabanana.feature.text.domain.model.TextListPreview
-import com.san1ch.vocabanana.feature.text.presentation.data.TextToken
 import com.san1ch.vocabanana.feature.text.presentation.model.GenerateWordsFromTextUiState
+import com.san1ch.vocabanana.feature.text.presentation.model.TextWithContent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -80,8 +80,7 @@ data class TextListUiState(
 
     // --- Content (The "List" and the "Reader") ---
     val textItems: List<TextListPreview> = emptyList(),
-    val selectedText: TextListItem? = null,
-    val textContent: List<List<TextToken>> = emptyList(),
+    val selectedText: Resource<TextWithContent> = Resource.Empty,
 
     // --- Word & Dictionary Logic ---
     val wordInfoState: WordInfoState = WordInfoState.Hidden,

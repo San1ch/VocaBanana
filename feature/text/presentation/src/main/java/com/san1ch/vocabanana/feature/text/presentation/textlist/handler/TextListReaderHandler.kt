@@ -4,10 +4,13 @@ import com.san1ch.vocabanana.core.essentials.model.TextAppearanceSettings
 import com.san1ch.vocabanana.core.essentials.model.word.WordState
 import com.san1ch.vocabanana.core.essentials.repositories.TextRepository
 import com.san1ch.vocabanana.core.essentials.repositories.WordRepository
+import com.san1ch.vocabanana.core.ui.state.Resource
+import com.san1ch.vocabanana.core.ui.state.getOrNull
 import com.san1ch.vocabanana.feature.text.domain.ReadingStateRepository
 import com.san1ch.vocabanana.feature.text.domain.usecase.GetTextListItemUseCase
 import com.san1ch.vocabanana.feature.text.presentation.data.TextToken
 import com.san1ch.vocabanana.feature.text.presentation.data.tokenize
+import com.san1ch.vocabanana.feature.text.presentation.model.TextWithContent
 import com.san1ch.vocabanana.feature.text.presentation.textlist.TextListUiIntent
 import com.san1ch.vocabanana.feature.text.presentation.textlist.TextListUiState
 import kotlinx.coroutines.CoroutineScope
@@ -78,6 +81,7 @@ class TextListReaderHandler @Inject constructor(
                     )
                 }
             }
+
             is TextListUiIntent.Reader.ChangeWordStates -> {
                 saveFilterStates(
                     states = intent.states,
@@ -85,6 +89,7 @@ class TextListReaderHandler @Inject constructor(
                     scope = scope,
                 )
             }
+
             is TextListUiIntent.Reader.ChangePageSettings -> {
                 saveReaderSettings(
                     settings = intent.settings,
@@ -94,13 +99,14 @@ class TextListReaderHandler @Inject constructor(
             }
         }
     }
+
     private fun selectText(
         id: Int,
         updateState: ((TextListUiState) -> TextListUiState) -> Unit,
         scope: CoroutineScope,
     ) {
         scope.launch(Dispatchers.IO) {
-            clearText(updateState)
+            updateState { it.copy(selectedText = Resource.Loading) }
 
             val textFlow = getTextListItemUseCase(id)
             val contentFlow = textRepository.getContentById(id)
@@ -127,8 +133,7 @@ class TextListReaderHandler @Inject constructor(
 
                 updateState {
                     it.copy(
-                        selectedText = text,
-                        textContent = enrichedContent,
+                        selectedText = Resource.Success(TextWithContent(text, enrichedContent)),
                     )
                 }
             }
@@ -140,11 +145,11 @@ class TextListReaderHandler @Inject constructor(
     ) {
         updateState {
             it.copy(
-                selectedText = null,
-                textContent = emptyList(),
+                selectedText = Resource.Empty,
             )
         }
     }
+
     private fun updateProgress(
         id: Int,
         progress: Float,
@@ -163,16 +168,15 @@ class TextListReaderHandler @Inject constructor(
             }
         }
     }
+
     private fun saveFilterStates(
         states: Set<WordState>,
         updateState: ((TextListUiState) -> TextListUiState) -> Unit,
         scope: CoroutineScope,
     ) {
-        updateState { it.copy(selectedText = it.selectedText?.copy(activeWordStates = states)) }
-
         var selectedTextId: Int? = null
         updateState { state ->
-            selectedTextId = state.selectedText?.id
+            selectedTextId = state.selectedText.getOrNull { it.id }
             state
         }
 
@@ -186,6 +190,7 @@ class TextListReaderHandler @Inject constructor(
             }
         }
     }
+
     private fun saveReaderSettings(
         settings: TextAppearanceSettings,
         updateState: ((TextListUiState) -> TextListUiState) -> Unit,
@@ -194,7 +199,7 @@ class TextListReaderHandler @Inject constructor(
         var selectedTextId: Int? = null
 
         updateState { state ->
-            selectedTextId = state.selectedText?.id
+            selectedTextId = state.selectedText.getOrNull { it.id }
             state
         }
 

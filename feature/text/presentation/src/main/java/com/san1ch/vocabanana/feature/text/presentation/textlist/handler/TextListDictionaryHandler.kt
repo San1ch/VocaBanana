@@ -6,6 +6,7 @@ import com.san1ch.vocabanana.core.essentials.repositories.WordRepository
 import com.san1ch.vocabanana.core.essentials.usecases.GetWordsWithCountUseCase
 import com.san1ch.vocabanana.core.ui.model.UiEvent
 import com.san1ch.vocabanana.core.ui.model.toUi
+import com.san1ch.vocabanana.core.ui.state.getOrNull
 import com.san1ch.vocabanana.feature.text.domain.usecase.GenerateWordsFromTextUseCase
 import com.san1ch.vocabanana.feature.text.presentation.mapper.GenerateWordsFromTextUiMapper
 import com.san1ch.vocabanana.feature.text.presentation.textlist.TextListUiIntent
@@ -54,7 +55,7 @@ class TextListDictionaryHandler @Inject constructor(
 
             TextListUiIntent.Dictionary.GenerateWords -> {
                 generateWords(
-                    textId = state.selectedText?.id ?: return,
+                    textId = state.selectedText.getOrNull { it.id } ?: return,
                     scope = scope,
                     updateState = updateState,
                 )

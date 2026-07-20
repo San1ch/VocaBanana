@@ -46,14 +46,14 @@ import androidx.compose.ui.unit.dp
 import com.san1ch.vocabanana.core.essentials.model.TextAppearanceSettings
 import com.san1ch.vocabanana.core.essentials.model.word.WordState
 import com.san1ch.vocabanana.feature.text.presentation.R
+import com.san1ch.vocabanana.feature.text.presentation.model.TextWithContent
 import com.san1ch.vocabanana.feature.text.presentation.textlist.TextListUiIntent
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReaderSettingsPanel(
     visibility: Boolean,
-    settings: TextAppearanceSettings,
-    selectedStates: Set<WordState>,
+    text: TextWithContent,
     onIntent: (TextListUiIntent) -> Unit,
     onStatesSave: (Set<WordState>) -> Unit,
 ) {
@@ -91,14 +91,14 @@ fun ReaderSettingsPanel(
                     when (tab) {
                         0 -> {
                             DisplaySettingsContent(
-                                settings = settings,
+                                settings = text.textAppearanceSettings,
                                 onIntent = onIntent,
                             )
                         }
 
                         1 -> {
                             FilterSettingsContent(
-                                selectedStates = selectedStates,
+                                selectedStates = text.activeWordStates,
                                 onSave = onStatesSave,
                             )
                         }

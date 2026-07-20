@@ -54,71 +54,61 @@ import androidx.compose.ui.unit.sp
 import com.san1ch.vocabanana.core.essentials.model.TextAppearanceSettings
 import com.san1ch.vocabanana.core.essentials.model.word.WordState
 import com.san1ch.vocabanana.core.ui.theme.LocalDarkTheme
-import com.san1ch.vocabanana.feature.text.domain.model.TextListItem
 import com.san1ch.vocabanana.feature.text.presentation.data.TextToken
 import com.san1ch.vocabanana.feature.text.presentation.data.toReadingStateColor
+import com.san1ch.vocabanana.feature.text.presentation.model.TextWithContent
 import com.san1ch.vocabanana.feature.text.presentation.textlist.TextListUiIntent
 import com.san1ch.vocabanana.feature.text.presentation.textlist.WordInfoState
 
 @Composable
 fun TextReaderPage(
-    text: TextListItem?,
-    content: List<List<TextToken>>?,
+    text: TextWithContent,
     onIntent: (TextListUiIntent) -> Unit,
-    currentActiveState: Set<WordState>,
 ) {
     val listState = rememberLazyListState()
 
     // Restore scroll position
-    LaunchedEffect(text?.id) {
-        if (text != null && content != null && content.isNotEmpty()) {
-            val savedProgress = text.lastScrollPosition ?: 0f
-            val targetIndex = (savedProgress * content.size).toInt()
-            listState.scrollToItem(targetIndex.coerceIn(0, content.size - 1))
-        }
+    LaunchedEffect(text) {
+        val savedProgress = text.lastScrollPosition ?: 0f
+        val targetIndex = (savedProgress * text.content.size).toInt()
+        listState.scrollToItem(targetIndex.coerceIn(0, text.content.size - 1))
     }
 
     // Save progress
     LaunchedEffect(listState.firstVisibleItemIndex) {
-        if (text != null && content != null && content.isNotEmpty()) {
-            val progress = listState.firstVisibleItemIndex.toFloat() / content.size
+        val progress = listState.firstVisibleItemIndex.toFloat() / text.content.size
 
-            val currentProgress = text.lastScrollPosition ?: 0f
-            if (kotlin.math.abs(progress - currentProgress) > 0.001f) {
-                onIntent(TextListUiIntent.Reader.UpdateProgress(text.id, progress))
-            }
+        val currentProgress = text.lastScrollPosition ?: 0f
+        if (kotlin.math.abs(progress - currentProgress) > 0.001f) {
+            onIntent(TextListUiIntent.Reader.UpdateProgress(text.id, progress))
         }
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        if (text == null || content == null) {
-            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-        } else {
-            val settings = text.textAppearanceSettings
+        val settings = text.textAppearanceSettings
 
-            LazyColumn(
-                state = listState,
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(
-                    horizontal = settings.horizontalPadding.dp,
-                    vertical = 16.dp,
-                ),
-            ) {
-                items(content) { paragraph ->
-                    ParagraphViewItem(
-                        paragraphText = paragraph,
-                        settings = settings,
-                        onWordClick = { word ->
-                            onIntent(
-                                TextListUiIntent.Dictionary.WordClicked(
-                                    word,
-                                ),
-                            )
-                        },
-                        currentActiveState = currentActiveState,
-                    )
-                    Spacer(modifier = Modifier.height(settings.paragraphSpacing.dp))
-                }
+        LazyColumn(
+            state = listState,
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(
+                horizontal = settings.horizontalPadding.dp,
+                vertical = 16.dp,
+            ),
+        ) {
+            items(text.content) { paragraph ->
+                ParagraphViewItem(
+                    paragraphText = paragraph,
+                    settings = settings,
+                    onWordClick = { word ->
+                        onIntent(
+                            TextListUiIntent.Dictionary.WordClicked(
+                                word,
+                            ),
+                        )
+                    },
+                    currentActiveState = text.activeWordStates,
+                )
+                Spacer(modifier = Modifier.height(settings.paragraphSpacing.dp))
             }
         }
     }
@@ -149,7 +139,10 @@ fun ParagraphViewItem(
                             LinkAnnotation.Clickable(
                                 tag = "WORD",
                                 styles = TextLinkStyles(
-                                    style = SpanStyle(color = stateColor, fontWeight = if (isStateActive) FontWeight.Bold else null),
+                                    style = SpanStyle(
+                                        color = stateColor,
+                                        fontWeight = if (isStateActive) FontWeight.Bold else null,
+                                    ),
                                 ),
                                 linkInteractionListener = { onWordClick(token.text) },
                             ),

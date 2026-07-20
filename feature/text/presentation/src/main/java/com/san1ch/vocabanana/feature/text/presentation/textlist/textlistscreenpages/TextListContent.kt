@@ -48,9 +48,11 @@ import androidx.compose.ui.platform.LocalViewConfiguration
 import androidx.compose.ui.platform.ViewConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.san1ch.vocabanana.core.essentials.model.TextAppearanceSettings
 import com.san1ch.vocabanana.core.ui.compose.AnimatedTitle
 import com.san1ch.vocabanana.core.ui.compose.DeleteConfirmDialog
+import com.san1ch.vocabanana.core.ui.state.Resource
+import com.san1ch.vocabanana.core.ui.state.ResourceObserver
+import com.san1ch.vocabanana.core.ui.state.fold
 import com.san1ch.vocabanana.feature.text.presentation.R
 import com.san1ch.vocabanana.feature.text.presentation.textlist.TextListUiIntent
 import com.san1ch.vocabanana.feature.text.presentation.textlist.TextListUiState
@@ -109,8 +111,12 @@ fun TextListContent(
                             val title = when (currentPage) {
                                 TextListScreenPage.MyTexts -> "My Texts"
                                 TextListScreenPage.TextReader ->
-                                    state.selectedText?.title
-                                        ?: "Loading..."
+                                    state.selectedText.fold(
+                                        onLoading = { "Loading..." },
+                                        onEmpty = { "No Text Selected" },
+                                        onSuccess = { it.text.title },
+                                        onError = { "Error" },
+                                    )
 
                                 TextListScreenPage.Settings -> "Settings"
                             }
@@ -150,7 +156,7 @@ fun TextListContent(
                                 }
                             }
                         },
-                    userScrollEnabled = !state.isLockedByReaderLocker && (pagerState.currentPage != 0 || state.selectedText != null),
+                    userScrollEnabled = !state.isLockedByReaderLocker && (pagerState.currentPage != 0 || state.selectedText is Resource.Success),
                 ) { pageIndex ->
                     when (TextListScreenPage.fromIndex(pageIndex)) {
                         TextListScreenPage.MyTexts ->
@@ -163,12 +169,12 @@ fun TextListContent(
                             )
 
                         TextListScreenPage.TextReader ->
-                            TextReaderPage(
-                                state.selectedText,
-                                state.textContent,
-                                onIntent,
-                                state.selectedText?.activeWordStates ?: emptySet(),
-                            )
+                            ResourceObserver(state.selectedText) { text ->
+                                TextReaderPage(
+                                    text,
+                                    onIntent,
+                                )
+                            }
 
                         TextListScreenPage.Settings ->
                             TextSettingsPage(state.generatingState, onIntent)
@@ -191,13 +197,19 @@ fun TextListContent(
             onOxfordClick = { onIntent(TextListUiIntent.Dictionary.OxfordMoreInfo(it)) },
         )
 
-        ReaderSettingsPanel(
-            visibility = state.showSettings,
-            settings = state.selectedText?.textAppearanceSettings ?: TextAppearanceSettings(),
-            onIntent = onIntent,
-            selectedStates = state.selectedText?.activeWordStates ?: emptySet(),
-            onStatesSave = { onIntent(TextListUiIntent.Reader.ChangeWordStates(it)) },
-        )
+        ResourceObserver(
+            state = state.selectedText,
+            onEmpty = { },
+            onLoading = { },
+            onError = { },
+        ) { text ->
+            ReaderSettingsPanel(
+                visibility = state.showSettings,
+                text = text,
+                onIntent = onIntent,
+                onStatesSave = { onIntent(TextListUiIntent.Reader.ChangeWordStates(it)) },
+            )
+        }
     }
 }
 
