@@ -11,8 +11,8 @@ import com.san1ch.vocabanana.feature.text.domain.usecase.GetTextListItemUseCase
 import com.san1ch.vocabanana.feature.text.presentation.data.TextToken
 import com.san1ch.vocabanana.feature.text.presentation.data.tokenize
 import com.san1ch.vocabanana.feature.text.presentation.model.TextWithContent
-import com.san1ch.vocabanana.feature.text.presentation.textlist.TextListUiIntent
-import com.san1ch.vocabanana.feature.text.presentation.textlist.TextListUiState
+import com.san1ch.vocabanana.feature.text.presentation.textlist.viewmodel.TextListUiIntent
+import com.san1ch.vocabanana.feature.text.presentation.textlist.viewmodel.TextListUiState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job

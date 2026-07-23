@@ -1,4 +1,4 @@
-package com.san1ch.vocabanana.feature.text.presentation.textlist
+package com.san1ch.vocabanana.feature.text.presentation.textlist.viewmodel
 
 import androidx.lifecycle.viewModelScope
 import com.san1ch.vocabanana.core.essentials.model.TextAppearanceSettings
@@ -9,6 +9,7 @@ import com.san1ch.vocabanana.core.ui.state.Resource
 import com.san1ch.vocabanana.feature.text.domain.model.TextListPreview
 import com.san1ch.vocabanana.feature.text.presentation.model.GenerateWordsFromTextUiState
 import com.san1ch.vocabanana.feature.text.presentation.model.TextWithContent
+import com.san1ch.vocabanana.feature.text.presentation.textlist.screen.TextListScreenPage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -41,7 +42,7 @@ class TextListScreenViewModel @Inject constructor(
 sealed class TextListUiIntent {
     sealed class Navigation : TextListUiIntent() {
         object NavigateToAddText : Navigation()
-        data class PageChanged(val page: Int) : Navigation()
+        data class PageChanged(val page: TextListScreenPage) : Navigation()
         object ShowRenderSettings : Navigation()
         object CloseReaderSettings : Navigation()
     }
@@ -74,7 +75,7 @@ sealed class TextListUiIntent {
 
 data class TextListUiState(
     // --- Navigation & Global Layout ---
-    val pagerPage: Int = 0,
+    val currentPage: TextListScreenPage = TextListScreenPage.MyTexts,
     val showSettings: Boolean = false,
     val isLockedByReaderLocker: Boolean = false,
 

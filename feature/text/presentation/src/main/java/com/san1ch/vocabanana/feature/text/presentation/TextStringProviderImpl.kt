@@ -1,8 +1,7 @@
-package com.san1ch.vocabanana.feature.text.presentation.textlist
+package com.san1ch.vocabanana.feature.text.presentation
 
 import android.content.Context
 import com.san1ch.vocabanana.core.essentials.resources.featureproviders.TextStringProvider
-import com.san1ch.vocabanana.feature.text.presentation.R
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 

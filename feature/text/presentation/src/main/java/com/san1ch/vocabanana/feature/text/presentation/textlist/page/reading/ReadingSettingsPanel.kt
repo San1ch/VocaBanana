@@ -1,4 +1,4 @@
-package com.san1ch.vocabanana.feature.text.presentation.textlist.textlistscreenpages
+package com.san1ch.vocabanana.feature.text.presentation.textlist.page.reading
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.SizeTransform
@@ -47,7 +47,7 @@ import com.san1ch.vocabanana.core.essentials.model.TextAppearanceSettings
 import com.san1ch.vocabanana.core.essentials.model.word.WordState
 import com.san1ch.vocabanana.feature.text.presentation.R
 import com.san1ch.vocabanana.feature.text.presentation.model.TextWithContent
-import com.san1ch.vocabanana.feature.text.presentation.textlist.TextListUiIntent
+import com.san1ch.vocabanana.feature.text.presentation.textlist.viewmodel.TextListUiIntent
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

@@ -2,8 +2,8 @@ package com.san1ch.vocabanana.feature.text.presentation.textlist.handler
 
 import com.san1ch.vocabanana.core.essentials.repositories.TextRepository
 import com.san1ch.vocabanana.feature.text.domain.usecase.GetTextPreviewsUseCase
-import com.san1ch.vocabanana.feature.text.presentation.textlist.TextListUiIntent
-import com.san1ch.vocabanana.feature.text.presentation.textlist.TextListUiState
+import com.san1ch.vocabanana.feature.text.presentation.textlist.viewmodel.TextListUiIntent
+import com.san1ch.vocabanana.feature.text.presentation.textlist.viewmodel.TextListUiState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import javax.inject.Inject

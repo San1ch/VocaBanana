@@ -1,4 +1,4 @@
-package com.san1ch.vocabanana.feature.text.presentation.textlist
+package com.san1ch.vocabanana.feature.text.presentation.textlist.viewmodel
 
 import com.san1ch.vocabanana.core.ui.model.UiEvent
 import com.san1ch.vocabanana.feature.text.presentation.textlist.handler.TextListDictionaryHandler

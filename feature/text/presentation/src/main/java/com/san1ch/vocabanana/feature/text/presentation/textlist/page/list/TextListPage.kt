@@ -1,4 +1,4 @@
-package com.san1ch.vocabanana.feature.text.presentation.textlist.textlistscreenpages
+package com.san1ch.vocabanana.feature.text.presentation.textlist.page.list
 
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.BorderStroke
@@ -39,7 +39,7 @@ import androidx.compose.ui.unit.dp
 import com.san1ch.vocabanana.core.ui.toFormattedDate
 import com.san1ch.vocabanana.feature.text.domain.model.TextListPreview
 import com.san1ch.vocabanana.feature.text.presentation.R
-import com.san1ch.vocabanana.feature.text.presentation.textlist.TextListUiIntent
+import com.san1ch.vocabanana.feature.text.presentation.textlist.viewmodel.TextListUiIntent
 
 @Composable
 fun TextListPage(
@@ -102,6 +102,7 @@ private fun TextLazyItem(
             modifier = Modifier.height(IntrinsicSize.Min),
             verticalAlignment = Alignment.CenterVertically,
         ) {
+            // Left divider
             Box(
                 modifier = Modifier
                     .width(6.dp)
@@ -109,11 +110,13 @@ private fun TextLazyItem(
                     .background(MaterialTheme.colorScheme.secondary),
             )
 
+            // Content of item
             Column(
                 modifier = Modifier
                     .weight(1f)
                     .padding(16.dp),
             ) {
+                // Title of text
                 Text(
                     text = item.title,
                     style = MaterialTheme.typography.titleMedium,
@@ -123,13 +126,19 @@ private fun TextLazyItem(
 
                 Spacer(modifier = Modifier.height(4.dp))
 
+                // Last read time info
                 Text(
-                    text = stringResource(R.string.last_read, item.lastReadTime.toFormattedDate()),
+                    text = if (item.lastReadTime != 0L) {
+                        stringResource(R.string.last_read, item.lastReadTime.toFormattedDate())
+                    } else {
+                        ""
+                    },
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
 
+            // Right action
             IconButton(
                 onClick = { onDelete(item) },
                 modifier = Modifier.padding(end = 8.dp),

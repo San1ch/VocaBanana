@@ -1,8 +1,8 @@
 package com.san1ch.vocabanana.feature.text.presentation.textlist.handler
 
 import com.san1ch.vocabanana.feature.text.presentation.TextListRouter
-import com.san1ch.vocabanana.feature.text.presentation.textlist.TextListUiIntent
-import com.san1ch.vocabanana.feature.text.presentation.textlist.TextListUiState
+import com.san1ch.vocabanana.feature.text.presentation.textlist.viewmodel.TextListUiIntent
+import com.san1ch.vocabanana.feature.text.presentation.textlist.viewmodel.TextListUiState
 import javax.inject.Inject
 
 class TextListNavigationHandler @Inject constructor(
@@ -21,7 +21,7 @@ class TextListNavigationHandler @Inject constructor(
             is TextListUiIntent.Navigation.PageChanged -> {
                 updateState {
                     it.copy(
-                        pagerPage = intent.page,
+                        currentPage = intent.page,
                     )
                 }
             }

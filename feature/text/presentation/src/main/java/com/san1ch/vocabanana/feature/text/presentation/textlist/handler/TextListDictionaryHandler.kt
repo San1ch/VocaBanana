@@ -9,9 +9,9 @@ import com.san1ch.vocabanana.core.ui.model.toUi
 import com.san1ch.vocabanana.core.ui.state.getOrNull
 import com.san1ch.vocabanana.feature.text.domain.usecase.GenerateWordsFromTextUseCase
 import com.san1ch.vocabanana.feature.text.presentation.mapper.GenerateWordsFromTextUiMapper
-import com.san1ch.vocabanana.feature.text.presentation.textlist.TextListUiIntent
-import com.san1ch.vocabanana.feature.text.presentation.textlist.TextListUiState
-import com.san1ch.vocabanana.feature.text.presentation.textlist.WordInfoState
+import com.san1ch.vocabanana.feature.text.presentation.textlist.viewmodel.TextListUiIntent
+import com.san1ch.vocabanana.feature.text.presentation.textlist.viewmodel.TextListUiState
+import com.san1ch.vocabanana.feature.text.presentation.textlist.viewmodel.WordInfoState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map

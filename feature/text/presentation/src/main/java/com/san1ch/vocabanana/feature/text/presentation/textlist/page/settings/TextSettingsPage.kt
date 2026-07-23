@@ -1,4 +1,4 @@
-package com.san1ch.vocabanana.feature.text.presentation.textlist.textlistscreenpages
+package com.san1ch.vocabanana.feature.text.presentation.textlist.page.settings
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
@@ -43,7 +43,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.san1ch.vocabanana.feature.text.presentation.R
 import com.san1ch.vocabanana.feature.text.presentation.model.GenerateWordsFromTextUiState
-import com.san1ch.vocabanana.feature.text.presentation.textlist.TextListUiIntent
+import com.san1ch.vocabanana.feature.text.presentation.textlist.viewmodel.TextListUiIntent
 
 @Composable
 fun TextSettingsPage(

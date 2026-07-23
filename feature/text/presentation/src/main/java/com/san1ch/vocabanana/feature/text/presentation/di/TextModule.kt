@@ -1,7 +1,7 @@
 package com.san1ch.vocabanana.feature.text.presentation.di
 
 import com.san1ch.vocabanana.core.essentials.resources.featureproviders.TextStringProvider
-import com.san1ch.vocabanana.feature.text.presentation.textlist.TextStringProviderImpl
+import com.san1ch.vocabanana.feature.text.presentation.TextStringProviderImpl
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
