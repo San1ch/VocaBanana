@@ -1,7 +1,9 @@
 package com.san1ch.vocabanana.feature.text.presentation.textlist.handler
 
 import com.san1ch.vocabanana.core.essentials.repositories.TextRepository
+import com.san1ch.vocabanana.core.ui.state.Resource
 import com.san1ch.vocabanana.feature.text.domain.usecase.GetTextPreviewsUseCase
+import com.san1ch.vocabanana.feature.text.presentation.model.TextWithContent
 import com.san1ch.vocabanana.feature.text.presentation.textlist.viewmodel.TextListUiIntent
 import com.san1ch.vocabanana.feature.text.presentation.textlist.viewmodel.TextListUiState
 import kotlinx.coroutines.CoroutineScope
@@ -17,6 +19,7 @@ class TextListManagementHandler @Inject constructor(
         intent: TextListUiIntent.Management,
         scope: CoroutineScope,
         updateState: ((TextListUiState) -> TextListUiState) -> Unit,
+        currentState: TextListUiState,
     ) {
         when (intent) {
             TextListUiIntent.Management.ObserveTextPreviews -> {
@@ -46,6 +49,7 @@ class TextListManagementHandler @Inject constructor(
                 deleteText(
                     scope = scope,
                     updateState = updateState,
+                    currentState = currentState,
                 )
             }
         }
@@ -69,22 +73,29 @@ class TextListManagementHandler @Inject constructor(
     private fun deleteText(
         scope: CoroutineScope,
         updateState: ((TextListUiState) -> TextListUiState) -> Unit,
+        currentState: TextListUiState,
     ) {
-        var idToDelete: Int? = null
+        val idToDelete: Int = currentState.selectedTextIdToDelete ?: return
 
-        updateState { state ->
-            idToDelete = state.selectedTextIdToDelete
-            state
+        val newSelectedText = when (val resource = currentState.selectedText) {
+            is Resource.Success -> {
+                if (idToDelete == resource.data.id) {
+                    Resource.Empty
+                } else {
+                    resource
+                }
+            }
+
+            else -> resource
         }
 
-        val id = idToDelete ?: return
-
         scope.launch {
-            textRepository.deleteTexts(listOf(id))
+            textRepository.deleteTexts(listOf(idToDelete))
 
             updateState {
                 it.copy(
                     selectedTextIdToDelete = null,
+                    selectedText = newSelectedText
                 )
             }
         }

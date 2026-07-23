@@ -5,6 +5,7 @@ import com.san1ch.vocabanana.core.essentials.model.word.WordState
 import com.san1ch.vocabanana.core.essentials.repositories.TextRepository
 import com.san1ch.vocabanana.core.essentials.repositories.WordRepository
 import com.san1ch.vocabanana.core.ui.state.Resource
+import com.san1ch.vocabanana.core.ui.state.ResourceError
 import com.san1ch.vocabanana.core.ui.state.getOrNull
 import com.san1ch.vocabanana.feature.text.domain.ReadingStateRepository
 import com.san1ch.vocabanana.feature.text.domain.usecase.GetTextListItemUseCase
@@ -18,6 +19,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -34,6 +36,7 @@ class TextListReaderHandler @Inject constructor(
         intent: TextListUiIntent.Reader,
         updateState: ((TextListUiState) -> TextListUiState) -> Unit,
         scope: CoroutineScope,
+        currentState: TextListUiState,
     ) {
         when (intent) {
             is TextListUiIntent.Reader.SelectText -> {
@@ -41,12 +44,6 @@ class TextListReaderHandler @Inject constructor(
                     id = intent.id,
                     updateState = updateState,
                     scope = scope,
-                )
-            }
-
-            TextListUiIntent.Reader.ClearSelection -> {
-                clearText(
-                    updateState = updateState,
                 )
             }
 
@@ -85,16 +82,18 @@ class TextListReaderHandler @Inject constructor(
             is TextListUiIntent.Reader.ChangeWordStates -> {
                 saveFilterStates(
                     states = intent.states,
-                    updateState = updateState,
                     scope = scope,
+                    currentState = currentState,
+                    updateState = updateState,
                 )
             }
 
             is TextListUiIntent.Reader.ChangePageSettings -> {
                 saveReaderSettings(
                     settings = intent.settings,
-                    updateState = updateState,
                     scope = scope,
+                    currentState = currentState,
+                    updateState = updateState,
                 )
             }
         }
@@ -108,12 +107,10 @@ class TextListReaderHandler @Inject constructor(
         scope.launch(Dispatchers.IO) {
             updateState { it.copy(selectedText = Resource.Loading) }
 
-            val textFlow = getTextListItemUseCase(id)
-            val contentFlow = textRepository.getContentById(id)
+            try {
+                val text = getTextListItemUseCase(id).first()
+                val content = textRepository.getContentById(id).first()
 
-            combine(textFlow, contentFlow) { text, content ->
-                Pair(text, content)
-            }.collect { (text, content) ->
                 val allWords = content.flatMap { it.tokenize() }
                     .filterIsInstance<TextToken.Word>()
                     .map { it.text.lowercase() }
@@ -130,26 +127,20 @@ class TextListReaderHandler @Inject constructor(
                         }
                     }
                 }
-
                 updateState {
                     it.copy(
                         selectedText = Resource.Success(TextWithContent(text, enrichedContent)),
                     )
                 }
+            } catch (e: Exception) {
+                updateState {
+                    it.copy(
+                        selectedText = Resource.Error(ResourceError.Unknown(e.message ?: "Unknown error")),
+                    )
+                }
             }
         }
     }
-
-    private fun clearText(
-        updateState: ((TextListUiState) -> TextListUiState) -> Unit,
-    ) {
-        updateState {
-            it.copy(
-                selectedText = Resource.Empty,
-            )
-        }
-    }
-
     private fun updateProgress(
         id: Int,
         progress: Float,
@@ -171,19 +162,23 @@ class TextListReaderHandler @Inject constructor(
 
     private fun saveFilterStates(
         states: Set<WordState>,
-        updateState: ((TextListUiState) -> TextListUiState) -> Unit,
         scope: CoroutineScope,
+        currentState: TextListUiState,
+        updateState: ((TextListUiState) -> TextListUiState) -> Unit,
     ) {
-        var selectedTextId: Int? = null
-        updateState { state ->
-            selectedTextId = state.selectedText.getOrNull { it.id }
-            state
+        val selectedTextId: Int = currentState.selectedText.getOrNull { it.id } ?: return
+
+        val currentSuccess = currentState.selectedText as? Resource.Success ?: return
+        updateState{ state ->
+            state.copy(
+                selectedText = Resource.Success(data = currentSuccess.data.copy(text = currentSuccess.data.text.copy(activeWordStates = states))),
+            )
         }
 
-        selectedTextId ?: return
-
         scope.launch(Dispatchers.IO) {
-            readingStateRepository.updateReadingState(selectedTextId!!) { readingState ->
+
+
+            readingStateRepository.updateReadingState(selectedTextId) { readingState ->
                 readingState.copy(
                     activeWordStates = states.toSet(),
                 )
@@ -193,20 +188,21 @@ class TextListReaderHandler @Inject constructor(
 
     private fun saveReaderSettings(
         settings: TextAppearanceSettings,
-        updateState: ((TextListUiState) -> TextListUiState) -> Unit,
         scope: CoroutineScope,
+        currentState: TextListUiState,
+        updateState: ((TextListUiState) -> TextListUiState) -> Unit,
     ) {
-        var selectedTextId: Int? = null
+        val selectedTextId: Int = currentState.selectedText.getOrNull { it.id } ?: return
 
-        updateState { state ->
-            selectedTextId = state.selectedText.getOrNull { it.id }
-            state
+        val currentSuccess = currentState.selectedText as? Resource.Success ?: return
+        updateState{ state ->
+            state.copy(
+                selectedText = Resource.Success(data = currentSuccess.data.copy(text = currentSuccess.data.text.copy(textAppearanceSettings = settings))),
+            )
         }
 
-        selectedTextId ?: return
-
         scope.launch {
-            readingStateRepository.updateReadingState(selectedTextId!!) { readingState ->
+            readingStateRepository.updateReadingState(selectedTextId) { readingState ->
                 readingState.copy(
                     fontSize = settings.fontSize,
                     lineSpacing = settings.lineSpacing,

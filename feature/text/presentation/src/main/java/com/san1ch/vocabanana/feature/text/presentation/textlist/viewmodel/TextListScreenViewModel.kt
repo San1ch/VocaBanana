@@ -35,6 +35,7 @@ class TextListScreenViewModel @Inject constructor(
             state = _uiState.value,
             updateState = _uiState::update,
             sendEvent = { sendEvent(it) },
+            currentState = _uiState.value,
         )
     }
 }
@@ -49,7 +50,6 @@ sealed class TextListUiIntent {
 
     sealed class Reader : TextListUiIntent() {
         data class SelectText(val id: Int) : Reader()
-        object ClearSelection : Reader()
         data class UpdateProgress(val id: Int, val progress: Float) : Reader()
         object ToggleLock : Reader()
         object NotifySwipeBlocked : Reader()

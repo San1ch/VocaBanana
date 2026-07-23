@@ -23,6 +23,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
@@ -68,13 +71,11 @@ fun TextListContent(
     val coroutineScope = rememberCoroutineScope()
 
     val canUserScroll = !state.isLockedByReaderLocker &&
-        (
-            pagerState.currentPage != TextListScreenPage.TextReader.index ||
-                state.selectedText is Resource.Success
-            )
+            (pagerState.currentPage != TextListScreenPage.MyTexts.index ||
+                    state.selectedText is Resource.Success ||
+                    state.selectedText is Resource.Loading)
 
-    // Back handler for swiping back to previous page
-    BackHandler(enabled = pagerState.currentPage != TextListScreenPage.TextReader.index) {
+    BackHandler(enabled = pagerState.currentPage != TextListScreenPage.MyTexts.index) {
         coroutineScope.launch {
             pagerState.animateScrollToPage(pagerState.currentPage - 1)
         }

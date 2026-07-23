@@ -20,6 +20,7 @@ class TextListCoordinator @Inject constructor(
         scope: CoroutineScope,
         state: TextListUiState,
         updateState: ((TextListUiState) -> TextListUiState) -> Unit,
+        currentState: TextListUiState,
         sendEvent: (UiEvent) -> Unit,
     ) {
         when (intent) {
@@ -35,6 +36,7 @@ class TextListCoordinator @Inject constructor(
                     intent = intent,
                     scope = scope,
                     updateState = updateState,
+                    currentState = currentState,
                 )
             }
 
@@ -53,6 +55,7 @@ class TextListCoordinator @Inject constructor(
                     intent = intent,
                     scope = scope,
                     updateState = updateState,
+                    currentState = currentState
                 )
             }
         }
