@@ -19,8 +19,6 @@ data class WordDomain private constructor(
 ) {
     fun withState(newState: WordState): WordDomain = this.copy(state = newState)
 
-    fun withDefinition(newDefinition: String): WordDomain = this.copy(definition = newDefinition)
-
     fun addForms(newForms: List<String>): WordDomain {
         val updatedForms = (this.forms + newForms).distinct()
         return this.copy(forms = updatedForms)

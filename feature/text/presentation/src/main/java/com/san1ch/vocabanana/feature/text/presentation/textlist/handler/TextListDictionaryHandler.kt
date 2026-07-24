@@ -2,6 +2,7 @@ package com.san1ch.vocabanana.feature.text.presentation.textlist.handler
 
 import com.san1ch.vocabanana.core.essentials.model.word.FilterType
 import com.san1ch.vocabanana.core.essentials.model.word.WordQuery
+import com.san1ch.vocabanana.core.essentials.repositories.TextRepository
 import com.san1ch.vocabanana.core.essentials.repositories.WordRepository
 import com.san1ch.vocabanana.core.essentials.usecases.GetWordsWithCountUseCase
 import com.san1ch.vocabanana.core.ui.model.UiEvent
@@ -20,6 +21,7 @@ import javax.inject.Inject
 
 class TextListDictionaryHandler @Inject constructor(
     private val wordRepository: WordRepository,
+    private val textRepository: TextRepository,
     private val getWordsWithCountUseCase: GetWordsWithCountUseCase,
     private val generateWordsFromText: GenerateWordsFromTextUseCase,
     private val generateWordsFromTextUiMapper: GenerateWordsFromTextUiMapper,
@@ -38,6 +40,7 @@ class TextListDictionaryHandler @Inject constructor(
                     word = intent.word,
                     scope = scope,
                     updateState = updateState,
+                    textId = state.selectedText.getOrNull { it.id } ?: return, // TODO: handle null
                 )
             }
 
@@ -55,7 +58,7 @@ class TextListDictionaryHandler @Inject constructor(
 
             TextListUiIntent.Dictionary.GenerateWords -> {
                 generateWords(
-                    textId = state.selectedText.getOrNull { it.id } ?: return,
+                    textId = state.selectedText.getOrNull { it.id } ?: return, // TODO: handle null
                     scope = scope,
                     updateState = updateState,
                 )
@@ -64,6 +67,7 @@ class TextListDictionaryHandler @Inject constructor(
     }
     private fun selectPopExtraInfo(
         word: String,
+        textId: Int,
         scope: CoroutineScope,
         updateState: ((TextListUiState) -> TextListUiState) -> Unit,
     ) {
@@ -87,9 +91,11 @@ class TextListDictionaryHandler @Inject constructor(
                         .first()
                         .toUi()
 
+                    val textWordCount = textRepository.getWordCountInText(wordId, textId) ?: return@launch
+
                     updateState {
                         it.copy(
-                            wordInfoState = WordInfoState.Found(wordUi),
+                            wordInfoState = WordInfoState.Found(wordUi, textWordCount),
                         )
                     }
                 }

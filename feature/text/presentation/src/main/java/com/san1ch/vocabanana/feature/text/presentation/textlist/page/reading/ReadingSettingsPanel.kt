@@ -92,7 +92,9 @@ fun ReaderSettingsPanel(
                         0 -> {
                             DisplaySettingsContent(
                                 settings = text.textAppearanceSettings,
-                                onIntent = onIntent,
+                                onSave = { newSettings ->
+                                    onIntent(TextListUiIntent.Reader.ChangePageSettings(newSettings))
+                                },
                             )
                         }
 
@@ -163,56 +165,55 @@ private fun TabButton(
 @Composable
 private fun DisplaySettingsContent(
     settings: TextAppearanceSettings,
-    onIntent: (TextListUiIntent) -> Unit,
+    onSave: (TextAppearanceSettings) -> Unit,
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        SettingRow(stringResource(R.string.font_size), settings.fontSize) {
-            onIntent(
-                TextListUiIntent.Reader.ChangePageSettings(
-                    settings.copy(
-                        fontSize = it.coerceIn(
-                            12,
-                            36,
-                        ),
-                    ),
-                ),
-            )
+    var activatedSettings by remember(settings) { mutableStateOf(settings) }
+
+    val isChanged = settings != activatedSettings
+
+    Column(
+        modifier = Modifier
+            .wrapContentHeight()
+            .fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Column(
+            modifier = Modifier.weight(1f, fill = false),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            SettingRow(stringResource(R.string.font_size), activatedSettings.fontSize) {
+                activatedSettings = activatedSettings.copy(
+                    fontSize = it.coerceIn(12, 36),
+                )
+            }
+            SettingRow(stringResource(R.string.line_spacing), activatedSettings.lineSpacing) {
+                activatedSettings = activatedSettings.copy(
+                    lineSpacing = it.coerceIn(0, 24),
+                )
+            }
+            SettingRow(stringResource(R.string.paragraph_spacing), activatedSettings.paragraphSpacing) {
+                activatedSettings = activatedSettings.copy(
+                    paragraphSpacing = it.coerceIn(0, 64),
+                )
+            }
+            SettingRow(stringResource(R.string.side_margins), activatedSettings.horizontalPadding) {
+                activatedSettings = activatedSettings.copy(
+                    horizontalPadding = it.coerceIn(0, 48),
+                )
+            }
         }
-        SettingRow(stringResource(R.string.line_spacing), settings.lineSpacing) {
-            onIntent(
-                TextListUiIntent.Reader.ChangePageSettings(
-                    settings.copy(
-                        lineSpacing = it.coerceIn(
-                            0,
-                            24,
-                        ),
-                    ),
-                ),
-            )
-        }
-        SettingRow(stringResource(R.string.paragraph_spacing), settings.paragraphSpacing) {
-            onIntent(
-                TextListUiIntent.Reader.ChangePageSettings(
-                    settings.copy(
-                        paragraphSpacing = it.coerceIn(
-                            0,
-                            64,
-                        ),
-                    ),
-                ),
-            )
-        }
-        SettingRow(stringResource(R.string.side_margins), settings.horizontalPadding) {
-            onIntent(
-                TextListUiIntent.Reader.ChangePageSettings(
-                    settings.copy(
-                        horizontalPadding = it.coerceIn(
-                            0,
-                            48,
-                        ),
-                    ),
-                ),
-            )
+
+        OutlinedButton(
+            modifier = Modifier.fillMaxWidth(),
+            onClick = { onSave(activatedSettings) },
+            enabled = isChanged,
+            border = if (isChanged) null else BorderStroke(1.dp, MaterialTheme.colorScheme.primary),
+            colors = ButtonDefaults.outlinedButtonColors(
+                containerColor = if (isChanged) MaterialTheme.colorScheme.primary else Color.Transparent,
+                contentColor = if (isChanged) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary,
+            ),
+        ) {
+            Text("Save")
         }
     }
 }

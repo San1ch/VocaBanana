@@ -25,6 +25,9 @@ fun TextListOverlays(
         state = state.wordInfoState,
         onDismiss = { onIntent(TextListUiIntent.Dictionary.CloseWordInfo) },
         onOxfordClick = { onIntent(TextListUiIntent.Dictionary.OxfordMoreInfo(it)) },
+        onStateUpdate = { id, state ->
+            onIntent(TextListUiIntent.Reader.ChangeWordState(id, state))
+        },
     )
 
     ResourceObserver(

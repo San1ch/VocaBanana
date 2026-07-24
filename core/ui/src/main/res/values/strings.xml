@@ -3,4 +3,10 @@
     <string name="delete">Delete</string>
     <string name="titleanimation">TitleAnimation</string>
     <string name="no_data">No data</string>
+
+    <string name="new_word">New word</string>
+    <string name="learning_word">Learning word</string>
+    <string name="not_known_word">Not known word</string>
+    <string name="known_word">Known word</string>
+    <string name="ignored_word">Ignored word</string>
 </resources>

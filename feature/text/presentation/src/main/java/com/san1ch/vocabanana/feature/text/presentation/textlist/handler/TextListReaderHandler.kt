@@ -1,9 +1,12 @@
 package com.san1ch.vocabanana.feature.text.presentation.textlist.handler
 
 import com.san1ch.vocabanana.core.essentials.model.TextAppearanceSettings
+import com.san1ch.vocabanana.core.essentials.model.word.FilterType
+import com.san1ch.vocabanana.core.essentials.model.word.WordQuery
 import com.san1ch.vocabanana.core.essentials.model.word.WordState
 import com.san1ch.vocabanana.core.essentials.repositories.TextRepository
 import com.san1ch.vocabanana.core.essentials.repositories.WordRepository
+import com.san1ch.vocabanana.core.essentials.usecases.GetWordsUseCase
 import com.san1ch.vocabanana.core.ui.state.Resource
 import com.san1ch.vocabanana.core.ui.state.ResourceError
 import com.san1ch.vocabanana.core.ui.state.getOrNull
@@ -20,6 +23,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -28,6 +32,7 @@ class TextListReaderHandler @Inject constructor(
     private val getTextListItemUseCase: GetTextListItemUseCase,
     private val readingStateRepository: ReadingStateRepository,
     private val wordRepository: WordRepository,
+    private val getWordsUseCase: GetWordsUseCase,
 ) {
 
     private var saveJob: Job? = null
@@ -96,6 +101,25 @@ class TextListReaderHandler @Inject constructor(
                     updateState = updateState,
                 )
             }
+
+            is TextListUiIntent.Reader.ChangeWordState -> {
+                saveNewWordState(
+                    id = intent.id,
+                    state = intent.state,
+                    scope = scope,
+                )
+            }
+        }
+    }
+
+    private fun saveNewWordState(id: Int, state: WordState, scope: CoroutineScope) {
+
+
+        scope.launch(Dispatchers.IO) {
+            val previousWord =
+                getWordsUseCase(WordQuery(wordIds = FilterType.Include(listOf(id)))).firstOrNull()?.first() ?: return@launch
+
+            wordRepository.updateWord(previousWord.withState(state))
         }
     }
 

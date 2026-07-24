@@ -2,6 +2,7 @@ package com.san1ch.vocabanana.feature.text.presentation.textlist.viewmodel
 
 import androidx.lifecycle.viewModelScope
 import com.san1ch.vocabanana.core.essentials.model.TextAppearanceSettings
+import com.san1ch.vocabanana.core.essentials.model.text.TextWordCount
 import com.san1ch.vocabanana.core.essentials.model.word.WordState
 import com.san1ch.vocabanana.core.ui.BaseViewModel
 import com.san1ch.vocabanana.core.ui.model.WordUi
@@ -56,6 +57,7 @@ sealed class TextListUiIntent {
         object ResetSwipeAttempt : Reader()
         data class ChangeWordStates(val states: Set<WordState>) : Reader()
         data class ChangePageSettings(val settings: TextAppearanceSettings) : Reader()
+        data class ChangeWordState(val id: Int, val state: WordState) : Reader()
     }
 
     sealed class Dictionary : TextListUiIntent() {
@@ -95,6 +97,6 @@ data class TextListUiState(
 sealed class WordInfoState {
     object Hidden : WordInfoState()
     object Loading : WordInfoState()
-    data class Found(val word: WordUi) : WordInfoState()
+    data class Found(val word: WordUi, val wordCountInTheText: TextWordCount) : WordInfoState()
     data class NotFound(val word: String) : WordInfoState()
 }
