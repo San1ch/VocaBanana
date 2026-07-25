@@ -17,6 +17,6 @@ fun WordState.toText(): String {
             WordState.NOT_KNOWN -> R.string.not_known_word
             WordState.KNOWN -> R.string.known_word
             WordState.IGNORED -> R.string.ignored_word
-        }
+        },
     )
 }

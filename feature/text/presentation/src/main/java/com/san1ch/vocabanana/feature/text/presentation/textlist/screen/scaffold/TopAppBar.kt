@@ -36,7 +36,7 @@ fun TextListTopBar(
                         onSuccess = { it.text.title },
                         onError = { "Error" },
                     )
-                        // TODO: Change to localized method
+                // TODO: Change to localized method
             }
             AnimatedTitle(title)
         },

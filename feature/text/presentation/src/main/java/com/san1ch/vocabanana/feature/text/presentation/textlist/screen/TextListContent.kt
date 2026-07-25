@@ -69,9 +69,11 @@ fun TextListContent(
     val coroutineScope = rememberCoroutineScope()
 
     val canUserScroll = !state.isLockedByReaderLocker &&
-            (pagerState.currentPage != TextListScreenPage.MyTexts.index ||
-                    state.selectedText is Resource.Success ||
-                    state.selectedText is Resource.Loading)
+        (
+            pagerState.currentPage != TextListScreenPage.MyTexts.index ||
+                state.selectedText is Resource.Success ||
+                state.selectedText is Resource.Loading
+            )
 
     HandleTextListEffects(
         effectFlow = effectFlow,

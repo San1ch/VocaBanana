@@ -50,7 +50,7 @@ class TextListReaderHandler @Inject constructor(
                     textId = intent.id,
                     updateState = updateState,
                     scope = scope,
-                    sendEffect = sendEffect
+                    sendEffect = sendEffect,
                 )
             }
 
@@ -115,8 +115,6 @@ class TextListReaderHandler @Inject constructor(
     }
 
     private fun saveNewWordState(id: Int, state: WordState, scope: CoroutineScope) {
-
-
         scope.launch(Dispatchers.IO) {
             val previousWord =
                 getWordsUseCase(WordQuery(wordIds = FilterType.Include(listOf(id)))).firstOrNull()?.first() ?: return@launch
@@ -132,7 +130,7 @@ class TextListReaderHandler @Inject constructor(
         sendEffect: (TextListUiEffect) -> Unit,
     ) {
         scope.launch(Dispatchers.IO) {
-            if(!textRepository.isTextIdExists(textId)) {
+            if (!textRepository.isTextIdExists(textId)) {
                 updateState { it.copy(currentIdToGenerateWords = textId) }
                 return@launch
             }
@@ -207,15 +205,13 @@ class TextListReaderHandler @Inject constructor(
         val selectedTextId: Int = currentState.selectedText.getOrNull { it.id } ?: return
 
         val currentSuccess = currentState.selectedText as? Resource.Success ?: return
-        updateState{ state ->
+        updateState { state ->
             state.copy(
                 selectedText = Resource.Success(data = currentSuccess.data.copy(text = currentSuccess.data.text.copy(activeWordStates = states))),
             )
         }
 
         scope.launch(Dispatchers.IO) {
-
-
             readingStateRepository.updateReadingState(selectedTextId) { readingState ->
                 readingState.copy(
                     activeWordStates = states.toSet(),
@@ -233,7 +229,7 @@ class TextListReaderHandler @Inject constructor(
         val selectedTextId: Int = currentState.selectedText.getOrNull { it.id } ?: return
 
         val currentSuccess = currentState.selectedText as? Resource.Success ?: return
-        updateState{ state ->
+        updateState { state ->
             state.copy(
                 selectedText = Resource.Success(data = currentSuccess.data.copy(text = currentSuccess.data.text.copy(textAppearanceSettings = settings))),
             )

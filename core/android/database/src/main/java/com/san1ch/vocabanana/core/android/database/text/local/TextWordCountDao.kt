@@ -43,8 +43,7 @@ WHERE (:filter = 0)
 
     @Query("SELECT EXISTS (SELECT 1 FROM text_word_counts WHERE textId = :textId)")
     suspend fun isTextIdExists(textId: Int): Boolean
-    
-    
+
     @Query("SELECT * FROM text_word_counts WHERE textId = :textId AND wordId = :wordId")
     suspend fun getWordCountInText(wordId: Int, textId: Int): TextWordCountEntity?
 

@@ -57,7 +57,7 @@ class TextListCoordinator @Inject constructor(
                     intent = intent,
                     scope = scope,
                     updateState = updateState,
-                    currentState = currentState
+                    currentState = currentState,
                 )
             }
         }

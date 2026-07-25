@@ -99,9 +99,7 @@ class TextRepositoryImpl @Inject constructor(
         textWordCountDao.insertWordCounts(entities)
     }
 
-    override suspend fun getWordCountInText(wordId: Int, textId: Int): TextWordCount? {
-        return textWordCountDao.getWordCountInText(wordId, textId)?.toDomain()
-    }
+    override suspend fun getWordCountInText(wordId: Int, textId: Int): TextWordCount? = textWordCountDao.getWordCountInText(wordId, textId)?.toDomain()
 
     override suspend fun getTextWordCounts(wordIds: List<Int>): Map<Int, Int> {
         if (wordIds.isEmpty()) return emptyMap()

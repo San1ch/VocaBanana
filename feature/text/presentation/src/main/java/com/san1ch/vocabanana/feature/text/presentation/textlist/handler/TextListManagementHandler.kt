@@ -3,7 +3,6 @@ package com.san1ch.vocabanana.feature.text.presentation.textlist.handler
 import com.san1ch.vocabanana.core.essentials.repositories.TextRepository
 import com.san1ch.vocabanana.core.ui.state.Resource
 import com.san1ch.vocabanana.feature.text.domain.usecase.GetTextPreviewsUseCase
-import com.san1ch.vocabanana.feature.text.presentation.model.TextWithContent
 import com.san1ch.vocabanana.feature.text.presentation.textlist.viewmodel.TextListUiIntent
 import com.san1ch.vocabanana.feature.text.presentation.textlist.viewmodel.TextListUiState
 import kotlinx.coroutines.CoroutineScope
@@ -95,7 +94,7 @@ class TextListManagementHandler @Inject constructor(
             updateState {
                 it.copy(
                     selectedTextIdToDelete = null,
-                    selectedText = newSelectedText
+                    selectedText = newSelectedText,
                 )
             }
         }
