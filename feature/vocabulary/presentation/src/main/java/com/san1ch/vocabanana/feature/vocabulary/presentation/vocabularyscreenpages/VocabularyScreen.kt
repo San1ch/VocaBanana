@@ -14,7 +14,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.san1ch.vocabanana.core.ui.compose.CollectResource
+import com.san1ch.vocabanana.core.ui.compose.CollectUiEvents
 import com.san1ch.vocabanana.core.ui.state.ResourceObserver
 import com.san1ch.vocabanana.feature.vocabulary.presentation.VocabularyIntent
 import com.san1ch.vocabanana.feature.vocabulary.presentation.VocabularyScreenViewModel
@@ -24,7 +24,7 @@ import kotlinx.coroutines.launch
 fun VocabularyScreen(
     viewModel: VocabularyScreenViewModel = hiltViewModel(),
 ) {
-    CollectResource(viewModel.events)
+    CollectUiEvents(viewModel.events)
 
     // Single observation point
     val state by viewModel.resource.collectAsState()

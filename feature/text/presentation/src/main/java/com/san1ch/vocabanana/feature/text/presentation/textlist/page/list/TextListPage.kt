@@ -45,7 +45,6 @@ import com.san1ch.vocabanana.feature.text.presentation.textlist.viewmodel.TextLi
 fun TextListPage(
     items: List<TextListPreview>,
     onIntent: (TextListUiIntent) -> Unit,
-    onNavigateToReader: () -> Unit,
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -62,7 +61,6 @@ fun TextListPage(
                     item = item,
                     onClick = {
                         onIntent(TextListUiIntent.Reader.SelectText(item.id))
-                        onNavigateToReader()
                     },
                     onDelete = {
                         onIntent(TextListUiIntent.Management.SelectTextToDelete(item.id))

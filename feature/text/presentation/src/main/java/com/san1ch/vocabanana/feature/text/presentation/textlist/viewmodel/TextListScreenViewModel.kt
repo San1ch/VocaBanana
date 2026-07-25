@@ -12,9 +12,12 @@ import com.san1ch.vocabanana.feature.text.presentation.model.GenerateWordsFromTe
 import com.san1ch.vocabanana.feature.text.presentation.model.TextWithContent
 import com.san1ch.vocabanana.feature.text.presentation.textlist.screen.TextListScreenPage
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -24,6 +27,9 @@ class TextListScreenViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(TextListUiState())
     val uiState = _uiState.asStateFlow()
+
+    private val _effect = MutableSharedFlow<TextListUiEffect>(extraBufferCapacity = 1)
+    val effect = _effect.asSharedFlow()
 
     init {
         onIntent(TextListUiIntent.Management.ObserveTextPreviews)
@@ -36,6 +42,11 @@ class TextListScreenViewModel @Inject constructor(
             state = _uiState.value,
             updateState = _uiState::update,
             sendEvent = { sendEvent(it) },
+            sendEffect = { effect ->
+                viewModelScope.launch {
+                    _effect.emit(effect)
+                }
+            },
             currentState = _uiState.value,
         )
     }
@@ -64,7 +75,8 @@ sealed class TextListUiIntent {
         data class WordClicked(val word: String) : Dictionary()
         object CloseWordInfo : Dictionary()
         data class OxfordMoreInfo(val word: String) : Dictionary()
-        object GenerateWords : Dictionary()
+        data class GenerateWords(val textId: Int) : Dictionary()
+        object ClearIdToGenereteWords : Dictionary()
     }
 
     sealed class Management : TextListUiIntent() {
@@ -81,18 +93,24 @@ data class TextListUiState(
     val showSettings: Boolean = false,
     val isLockedByReaderLocker: Boolean = false,
 
+    val currentIdToGenerateWords: Int? = null,
+
     // --- Content (The "List" and the "Reader") ---
     val textItems: List<TextListPreview> = emptyList(),
     val selectedText: Resource<TextWithContent> = Resource.Empty,
 
     // --- Word & Dictionary Logic ---
-    val wordInfoState: WordInfoState = WordInfoState.Hidden,
+    val showWordInfoState: WordInfoState = WordInfoState.Hidden,
     val generatingState: GenerateWordsFromTextUiState? = null,
 
     // --- Operations & Feedback (Temporary States) ---
     val selectedTextIdToDelete: Int? = null,
     val isSwipeAttempted: Boolean = false,
 )
+
+sealed interface TextListUiEffect {
+    data object NavigateToReader : TextListUiEffect
+}
 
 sealed class WordInfoState {
     object Hidden : WordInfoState()

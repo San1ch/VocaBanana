@@ -91,6 +91,8 @@ class TextRepositoryImpl @Inject constructor(
 
     override fun isTextNameUnique(name: String): Boolean = !textDao.isNameUnique(name)
 
+    override suspend fun isTextIdExists(textId: Int): Boolean = textWordCountDao.isTextIdExists(textId)
+
     override suspend fun saveTextWordCounts(textWordCounts: List<TextWordCount>) {
         if (textWordCounts.isEmpty()) return
         val entities = textWordCounts.map { it.toEntity() }

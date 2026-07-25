@@ -3,6 +3,7 @@ package com.san1ch.vocabanana.feature.text.presentation.textlist.screen
 import androidx.compose.runtime.Composable
 import com.san1ch.vocabanana.core.ui.compose.DeleteConfirmDialog
 import com.san1ch.vocabanana.core.ui.state.ResourceObserver
+import com.san1ch.vocabanana.feature.text.presentation.textlist.page.list.TextGenerateWordsPopup
 import com.san1ch.vocabanana.feature.text.presentation.textlist.page.reading.ReaderSettingsPanel
 import com.san1ch.vocabanana.feature.text.presentation.textlist.page.reading.WordInfoPopup
 import com.san1ch.vocabanana.feature.text.presentation.textlist.viewmodel.TextListUiIntent
@@ -22,7 +23,7 @@ fun TextListOverlays(
     )
 
     WordInfoPopup(
-        state = state.wordInfoState,
+        state = state.showWordInfoState,
         onDismiss = { onIntent(TextListUiIntent.Dictionary.CloseWordInfo) },
         onOxfordClick = { onIntent(TextListUiIntent.Dictionary.OxfordMoreInfo(it)) },
         onStateUpdate = { id, state ->
@@ -43,4 +44,11 @@ fun TextListOverlays(
             onStatesSave = { onIntent(TextListUiIntent.Reader.ChangeWordStates(it)) },
         )
     }
+
+    TextGenerateWordsPopup(
+        textId = state.currentIdToGenerateWords,
+        generatingState = state.generatingState,
+        onIntent = onIntent,
+        onDismiss = { onIntent(TextListUiIntent.Dictionary.ClearIdToGenereteWords) },
+    )
 }

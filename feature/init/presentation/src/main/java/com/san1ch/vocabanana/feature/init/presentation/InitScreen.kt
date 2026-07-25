@@ -17,13 +17,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.san1ch.vocabanana.core.ui.compose.CollectResource
+import com.san1ch.vocabanana.core.ui.compose.CollectUiEvents
 
 @Composable
 fun InitScreen(
     viewModel: InitScreenViewModel = hiltViewModel(),
 ) {
-    CollectResource(viewModel.events)
+    CollectUiEvents(viewModel.events)
     InitContent(onFinished = viewModel::finishInit)
 }
 

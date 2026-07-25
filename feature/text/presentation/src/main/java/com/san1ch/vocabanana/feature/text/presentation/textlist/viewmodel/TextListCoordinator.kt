@@ -22,6 +22,7 @@ class TextListCoordinator @Inject constructor(
         updateState: ((TextListUiState) -> TextListUiState) -> Unit,
         currentState: TextListUiState,
         sendEvent: (UiEvent) -> Unit,
+        sendEffect: (TextListUiEffect) -> Unit,
     ) {
         when (intent) {
             is TextListUiIntent.Navigation -> {
@@ -37,6 +38,7 @@ class TextListCoordinator @Inject constructor(
                     scope = scope,
                     updateState = updateState,
                     currentState = currentState,
+                    sendEffect = sendEffect,
                 )
             }
 

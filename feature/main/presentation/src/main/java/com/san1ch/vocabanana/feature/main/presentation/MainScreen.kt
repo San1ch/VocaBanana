@@ -43,13 +43,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.san1ch.vocabanana.core.ui.compose.CollectResource
+import com.san1ch.vocabanana.core.ui.compose.CollectUiEvents
 
 @Composable
 fun MainScreen(
     viewModel: MainScreenViewModel = hiltViewModel(),
 ) {
-    CollectResource(events = viewModel.events)
+    CollectUiEvents(events = viewModel.events)
 
     val state by viewModel.uiState.collectAsState()
 

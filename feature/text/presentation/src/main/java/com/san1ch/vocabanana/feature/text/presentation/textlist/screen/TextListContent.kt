@@ -23,9 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.compositionLocalOf
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
@@ -33,25 +31,24 @@ import com.san1ch.vocabanana.core.ui.state.Resource
 import com.san1ch.vocabanana.core.ui.state.ResourceObserver
 import com.san1ch.vocabanana.feature.text.presentation.textlist.page.list.TextListPage
 import com.san1ch.vocabanana.feature.text.presentation.textlist.page.reading.TextReaderPage
-import com.san1ch.vocabanana.feature.text.presentation.textlist.page.settings.TextSettingsPage
 import com.san1ch.vocabanana.feature.text.presentation.textlist.screen.scaffold.TextListTopBar
+import com.san1ch.vocabanana.feature.text.presentation.textlist.viewmodel.TextListUiEffect
 import com.san1ch.vocabanana.feature.text.presentation.textlist.viewmodel.TextListUiIntent
 import com.san1ch.vocabanana.feature.text.presentation.textlist.viewmodel.TextListUiState
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 
 enum class TextListScreenPage(val index: Int) {
     MyTexts(0),
     TextReader(1),
-    Settings(2),
     ;
 
     companion object {
         fun fromIndex(index: Int) = when (index) {
             0 -> MyTexts
-            1 -> TextReader
-            else -> Settings
+            else -> TextReader
         }
     }
 }
@@ -65,6 +62,7 @@ val LocalIsPagerScrolling = compositionLocalOf { false }
 @Composable
 fun TextListContent(
     state: TextListUiState,
+    effectFlow: Flow<TextListUiEffect>,
     onIntent: (TextListUiIntent) -> Unit,
 ) {
     val pagerState = rememberPagerState(pageCount = { TextListScreenPage.entries.size })
@@ -74,6 +72,13 @@ fun TextListContent(
             (pagerState.currentPage != TextListScreenPage.MyTexts.index ||
                     state.selectedText is Resource.Success ||
                     state.selectedText is Resource.Loading)
+
+    HandleTextListEffects(
+        effectFlow = effectFlow,
+        onNavigateToReader = {
+            pagerState.animateScrollToPage(TextListScreenPage.TextReader.index)
+        },
+    )
 
     BackHandler(enabled = pagerState.currentPage != TextListScreenPage.MyTexts.index) {
         coroutineScope.launch {
@@ -122,9 +127,6 @@ fun TextListContent(
                             TextListPage(
                                 items = state.textItems,
                                 onIntent = onIntent,
-                                onNavigateToReader = {
-                                    coroutineScope.launch { pagerState.animateScrollToPage(1) }
-                                },
                             )
 
                         TextListScreenPage.TextReader ->
@@ -134,9 +136,6 @@ fun TextListContent(
                                     onIntent,
                                 )
                             }
-
-                        TextListScreenPage.Settings ->
-                            TextSettingsPage(state.generatingState, onIntent)
                     }
                 }
             }
@@ -185,6 +184,22 @@ private fun FabAnimated(isVisible: Boolean, isClickable: Boolean = true, onClick
             if (isClickable) onClick()
         }) {
             Icon(Icons.Default.Add, contentDescription = "Add")
+        }
+    }
+}
+
+@Composable
+fun HandleTextListEffects(
+    effectFlow: Flow<TextListUiEffect>,
+    onNavigateToReader: suspend () -> Unit,
+) {
+    LaunchedEffect(Unit) {
+        effectFlow.collect { effect ->
+            when (effect) {
+                is TextListUiEffect.NavigateToReader -> {
+                    onNavigateToReader()
+                }
+            }
         }
     }
 }

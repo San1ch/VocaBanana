@@ -1,24 +1,16 @@
 package com.san1ch.vocabanana.feature.text.presentation.textlist.page.reading
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
@@ -26,8 +18,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -43,17 +33,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.san1ch.vocabanana.core.essentials.model.text.TextWordCount
-import com.san1ch.vocabanana.core.essentials.model.text.WordWithCount
 import com.san1ch.vocabanana.core.essentials.model.word.WordState
+import com.san1ch.vocabanana.core.ui.compose.AppBasePopup
 import com.san1ch.vocabanana.core.ui.model.toText
 import com.san1ch.vocabanana.feature.text.presentation.textlist.viewmodel.WordInfoState
-import kotlin.text.ifEmpty
 
 @Composable
 fun WordInfoPopup(
@@ -62,44 +48,24 @@ fun WordInfoPopup(
     onStateUpdate: (Int, WordState) -> Unit,
     onOxfordClick: (String) -> Unit,
 ) {
-    AnimatedVisibility(
+    AppBasePopup(
         visible = state !is WordInfoState.Hidden,
-        enter = fadeIn() + slideInVertically { -50 },
-        exit = fadeOut() + slideOutVertically { -50 },
+        onDismiss = onDismiss,
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Black.copy(alpha = 0.4f))
-                .pointerInput(Unit) { detectTapGestures { onDismiss() } }
-                .padding(20.dp)
-                .statusBarsPadding(),
-            contentAlignment = Alignment.Center,
-        ) {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                elevation = CardDefaults.cardElevation(defaultElevation = 12.dp),
-            ) {
-                Column(modifier = Modifier.padding(20.dp)) {
-                    when (state) {
-                        is WordInfoState.Loading -> LoadingContent()
-                        is WordInfoState.NotFound -> NotFoundContent(
-                            state = state,
-                            onOxfordClick = onOxfordClick,
-                        )
+        when (state) {
+            is WordInfoState.Loading -> LoadingContent()
+            is WordInfoState.NotFound -> NotFoundContent(
+                state = state,
+                onOxfordClick = onOxfordClick,
+            )
 
-                        is WordInfoState.Found -> FoundContent(
-                            state = state,
-                            onOxfordClick = onOxfordClick,
-                            onStateSelected = { newState -> onStateUpdate(state.word.id, newState) },
-                        )
+            is WordInfoState.Found -> FoundContent(
+                state = state,
+                onOxfordClick = onOxfordClick,
+                onStateSelected = { newState -> onStateUpdate(state.word.id, newState) },
+            )
 
-                        else -> {}
-                    }
-                }
-            }
+            else -> {}
         }
     }
 }
@@ -143,7 +109,6 @@ private fun FoundContent(
     var showMenu by remember { mutableStateOf(false) }
 
     Column {
-        // Header: Lemma + POS (Compact)
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -162,7 +127,6 @@ private fun FoundContent(
                     color = MaterialTheme.colorScheme.primary,
                 )
             }
-            // Subtle badge
             Box {
                 Box(
                     modifier = Modifier
@@ -213,7 +177,6 @@ private fun FoundContent(
 
     ActionSection(word = state.word.lemma, onOxfordClick = onOxfordClick)
 }
-
 
 @Composable
 private fun ActionSection(word: String, onOxfordClick: (String) -> Unit) {

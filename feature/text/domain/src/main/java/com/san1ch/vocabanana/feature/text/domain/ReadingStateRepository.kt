@@ -9,7 +9,7 @@ interface ReadingStateRepository {
 
     suspend fun setReadingState(readingState: ReadingState)
     suspend fun updateReadingState(
-        id: Int,
+        textId: Int,
         transform: (ReadingState) -> ReadingState,
     )
 }

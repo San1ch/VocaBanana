@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.MaterialTheme
@@ -43,9 +44,11 @@ fun TextReaderPage(
         val targetIndex = (savedProgress * text.content.size).toInt()
         targetIndex.coerceIn(0, maxOf(0, text.content.size - 1))
     }
-    val listState = rememberLazyListState(
-        initialFirstVisibleItemIndex = initialIndex,
-    )
+    val listState = remember(text.id) {
+        LazyListState(
+            firstVisibleItemIndex = initialIndex
+        )
+    }
 
     // Save progress
     LaunchedEffect(listState.firstVisibleItemIndex) {

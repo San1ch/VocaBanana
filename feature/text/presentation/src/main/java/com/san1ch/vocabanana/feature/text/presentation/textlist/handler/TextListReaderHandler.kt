@@ -15,13 +15,13 @@ import com.san1ch.vocabanana.feature.text.domain.usecase.GetTextListItemUseCase
 import com.san1ch.vocabanana.feature.text.presentation.data.TextToken
 import com.san1ch.vocabanana.feature.text.presentation.data.tokenize
 import com.san1ch.vocabanana.feature.text.presentation.model.TextWithContent
+import com.san1ch.vocabanana.feature.text.presentation.textlist.viewmodel.TextListUiEffect
 import com.san1ch.vocabanana.feature.text.presentation.textlist.viewmodel.TextListUiIntent
 import com.san1ch.vocabanana.feature.text.presentation.textlist.viewmodel.TextListUiState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
@@ -42,19 +42,21 @@ class TextListReaderHandler @Inject constructor(
         updateState: ((TextListUiState) -> TextListUiState) -> Unit,
         scope: CoroutineScope,
         currentState: TextListUiState,
+        sendEffect: (TextListUiEffect) -> Unit,
     ) {
         when (intent) {
             is TextListUiIntent.Reader.SelectText -> {
                 selectText(
-                    id = intent.id,
+                    textId = intent.id,
                     updateState = updateState,
                     scope = scope,
+                    sendEffect = sendEffect
                 )
             }
 
             is TextListUiIntent.Reader.UpdateProgress -> {
                 updateProgress(
-                    id = intent.id,
+                    textId = intent.id,
                     progress = intent.progress,
                     scope = scope,
                 )
@@ -124,22 +126,31 @@ class TextListReaderHandler @Inject constructor(
     }
 
     private fun selectText(
-        id: Int,
+        textId: Int,
         updateState: ((TextListUiState) -> TextListUiState) -> Unit,
         scope: CoroutineScope,
+        sendEffect: (TextListUiEffect) -> Unit,
     ) {
         scope.launch(Dispatchers.IO) {
+            if(!textRepository.isTextIdExists(textId)) {
+                updateState { it.copy(currentIdToGenerateWords = textId) }
+                return@launch
+            }
+
             updateState { it.copy(selectedText = Resource.Loading) }
 
+            sendEffect(TextListUiEffect.NavigateToReader)
             try {
-                val text = getTextListItemUseCase(id).first()
-                val content = textRepository.getContentById(id).first()
+                val text = getTextListItemUseCase(textId).first()
+                val content = textRepository.getContentById(textId).first()
 
+                println("SELECT TEXT: Id-$textId: ${text.lastScrollPosition}")
                 val allWords = content.flatMap { it.tokenize() }
                     .filterIsInstance<TextToken.Word>()
                     .map { it.text.lowercase() }
                     .distinct()
 
+                println("SELECT TEXT: Id-$textId: ${text.lastScrollPosition}")
                 val statesMap = wordRepository.getWordStatesMapForText(allWords)
 
                 val enrichedContent = content.map { paragraph ->
@@ -151,11 +162,14 @@ class TextListReaderHandler @Inject constructor(
                         }
                     }
                 }
+                println("SELECT TEXT: Id-$textId: ${text.lastScrollPosition}")
                 updateState {
                     it.copy(
                         selectedText = Resource.Success(TextWithContent(text, enrichedContent)),
                     )
                 }
+                println("SELECT TEXT: Id-$textId: ${text.lastScrollPosition}")
+                println("SELECT TEXT: FINISHED")
             } catch (e: Exception) {
                 updateState {
                     it.copy(
@@ -166,7 +180,7 @@ class TextListReaderHandler @Inject constructor(
         }
     }
     private fun updateProgress(
-        id: Int,
+        textId: Int,
         progress: Float,
         scope: CoroutineScope,
     ) {
@@ -175,7 +189,7 @@ class TextListReaderHandler @Inject constructor(
         saveJob = scope.launch(Dispatchers.IO) {
             delay(500)
 
-            readingStateRepository.updateReadingState(id) { readingState ->
+            readingStateRepository.updateReadingState(textId) { readingState ->
                 readingState.copy(
                     lastScrollPosition = progress,
                     lastReadTime = System.currentTimeMillis(),

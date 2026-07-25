@@ -47,7 +47,7 @@ class TextListDictionaryHandler @Inject constructor(
             TextListUiIntent.Dictionary.CloseWordInfo -> {
                 updateState {
                     it.copy(
-                        wordInfoState = WordInfoState.Hidden,
+                        showWordInfoState = WordInfoState.Hidden,
                     )
                 }
             }
@@ -56,12 +56,20 @@ class TextListDictionaryHandler @Inject constructor(
                 openOxfordDictionary(intent.word, sendEvent)
             }
 
-            TextListUiIntent.Dictionary.GenerateWords -> {
+            is TextListUiIntent.Dictionary.GenerateWords -> {
                 generateWords(
-                    textId = state.selectedText.getOrNull { it.id } ?: return, // TODO: handle null
+                    textId = intent.textId,
                     scope = scope,
                     updateState = updateState,
                 )
+            }
+
+            TextListUiIntent.Dictionary.ClearIdToGenereteWords -> {
+                updateState {
+                    it.copy(
+                        currentIdToGenerateWords = null,
+                    )
+                }
             }
         }
     }
@@ -73,7 +81,7 @@ class TextListDictionaryHandler @Inject constructor(
     ) {
         updateState {
             it.copy(
-                wordInfoState = WordInfoState.Loading,
+                showWordInfoState = WordInfoState.Loading,
             )
         }
 
@@ -95,14 +103,14 @@ class TextListDictionaryHandler @Inject constructor(
 
                     updateState {
                         it.copy(
-                            wordInfoState = WordInfoState.Found(wordUi, textWordCount),
+                            showWordInfoState = WordInfoState.Found(wordUi, textWordCount),
                         )
                     }
                 }
                 .onFailure {
                     updateState {
                         it.copy(
-                            wordInfoState = WordInfoState.NotFound(word),
+                            showWordInfoState = WordInfoState.NotFound(word),
                         )
                     }
                 }

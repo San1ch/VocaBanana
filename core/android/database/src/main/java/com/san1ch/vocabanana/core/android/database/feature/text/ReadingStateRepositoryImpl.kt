@@ -22,10 +22,10 @@ class ReadingStateRepositoryImpl @Inject constructor(
     }
 
     override suspend fun updateReadingState(
-        id: Int,
+        textId: Int,
         transform: (ReadingState) -> ReadingState,
     ) {
-        val currentState = readingStateDao.getReadingStateById(id) ?: ReadingState(id).toEntity()
+        val currentState = readingStateDao.getReadingStateById(textId) ?: ReadingState(textId).toEntity()
         val newState = transform(currentState.toDomain())
         readingStateDao.insertReadingState(newState.toEntity())
     }
