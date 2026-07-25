@@ -104,7 +104,7 @@ class TextProcessingServiceTest {
     fun `prepareText should handle some new edge case`() {
         val text = "some text"
         val result = service.prepareText(text)
-        Assertions.assertNotNull(result) // Або будь-яка інша перевірка
+        Assertions.assertNotNull(result)
     }
 
     @Test

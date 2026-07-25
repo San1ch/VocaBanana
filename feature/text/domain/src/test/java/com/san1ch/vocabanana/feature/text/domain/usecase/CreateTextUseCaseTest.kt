@@ -44,7 +44,7 @@ class CreateTextUseCaseTest {
     fun `invoke should return failure when domain validation fails`() {
         // Given
         val textName = "Valid Title"
-        val invalidContent = "" // Змінено на порожній рядок для коректної перевірки валідації
+        val invalidContent = ""
         every { textRepository.isTextNameUnique(textName) } returns true
 
         // When

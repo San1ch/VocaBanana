@@ -25,3 +25,4 @@ data class TextWordCountEntity(
 )
 
 fun TextWordCount.toEntity() = TextWordCountEntity(textId, wordId, count)
+fun TextWordCountEntity.toDomain() = TextWordCount(textId, wordId, count)

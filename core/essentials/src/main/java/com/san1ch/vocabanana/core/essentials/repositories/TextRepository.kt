@@ -17,8 +17,9 @@ interface TextRepository {
     suspend fun deleteTexts(textIds: List<Int>)
 
     fun isTextNameUnique(name: String): Boolean
-
+    suspend fun isTextIdExists(textId: Int): Boolean
     suspend fun saveTextWordCounts(textWordCounts: List<TextWordCount>)
+    suspend fun getWordCountInText(wordId: Int, textId: Int): TextWordCount?
 
     suspend fun getTextWordCounts(wordIds: List<Int>): Map<Int, Int>
 }

@@ -1,4 +1,4 @@
-package com.san1ch.vocabanana.feature.text.presentation.textlist
+package com.san1ch.vocabanana.feature.text.presentation.textlist.viewmodel
 
 import com.san1ch.vocabanana.core.ui.model.UiEvent
 import com.san1ch.vocabanana.feature.text.presentation.textlist.handler.TextListDictionaryHandler
@@ -20,7 +20,9 @@ class TextListCoordinator @Inject constructor(
         scope: CoroutineScope,
         state: TextListUiState,
         updateState: ((TextListUiState) -> TextListUiState) -> Unit,
+        currentState: TextListUiState,
         sendEvent: (UiEvent) -> Unit,
+        sendEffect: (TextListUiEffect) -> Unit,
     ) {
         when (intent) {
             is TextListUiIntent.Navigation -> {
@@ -35,6 +37,8 @@ class TextListCoordinator @Inject constructor(
                     intent = intent,
                     scope = scope,
                     updateState = updateState,
+                    currentState = currentState,
+                    sendEffect = sendEffect,
                 )
             }
 
@@ -53,6 +57,7 @@ class TextListCoordinator @Inject constructor(
                     intent = intent,
                     scope = scope,
                     updateState = updateState,
+                    currentState = currentState,
                 )
             }
         }

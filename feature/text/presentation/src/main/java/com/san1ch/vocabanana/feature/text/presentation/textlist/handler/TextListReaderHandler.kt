@@ -1,20 +1,29 @@
 package com.san1ch.vocabanana.feature.text.presentation.textlist.handler
 
 import com.san1ch.vocabanana.core.essentials.model.TextAppearanceSettings
+import com.san1ch.vocabanana.core.essentials.model.word.FilterType
+import com.san1ch.vocabanana.core.essentials.model.word.WordQuery
 import com.san1ch.vocabanana.core.essentials.model.word.WordState
 import com.san1ch.vocabanana.core.essentials.repositories.TextRepository
 import com.san1ch.vocabanana.core.essentials.repositories.WordRepository
+import com.san1ch.vocabanana.core.essentials.usecases.GetWordsUseCase
+import com.san1ch.vocabanana.core.ui.state.Resource
+import com.san1ch.vocabanana.core.ui.state.ResourceError
+import com.san1ch.vocabanana.core.ui.state.getOrNull
 import com.san1ch.vocabanana.feature.text.domain.ReadingStateRepository
 import com.san1ch.vocabanana.feature.text.domain.usecase.GetTextListItemUseCase
 import com.san1ch.vocabanana.feature.text.presentation.data.TextToken
 import com.san1ch.vocabanana.feature.text.presentation.data.tokenize
-import com.san1ch.vocabanana.feature.text.presentation.textlist.TextListUiIntent
-import com.san1ch.vocabanana.feature.text.presentation.textlist.TextListUiState
+import com.san1ch.vocabanana.feature.text.presentation.model.TextWithContent
+import com.san1ch.vocabanana.feature.text.presentation.textlist.viewmodel.TextListUiEffect
+import com.san1ch.vocabanana.feature.text.presentation.textlist.viewmodel.TextListUiIntent
+import com.san1ch.vocabanana.feature.text.presentation.textlist.viewmodel.TextListUiState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -23,6 +32,7 @@ class TextListReaderHandler @Inject constructor(
     private val getTextListItemUseCase: GetTextListItemUseCase,
     private val readingStateRepository: ReadingStateRepository,
     private val wordRepository: WordRepository,
+    private val getWordsUseCase: GetWordsUseCase,
 ) {
 
     private var saveJob: Job? = null
@@ -31,25 +41,22 @@ class TextListReaderHandler @Inject constructor(
         intent: TextListUiIntent.Reader,
         updateState: ((TextListUiState) -> TextListUiState) -> Unit,
         scope: CoroutineScope,
+        currentState: TextListUiState,
+        sendEffect: (TextListUiEffect) -> Unit,
     ) {
         when (intent) {
             is TextListUiIntent.Reader.SelectText -> {
                 selectText(
-                    id = intent.id,
+                    textId = intent.id,
                     updateState = updateState,
                     scope = scope,
-                )
-            }
-
-            TextListUiIntent.Reader.ClearSelection -> {
-                clearText(
-                    updateState = updateState,
+                    sendEffect = sendEffect,
                 )
             }
 
             is TextListUiIntent.Reader.UpdateProgress -> {
                 updateProgress(
-                    id = intent.id,
+                    textId = intent.id,
                     progress = intent.progress,
                     scope = scope,
                 )
@@ -78,41 +85,70 @@ class TextListReaderHandler @Inject constructor(
                     )
                 }
             }
+
             is TextListUiIntent.Reader.ChangeWordStates -> {
                 saveFilterStates(
                     states = intent.states,
-                    updateState = updateState,
                     scope = scope,
+                    currentState = currentState,
+                    updateState = updateState,
                 )
             }
+
             is TextListUiIntent.Reader.ChangePageSettings -> {
                 saveReaderSettings(
                     settings = intent.settings,
+                    scope = scope,
+                    currentState = currentState,
                     updateState = updateState,
+                )
+            }
+
+            is TextListUiIntent.Reader.ChangeWordState -> {
+                saveNewWordState(
+                    id = intent.id,
+                    state = intent.state,
                     scope = scope,
                 )
             }
         }
     }
+
+    private fun saveNewWordState(id: Int, state: WordState, scope: CoroutineScope) {
+        scope.launch(Dispatchers.IO) {
+            val previousWord =
+                getWordsUseCase(WordQuery(wordIds = FilterType.Include(listOf(id)))).firstOrNull()?.first() ?: return@launch
+
+            wordRepository.updateWord(previousWord.withState(state))
+        }
+    }
+
     private fun selectText(
-        id: Int,
+        textId: Int,
         updateState: ((TextListUiState) -> TextListUiState) -> Unit,
         scope: CoroutineScope,
+        sendEffect: (TextListUiEffect) -> Unit,
     ) {
         scope.launch(Dispatchers.IO) {
-            clearText(updateState)
+            if (!textRepository.isTextIdExists(textId)) {
+                updateState { it.copy(currentIdToGenerateWords = textId) }
+                return@launch
+            }
 
-            val textFlow = getTextListItemUseCase(id)
-            val contentFlow = textRepository.getContentById(id)
+            updateState { it.copy(selectedText = Resource.Loading) }
 
-            combine(textFlow, contentFlow) { text, content ->
-                Pair(text, content)
-            }.collect { (text, content) ->
+            sendEffect(TextListUiEffect.NavigateToReader)
+            try {
+                val text = getTextListItemUseCase(textId).first()
+                val content = textRepository.getContentById(textId).first()
+
+                println("SELECT TEXT: Id-$textId: ${text.lastScrollPosition}")
                 val allWords = content.flatMap { it.tokenize() }
                     .filterIsInstance<TextToken.Word>()
                     .map { it.text.lowercase() }
                     .distinct()
 
+                println("SELECT TEXT: Id-$textId: ${text.lastScrollPosition}")
                 val statesMap = wordRepository.getWordStatesMapForText(allWords)
 
                 val enrichedContent = content.map { paragraph ->
@@ -124,29 +160,25 @@ class TextListReaderHandler @Inject constructor(
                         }
                     }
                 }
-
+                println("SELECT TEXT: Id-$textId: ${text.lastScrollPosition}")
                 updateState {
                     it.copy(
-                        selectedText = text,
-                        textContent = enrichedContent,
+                        selectedText = Resource.Success(TextWithContent(text, enrichedContent)),
+                    )
+                }
+                println("SELECT TEXT: Id-$textId: ${text.lastScrollPosition}")
+                println("SELECT TEXT: FINISHED")
+            } catch (e: Exception) {
+                updateState {
+                    it.copy(
+                        selectedText = Resource.Error(ResourceError.Unknown(e.message ?: "Unknown error")),
                     )
                 }
             }
         }
     }
-
-    private fun clearText(
-        updateState: ((TextListUiState) -> TextListUiState) -> Unit,
-    ) {
-        updateState {
-            it.copy(
-                selectedText = null,
-                textContent = emptyList(),
-            )
-        }
-    }
     private fun updateProgress(
-        id: Int,
+        textId: Int,
         progress: Float,
         scope: CoroutineScope,
     ) {
@@ -155,7 +187,7 @@ class TextListReaderHandler @Inject constructor(
         saveJob = scope.launch(Dispatchers.IO) {
             delay(500)
 
-            readingStateRepository.updateReadingState(id) { readingState ->
+            readingStateRepository.updateReadingState(textId) { readingState ->
                 readingState.copy(
                     lastScrollPosition = progress,
                     lastReadTime = System.currentTimeMillis(),
@@ -163,45 +195,48 @@ class TextListReaderHandler @Inject constructor(
             }
         }
     }
+
     private fun saveFilterStates(
         states: Set<WordState>,
-        updateState: ((TextListUiState) -> TextListUiState) -> Unit,
         scope: CoroutineScope,
+        currentState: TextListUiState,
+        updateState: ((TextListUiState) -> TextListUiState) -> Unit,
     ) {
-        updateState { it.copy(selectedText = it.selectedText?.copy(activeWordStates = states)) }
+        val selectedTextId: Int = currentState.selectedText.getOrNull { it.id } ?: return
 
-        var selectedTextId: Int? = null
+        val currentSuccess = currentState.selectedText as? Resource.Success ?: return
         updateState { state ->
-            selectedTextId = state.selectedText?.id
-            state
+            state.copy(
+                selectedText = Resource.Success(data = currentSuccess.data.copy(text = currentSuccess.data.text.copy(activeWordStates = states))),
+            )
         }
 
-        selectedTextId ?: return
-
         scope.launch(Dispatchers.IO) {
-            readingStateRepository.updateReadingState(selectedTextId!!) { readingState ->
+            readingStateRepository.updateReadingState(selectedTextId) { readingState ->
                 readingState.copy(
                     activeWordStates = states.toSet(),
                 )
             }
         }
     }
+
     private fun saveReaderSettings(
         settings: TextAppearanceSettings,
-        updateState: ((TextListUiState) -> TextListUiState) -> Unit,
         scope: CoroutineScope,
+        currentState: TextListUiState,
+        updateState: ((TextListUiState) -> TextListUiState) -> Unit,
     ) {
-        var selectedTextId: Int? = null
+        val selectedTextId: Int = currentState.selectedText.getOrNull { it.id } ?: return
 
+        val currentSuccess = currentState.selectedText as? Resource.Success ?: return
         updateState { state ->
-            selectedTextId = state.selectedText?.id
-            state
+            state.copy(
+                selectedText = Resource.Success(data = currentSuccess.data.copy(text = currentSuccess.data.text.copy(textAppearanceSettings = settings))),
+            )
         }
 
-        selectedTextId ?: return
-
         scope.launch {
-            readingStateRepository.updateReadingState(selectedTextId!!) { readingState ->
+            readingStateRepository.updateReadingState(selectedTextId) { readingState ->
                 readingState.copy(
                     fontSize = settings.fontSize,
                     lineSpacing = settings.lineSpacing,

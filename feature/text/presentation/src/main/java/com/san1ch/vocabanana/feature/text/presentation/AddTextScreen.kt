@@ -6,7 +6,6 @@ import android.content.Context
 import android.provider.OpenableColumns
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -43,7 +42,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.san1ch.vocabanana.core.essentials.model.constants.TextConstant
-import com.san1ch.vocabanana.core.ui.compose.CollectResource
+import com.san1ch.vocabanana.core.ui.compose.CollectUiEvents
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -51,7 +50,7 @@ import kotlinx.coroutines.launch
 fun AddTextScreen(
     viewModel: AddTextScreenViewModel = hiltViewModel(),
 ) {
-    CollectResource(events = viewModel.events)
+    CollectUiEvents(events = viewModel.events)
 
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
@@ -117,11 +116,6 @@ fun AddTextContent(
     onPasteClick: () -> Unit,
     onCopyClick: () -> Unit,
 ) {
-    val color by animateColorAsState(
-        targetValue = if (state.isTitleTooLong) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.secondary,
-        label = stringResource(R.string.bordercolor),
-    )
-
     Scaffold(
         topBar = {
             TopAppBar(

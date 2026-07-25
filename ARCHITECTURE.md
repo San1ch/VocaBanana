@@ -297,16 +297,16 @@ This approach provides:
 Every screen exposes a single source of truth:
 
 ```kotlin
-data class UiState(...)
+data class _nameScreen_UiState(...)
 ```
 
 which simplifies state management and reactive UI updates.
 
 ---
 
-# UI State Management
+# Resource<T> Management
 
-The project uses a lightweight state management system based on sealed UI states:
+The project uses a lightweight state management system based on sealed states:
 
 * Loading
 * Success

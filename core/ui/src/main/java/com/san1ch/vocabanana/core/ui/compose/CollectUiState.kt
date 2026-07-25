@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.Flow
 
 @SuppressLint("LocalContextGetResourceValueCall")
 @Composable
-fun CollectResource(
+fun CollectUiEvents(
     events: Flow<UiEvent>,
 ) {
     val context = LocalContext.current

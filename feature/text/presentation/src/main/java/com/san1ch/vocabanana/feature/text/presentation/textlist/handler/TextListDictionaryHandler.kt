@@ -2,15 +2,17 @@ package com.san1ch.vocabanana.feature.text.presentation.textlist.handler
 
 import com.san1ch.vocabanana.core.essentials.model.word.FilterType
 import com.san1ch.vocabanana.core.essentials.model.word.WordQuery
+import com.san1ch.vocabanana.core.essentials.repositories.TextRepository
 import com.san1ch.vocabanana.core.essentials.repositories.WordRepository
 import com.san1ch.vocabanana.core.essentials.usecases.GetWordsWithCountUseCase
 import com.san1ch.vocabanana.core.ui.model.UiEvent
 import com.san1ch.vocabanana.core.ui.model.toUi
+import com.san1ch.vocabanana.core.ui.state.getOrNull
 import com.san1ch.vocabanana.feature.text.domain.usecase.GenerateWordsFromTextUseCase
 import com.san1ch.vocabanana.feature.text.presentation.mapper.GenerateWordsFromTextUiMapper
-import com.san1ch.vocabanana.feature.text.presentation.textlist.TextListUiIntent
-import com.san1ch.vocabanana.feature.text.presentation.textlist.TextListUiState
-import com.san1ch.vocabanana.feature.text.presentation.textlist.WordInfoState
+import com.san1ch.vocabanana.feature.text.presentation.textlist.viewmodel.TextListUiIntent
+import com.san1ch.vocabanana.feature.text.presentation.textlist.viewmodel.TextListUiState
+import com.san1ch.vocabanana.feature.text.presentation.textlist.viewmodel.WordInfoState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -19,6 +21,7 @@ import javax.inject.Inject
 
 class TextListDictionaryHandler @Inject constructor(
     private val wordRepository: WordRepository,
+    private val textRepository: TextRepository,
     private val getWordsWithCountUseCase: GetWordsWithCountUseCase,
     private val generateWordsFromText: GenerateWordsFromTextUseCase,
     private val generateWordsFromTextUiMapper: GenerateWordsFromTextUiMapper,
@@ -37,13 +40,14 @@ class TextListDictionaryHandler @Inject constructor(
                     word = intent.word,
                     scope = scope,
                     updateState = updateState,
+                    textId = state.selectedText.getOrNull { it.id } ?: return, // TODO: handle null
                 )
             }
 
             TextListUiIntent.Dictionary.CloseWordInfo -> {
                 updateState {
                     it.copy(
-                        wordInfoState = WordInfoState.Hidden,
+                        showWordInfoState = WordInfoState.Hidden,
                     )
                 }
             }
@@ -52,23 +56,32 @@ class TextListDictionaryHandler @Inject constructor(
                 openOxfordDictionary(intent.word, sendEvent)
             }
 
-            TextListUiIntent.Dictionary.GenerateWords -> {
+            is TextListUiIntent.Dictionary.GenerateWords -> {
                 generateWords(
-                    textId = state.selectedText?.id ?: return,
+                    textId = intent.textId,
                     scope = scope,
                     updateState = updateState,
                 )
+            }
+
+            TextListUiIntent.Dictionary.ClearIdToGenereteWords -> {
+                updateState {
+                    it.copy(
+                        currentIdToGenerateWords = null,
+                    )
+                }
             }
         }
     }
     private fun selectPopExtraInfo(
         word: String,
+        textId: Int,
         scope: CoroutineScope,
         updateState: ((TextListUiState) -> TextListUiState) -> Unit,
     ) {
         updateState {
             it.copy(
-                wordInfoState = WordInfoState.Loading,
+                showWordInfoState = WordInfoState.Loading,
             )
         }
 
@@ -86,16 +99,18 @@ class TextListDictionaryHandler @Inject constructor(
                         .first()
                         .toUi()
 
+                    val textWordCount = textRepository.getWordCountInText(wordId, textId) ?: return@launch
+
                     updateState {
                         it.copy(
-                            wordInfoState = WordInfoState.Found(wordUi),
+                            showWordInfoState = WordInfoState.Found(wordUi, textWordCount),
                         )
                     }
                 }
                 .onFailure {
                     updateState {
                         it.copy(
-                            wordInfoState = WordInfoState.NotFound(word),
+                            showWordInfoState = WordInfoState.NotFound(word),
                         )
                     }
                 }

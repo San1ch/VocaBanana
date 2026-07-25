@@ -3,6 +3,7 @@ package com.san1ch.vocabanana.core.android.database.text.repository
 import com.san1ch.vocabanana.core.android.database.text.local.TextDao
 import com.san1ch.vocabanana.core.android.database.text.local.TextEntity
 import com.san1ch.vocabanana.core.android.database.text.local.TextWordCountDao
+import com.san1ch.vocabanana.core.android.database.text.local.toDomain
 import com.san1ch.vocabanana.core.android.database.text.local.toEntity
 import com.san1ch.vocabanana.core.android.database.text.toDomainUnsafe
 import com.san1ch.vocabanana.core.essentials.extentionfuncs.toParagraphs
@@ -90,11 +91,15 @@ class TextRepositoryImpl @Inject constructor(
 
     override fun isTextNameUnique(name: String): Boolean = !textDao.isNameUnique(name)
 
+    override suspend fun isTextIdExists(textId: Int): Boolean = textWordCountDao.isTextIdExists(textId)
+
     override suspend fun saveTextWordCounts(textWordCounts: List<TextWordCount>) {
         if (textWordCounts.isEmpty()) return
         val entities = textWordCounts.map { it.toEntity() }
         textWordCountDao.insertWordCounts(entities)
     }
+
+    override suspend fun getWordCountInText(wordId: Int, textId: Int): TextWordCount? = textWordCountDao.getWordCountInText(wordId, textId)?.toDomain()
 
     override suspend fun getTextWordCounts(wordIds: List<Int>): Map<Int, Int> {
         if (wordIds.isEmpty()) return emptyMap()

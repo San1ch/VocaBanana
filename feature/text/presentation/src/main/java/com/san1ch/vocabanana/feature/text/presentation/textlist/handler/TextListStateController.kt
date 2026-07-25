@@ -1,6 +1,6 @@
 package com.san1ch.vocabanana.feature.text.presentation.textlist.handler
 
-import com.san1ch.vocabanana.feature.text.presentation.textlist.TextListUiState
+import com.san1ch.vocabanana.feature.text.presentation.textlist.viewmodel.TextListUiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 
