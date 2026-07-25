@@ -1,5 +1,6 @@
 package com.san1ch.vocabanana.feature.text.presentation.textlist.handler
 
+import com.san1ch.vocabanana.core.essentials.Logger
 import com.san1ch.vocabanana.core.essentials.repositories.TextRepository
 import com.san1ch.vocabanana.core.ui.state.Resource
 import com.san1ch.vocabanana.feature.text.domain.usecase.GetTextPreviewsUseCase
@@ -12,6 +13,7 @@ import javax.inject.Inject
 class TextListManagementHandler @Inject constructor(
     private val textRepository: TextRepository,
     private val getTextPreviewsUseCase: GetTextPreviewsUseCase,
+    private val logger: Logger,
 ) {
 
     fun handle(
@@ -74,7 +76,10 @@ class TextListManagementHandler @Inject constructor(
         updateState: ((TextListUiState) -> TextListUiState) -> Unit,
         currentState: TextListUiState,
     ) {
-        val idToDelete: Int = currentState.selectedTextIdToDelete ?: return
+        val idToDelete: Int = currentState.selectedTextIdToDelete ?: run {
+            logger.d("Attempted to delete text, but no text is currently selected.")
+            return
+        }
 
         val newSelectedText = when (val resource = currentState.selectedText) {
             is Resource.Success -> {

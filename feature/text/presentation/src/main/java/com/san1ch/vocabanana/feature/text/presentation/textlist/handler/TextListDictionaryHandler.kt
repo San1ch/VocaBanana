@@ -1,5 +1,6 @@
 package com.san1ch.vocabanana.feature.text.presentation.textlist.handler
 
+import com.san1ch.vocabanana.core.essentials.Logger
 import com.san1ch.vocabanana.core.essentials.model.word.FilterType
 import com.san1ch.vocabanana.core.essentials.model.word.WordQuery
 import com.san1ch.vocabanana.core.essentials.repositories.TextRepository
@@ -25,6 +26,7 @@ class TextListDictionaryHandler @Inject constructor(
     private val getWordsWithCountUseCase: GetWordsWithCountUseCase,
     private val generateWordsFromText: GenerateWordsFromTextUseCase,
     private val generateWordsFromTextUiMapper: GenerateWordsFromTextUiMapper,
+    private val logger: Logger
 ) {
 
     fun handle(
@@ -40,7 +42,13 @@ class TextListDictionaryHandler @Inject constructor(
                     word = intent.word,
                     scope = scope,
                     updateState = updateState,
-                    textId = state.selectedText.getOrNull { it.id } ?: return, // TODO: handle null
+                    textId = state.selectedText.getOrNull { it.id } ?: run {
+                        val exception = IllegalStateException("Critical: WordClicked received, but selectedText is null or not loaded. State: ${state.selectedText}")
+                        logger.e(exception, "State invariant broken in TextListDictionaryHandler")
+
+                        updateState { it.copy(showWordInfoState = WordInfoState.Hidden) }
+                        return
+                    }
                 )
             }
 
@@ -99,7 +107,15 @@ class TextListDictionaryHandler @Inject constructor(
                         .first()
                         .toUi()
 
-                    val textWordCount = textRepository.getWordCountInText(wordId, textId) ?: return@launch
+                    val textWordCount = textRepository.getWordCountInText(wordId, textId) ?: run {
+                        logger.e(
+                            IllegalStateException("Data missing"),
+                            "Failed to find word count for wordId=$wordId and textId=$textId"
+                        )
+
+                        updateState { it.copy(showWordInfoState = WordInfoState.NotFound(word)) }
+                        return@launch
+                    }
 
                     updateState {
                         it.copy(

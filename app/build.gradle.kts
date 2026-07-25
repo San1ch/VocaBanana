@@ -35,6 +35,7 @@ dependencies {
 
     implementation(projects.core.essentials)
     implementation(projects.core.android.database)
+    implementation(projects.core.android.commonandroid)
     implementation(projects.core.ui)
 
     implementation(projects.feature.debug.presentation)
