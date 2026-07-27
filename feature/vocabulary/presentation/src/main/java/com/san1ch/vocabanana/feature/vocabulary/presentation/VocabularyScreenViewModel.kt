@@ -6,9 +6,10 @@ import com.san1ch.vocabanana.core.essentials.model.word.WordState
 import com.san1ch.vocabanana.core.essentials.repositories.WordRepository
 import com.san1ch.vocabanana.core.essentials.usecases.GetWordsWithCountUseCase
 import com.san1ch.vocabanana.core.ui.BaseViewModel
-import com.san1ch.vocabanana.core.ui.model.SortType
+import com.san1ch.vocabanana.core.essentials.model.SortType
 import com.san1ch.vocabanana.core.ui.model.UiEvent
-import com.san1ch.vocabanana.core.ui.model.WordFilter
+import com.san1ch.vocabanana.core.essentials.model.WordFilter
+import com.san1ch.vocabanana.core.essentials.repositories.VocabularySettingsRepository
 import com.san1ch.vocabanana.core.ui.model.WordUi
 import com.san1ch.vocabanana.core.ui.model.filterAndSort
 import com.san1ch.vocabanana.core.ui.model.toDomain
@@ -24,7 +25,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -33,19 +33,36 @@ class VocabularyScreenViewModel @Inject constructor(
     private val getWordsWithCountUseCase: GetWordsWithCountUseCase,
     private val wordRepository: WordRepository,
     private val vocabularyRouter: VocabularyRouter,
+    private val vocabularySettingsRepository: VocabularySettingsRepository,
 ) : BaseViewModel() {
 
-    private val _wordFilter = MutableStateFlow(WordFilter())
-
-    @OptIn(FlowPreview::class)
-    val wordFilter = _wordFilter.debounce(500).distinctUntilChanged()
     private val _selectedWordId = MutableStateFlow<Int?>(null)
     val selectedWordId = _selectedWordId
 
-    // The single stream of state for the entire screen
+    @OptIn(FlowPreview::class)
+    private val debouncedSearchQuery = vocabularySettingsRepository.searchQuery
+        .debounce(500)
+        .distinctUntilChanged()
+
+    // Compose a single reactive WordFilter from the repository streams
+    private val wordFilterStream = combine(
+        debouncedSearchQuery,
+        vocabularySettingsRepository.sortType,
+        vocabularySettingsRepository.statesFilter,
+        vocabularySettingsRepository.isAscending,
+    ) { searchQuery, sortType, statesFilter, isAscending ->
+        WordFilter(
+            searchQuery = searchQuery,
+            sortType = sortType,
+            visibleStates = statesFilter,
+            isAscending = isAscending,
+        )
+    }
+
+    // The single stream of state for the entire screen based on persistent data
     val resource = combine(
         getWordsWithCountUseCase(),
-        wordFilter,
+        wordFilterStream,
         selectedWordId,
     ) { allLemmas, filter, selectedId ->
 
@@ -78,11 +95,19 @@ class VocabularyScreenViewModel @Inject constructor(
             is VocabularyIntent.UpdateWord -> updateWord(intent.word)
             is VocabularyIntent.NavigateBack -> vocabularyRouter.navigateBack()
             is VocabularyIntent.DeleteWord -> deleteWord(intent.id)
-            is VocabularyIntent.UpdateSearchQuery -> _wordFilter.update { it.copy(searchQuery = intent.searchQuery) }
-            is VocabularyIntent.ChangeSortType -> _wordFilter.update { it.copy(sortType = intent.sortType) }
-            VocabularyIntent.ToggleSortOrder -> _wordFilter.update { it.copy(isAscending = !it.isAscending) }
+            is VocabularyIntent.UpdateSearchQuery -> vocabularySettingsRepository.saveSearchQuery(intent.searchQuery)
+            is VocabularyIntent.ChangeSortType -> vocabularySettingsRepository.saveSortType(intent.sortType)
+            VocabularyIntent.ToggleSortOrder -> {
+                // Read current value and invert it
+                viewModelScope.launch(Dispatchers.IO) {
+                    // Using current resource state filter property to toggle safely
+                    val currentAscending = resource.value.wordFilter.isAscending
+                    vocabularySettingsRepository.saveIsAscending(!currentAscending)
+                }
+            }
             VocabularyIntent.NavigateToNewWords -> vocabularyRouter.navigateToNewWords()
             VocabularyIntent.DeselectWord -> _selectedWordId.value = null
+            is VocabularyIntent.UpdateVisibleStates -> vocabularySettingsRepository.saveStatesFilter(intent.states)
         }
     }
 
@@ -103,12 +128,13 @@ class VocabularyScreenViewModel @Inject constructor(
 data class VocabularyUiState(
     val wordsState: Resource<List<WordUi>> = Resource.Loading,
     val stats: VocabularyStats = VocabularyStats(),
-    val wordFilter: WordFilter = WordFilter(),
+    val wordFilter: WordFilter = WordFilter(visibleStates = listOf(WordState.KNOWN, WordState.LEARNING, WordState.NOT_KNOWN, WordState.IGNORED)),
     val selectedWordId: Int? = null,
     val newWordsCount: Int = 0,
 )
 
 sealed interface VocabularyIntent {
+    data class UpdateVisibleStates(val states: List<WordState>) : VocabularyIntent
     data class SelectWord(val id: Int) : VocabularyIntent
     object DeselectWord : VocabularyIntent
     object NavigateBack : VocabularyIntent

@@ -11,9 +11,13 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import com.san1ch.vocabanana.core.ui.compose.AnimatedLockIconButton
 import com.san1ch.vocabanana.core.ui.compose.AnimatedTitle
+import com.san1ch.vocabanana.core.ui.state.Resource
 import com.san1ch.vocabanana.core.ui.state.fold
+import com.san1ch.vocabanana.feature.text.presentation.R
 import com.san1ch.vocabanana.feature.text.presentation.textlist.screen.LocalIsPagerScrolling
 import com.san1ch.vocabanana.feature.text.presentation.textlist.screen.TextListScreenPage
 import com.san1ch.vocabanana.feature.text.presentation.textlist.viewmodel.TextListUiIntent
@@ -28,15 +32,13 @@ fun TextListTopBar(
     TopAppBar(
         title = {
             val title = when (state.currentPage) {
-                TextListScreenPage.MyTexts -> "My Texts"
-                TextListScreenPage.TextReader ->
-                    state.selectedText.fold(
-                        onLoading = { "Loading..." },
-                        onEmpty = { "No Text Selected" },
-                        onSuccess = { it.text.title },
-                        onError = { "Error" },
-                    )
-                // TODO: Change to localized method
+                TextListScreenPage.MyTexts -> stringResource(R.string.my_texts_title)
+                TextListScreenPage.TextReader -> when (val textState = state.selectedText) {
+                    is Resource.Loading -> stringResource(R.string.loading_title)
+                    is Resource.Empty -> stringResource(R.string.no_text_selected_title)
+                    is Resource.Success -> textState.data.text.title
+                    is Resource.Error -> stringResource(R.string.error_title)
+                }
             }
             AnimatedTitle(title)
         },
@@ -46,9 +48,7 @@ fun TextListTopBar(
                 isLocked = state.isLockedByReaderLocker,
                 isSwipeAttempted = state.isSwipeAttempted,
                 onLockClick = { onIntent(TextListUiIntent.Reader.ToggleLock) },
-                onPageSettings = {
-                    onIntent(TextListUiIntent.Navigation.ShowRenderSettings)
-                },
+                onPageSettings = { onIntent(TextListUiIntent.Navigation.ShowRenderSettings) },
             )
         },
     )

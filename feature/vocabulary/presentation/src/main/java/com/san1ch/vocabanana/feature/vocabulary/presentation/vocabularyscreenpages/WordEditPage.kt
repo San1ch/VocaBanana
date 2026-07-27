@@ -57,7 +57,7 @@ fun WordDetailsAndEditPage(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(word?.lemma ?: "Word Details") },
+                title = { Text(word?.lemma ?: stringResource(R.string.word_details)) },
                 navigationIcon = {
                     IconButton(onClick = { viewModel.onIntent(VocabularyIntent.NavigateBack) }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
@@ -68,7 +68,7 @@ fun WordDetailsAndEditPage(
     ) { padding ->
         if (word == null) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("Select a word to view details", style = MaterialTheme.typography.bodyLarge)
+                Text(stringResource(R.string.select_a_word_to_view_details), style = MaterialTheme.typography.bodyLarge)
             }
         } else {
             Column(
@@ -77,13 +77,13 @@ fun WordDetailsAndEditPage(
                     .padding(padding)
                     .padding(horizontal = 16.dp)
                     .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(16.dp), // Компактніші відступи
+                verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 // Header with Lemma and Frequency
                 Column(modifier = Modifier.padding(top = 8.dp)) {
                     Text(text = word.lemma, style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
                     Text(
-                        text = "Used ${word.count} times in your texts",
+                        text = stringResource(R.string.used_times_in_your_texts, word.count ?: 0),
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.primary,
                     )
@@ -116,7 +116,9 @@ fun WordDetailsAndEditPage(
                         readOnly = true,
                         label = { Text(stringResource(R.string.part_of_speech)) },
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = posExpanded) },
-                        modifier = Modifier.menuAnchor().fillMaxWidth(),
+                        modifier = Modifier
+                            .menuAnchor()
+                            .fillMaxWidth(),
                     )
                     ExposedDropdownMenu(expanded = posExpanded, onDismissRequest = { posExpanded = false }) {
                         PartOfSpeech.entries.forEach { pos ->

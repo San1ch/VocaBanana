@@ -7,8 +7,8 @@ import com.san1ch.vocabanana.core.essentials.model.word.WordState
 import com.san1ch.vocabanana.core.essentials.repositories.WordRepository
 import com.san1ch.vocabanana.core.essentials.usecases.GetWordsWithCountUseCase
 import com.san1ch.vocabanana.core.ui.BaseViewModel
-import com.san1ch.vocabanana.core.ui.model.SortType
-import com.san1ch.vocabanana.core.ui.model.WordFilter
+import com.san1ch.vocabanana.core.essentials.model.SortType
+import com.san1ch.vocabanana.core.essentials.model.WordFilter
 import com.san1ch.vocabanana.core.ui.model.WordUi
 import com.san1ch.vocabanana.core.ui.model.filterAndSort
 import com.san1ch.vocabanana.core.ui.model.toUi
@@ -35,7 +35,7 @@ class NewWordListScreenViewModel @Inject constructor(
 ) : BaseViewModel() {
 
     // Internal UI State flows
-    private val _wordFilter = MutableStateFlow(WordFilter(sortType = SortType.COUNT))
+    private val _wordFilter = MutableStateFlow(WordFilter(sortType = SortType.COUNT, visibleStates = listOf(WordState.NEW)))
 
     @OptIn(FlowPreview::class)
     val wordFilter = _wordFilter.debounce(500).distinctUntilChanged()
