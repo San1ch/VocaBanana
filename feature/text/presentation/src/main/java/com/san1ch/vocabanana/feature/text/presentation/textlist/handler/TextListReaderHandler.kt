@@ -1,5 +1,6 @@
 package com.san1ch.vocabanana.feature.text.presentation.textlist.handler
 
+import com.san1ch.vocabanana.core.essentials.Logger
 import com.san1ch.vocabanana.core.essentials.model.TextAppearanceSettings
 import com.san1ch.vocabanana.core.essentials.model.word.FilterType
 import com.san1ch.vocabanana.core.essentials.model.word.WordQuery
@@ -33,6 +34,7 @@ class TextListReaderHandler @Inject constructor(
     private val readingStateRepository: ReadingStateRepository,
     private val wordRepository: WordRepository,
     private val getWordsUseCase: GetWordsUseCase,
+    private val logger: Logger,
 ) {
 
     private var saveJob: Job? = null
@@ -116,8 +118,11 @@ class TextListReaderHandler @Inject constructor(
 
     private fun saveNewWordState(id: Int, state: WordState, scope: CoroutineScope) {
         scope.launch(Dispatchers.IO) {
-            val previousWord =
-                getWordsUseCase(WordQuery(wordIds = FilterType.Include(listOf(id)))).firstOrNull()?.first() ?: return@launch
+            val previousWord = getWordsUseCase(WordQuery(wordIds = FilterType.Include(listOf(id))))
+                .firstOrNull()?.first() ?: run {
+                logger.e(IllegalStateException("Invariant broken"), "Failed to find word for update with id=$id")
+                return@launch
+            }
 
             wordRepository.updateWord(previousWord.withState(state))
         }
@@ -131,6 +136,7 @@ class TextListReaderHandler @Inject constructor(
     ) {
         scope.launch(Dispatchers.IO) {
             if (!textRepository.isTextIdExists(textId)) {
+                logger.d("Text with id=$textId does not exist, redirecting to generation.")
                 updateState { it.copy(currentIdToGenerateWords = textId) }
                 return@launch
             }
@@ -202,9 +208,15 @@ class TextListReaderHandler @Inject constructor(
         currentState: TextListUiState,
         updateState: ((TextListUiState) -> TextListUiState) -> Unit,
     ) {
-        val selectedTextId: Int = currentState.selectedText.getOrNull { it.id } ?: return
+        val selectedTextId: Int = currentState.selectedText.getOrNull { it.id } ?: run {
+            logger.d("Attempted to save filter/settings, but no text is currently selected.")
+            return
+        }
+        val currentSuccess = currentState.selectedText as? Resource.Success ?: run {
+            logger.d("Attempted to save filter/settings, but selectedText is not a success resource.")
+            return
+        }
 
-        val currentSuccess = currentState.selectedText as? Resource.Success ?: return
         updateState { state ->
             state.copy(
                 selectedText = Resource.Success(data = currentSuccess.data.copy(text = currentSuccess.data.text.copy(activeWordStates = states))),
@@ -226,9 +238,15 @@ class TextListReaderHandler @Inject constructor(
         currentState: TextListUiState,
         updateState: ((TextListUiState) -> TextListUiState) -> Unit,
     ) {
-        val selectedTextId: Int = currentState.selectedText.getOrNull { it.id } ?: return
+        val selectedTextId: Int = currentState.selectedText.getOrNull { it.id } ?: run {
+            logger.d("Attempted to save filter/settings, but no text is currently selected.")
+            return
+        }
+        val currentSuccess = currentState.selectedText as? Resource.Success ?: run {
+            logger.d("Attempted to save filter/settings, but selectedText is not a success resource.")
+            return
+        }
 
-        val currentSuccess = currentState.selectedText as? Resource.Success ?: return
         updateState { state ->
             state.copy(
                 selectedText = Resource.Success(data = currentSuccess.data.copy(text = currentSuccess.data.text.copy(textAppearanceSettings = settings))),
