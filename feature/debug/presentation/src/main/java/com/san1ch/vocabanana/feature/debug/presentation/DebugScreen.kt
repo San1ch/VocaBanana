@@ -81,13 +81,13 @@ fun DebugContent(
         Button(
             onClick = { onIntent(DebugIntent.PrintWords) },
         ) {
-            Text("Print words")
+            Text(stringResource(R.string.print_words))
         }
 
         Button(
             onClick = { onIntent(DebugIntent.PrintWordCounts) },
         ) {
-            Text("Print counts")
+            Text(stringResource(R.string.print_counts))
         }
     }
 }

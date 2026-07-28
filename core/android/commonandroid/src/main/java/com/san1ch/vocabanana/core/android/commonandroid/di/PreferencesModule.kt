@@ -4,8 +4,10 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import com.san1ch.vocabanana.core.android.commonandroid.datastore.DataStoreSettingsRepository
+import com.san1ch.vocabanana.core.android.commonandroid.datastore.DataStoreVocabularySettingsRepositoryImpl
 import com.san1ch.vocabanana.core.android.commonandroid.datastore.dataStore
 import com.san1ch.vocabanana.core.essentials.repositories.SettingsRepository
+import com.san1ch.vocabanana.core.essentials.repositories.VocabularySettingsRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -25,5 +27,11 @@ object PreferencesModule {
 
     @Provides
     @Singleton
-    fun provideSettingsRepository(dataStore: DataStore<Preferences>): SettingsRepository = DataStoreSettingsRepository(dataStore)
+    fun provideSettingsRepository(dataStore: DataStore<Preferences>): SettingsRepository =
+        DataStoreSettingsRepository(dataStore)
+
+    @Provides
+    @Singleton
+    fun provideVocabularySettingsRepository(dataStore: DataStore<Preferences>): VocabularySettingsRepository =
+        DataStoreVocabularySettingsRepositoryImpl(dataStore)
 }

@@ -1,5 +1,7 @@
 package com.san1ch.vocabanana.core.ui.model
 
+import com.san1ch.vocabanana.core.essentials.model.SortType
+import com.san1ch.vocabanana.core.essentials.model.WordFilter
 import com.san1ch.vocabanana.core.essentials.model.text.WordWithCount
 import com.san1ch.vocabanana.core.essentials.model.word.PartOfSpeech
 import com.san1ch.vocabanana.core.essentials.model.word.WordDomain
@@ -60,16 +62,19 @@ fun WordUi.toDomain() = WordDomain.create(
 fun List<WordUi>.filterAndSort(filter: WordFilter): List<WordUi> {
     val query = filter.searchQuery.lowercase()
 
-    // 1. Apply Fuzzy Subsequence Filter
+    // 1. Apply Visible States Filter
+    val filteredByVisibleStates = this.filter { it.state in filter.visibleStates }
+
+    // 2. Apply Fuzzy Subsequence Filter
     val filteredBySearch = if (query.isEmpty()) {
-        this
+        filteredByVisibleStates
     } else {
-        this.filter { word ->
+        filteredByVisibleStates.filter { word ->
             isFuzzyMatch(word.lemma.lowercase(), query)
         }
     }
 
-    // 2. Apply Sorting
+    // 3. Apply Sorting
     val sortedList = when (filter.sortType) {
         SortType.ALPHABETIC -> filteredBySearch.sortedBy { it.lemma }
         SortType.STATE -> filteredBySearch.sortedBy { it.state.ordinal }

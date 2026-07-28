@@ -18,4 +18,14 @@
     <string name="part_of_speech">Part of Speech</string>
     <string name="definition">Definition</string>
     <string name="learning_status">Learning Status</string>
+    <string name="sort_by">Sort By</string>
+    <string name="known_stats">Known</string>
+    <string name="learning_stats">Learning</string>
+    <string name="not_known_stats">Not Known</string>
+    <string name="ignored_stats">Ignored</string>
+    <string name="vocabulary_settings">Vocabulary settings</string>
+    <string name="filter_by_states">Filter by states</string>
+    <string name="used_times_in_your_texts">Used %1$d times in your texts</string>
+    <string name="select_a_word_to_view_details">Select a word to view details</string>
+    <string name="word_details">Word Details</string>
 </resources>
