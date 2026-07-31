@@ -4,6 +4,7 @@ import com.san1ch.vocabanana.core.android.database.word.local.WordDao
 import com.san1ch.vocabanana.core.android.database.word.model.WordToLemmaPair
 import com.san1ch.vocabanana.core.android.database.word.toDomain
 import com.san1ch.vocabanana.core.android.database.word.toWordEntity
+import com.san1ch.vocabanana.core.essentials.DataChangeTracker
 import com.san1ch.vocabanana.core.essentials.exceptions.RepositoryNoDataByRequestException
 import com.san1ch.vocabanana.core.essentials.model.word.FilterType
 import com.san1ch.vocabanana.core.essentials.model.word.WordDomain
@@ -16,6 +17,7 @@ import javax.inject.Inject
 
 class WordRepositoryImpl @Inject constructor(
     private val wordDao: WordDao,
+    private val dataChangeTracker: DataChangeTracker,
 ) : WordRepository {
 
     override fun getWords(
@@ -58,6 +60,7 @@ class WordRepositoryImpl @Inject constructor(
 
     override suspend fun updateWord(word: WordDomain) {
         wordDao.insertWord(word.toWordEntity())
+        dataChangeTracker.notifyDataChanged()
     }
 
     override suspend fun syncWordWithDatabase(word: WordDomain) {
@@ -73,6 +76,7 @@ class WordRepositoryImpl @Inject constructor(
         } else {
             wordDao.insertWordWithForms(word.toWordEntity(), word.forms)
         }
+        dataChangeTracker.notifyDataChanged()
     }
 
     override suspend fun changeState(wordId: Int, state: WordState) {
@@ -80,6 +84,7 @@ class WordRepositoryImpl @Inject constructor(
             val updated = it.toDomain().withState(state)
             wordDao.insertWord(updated.toWordEntity())
         }
+        dataChangeTracker.notifyDataChanged()
     }
 
     override suspend fun addWords(words: List<WordDomain>) {
@@ -90,6 +95,7 @@ class WordRepositoryImpl @Inject constructor(
             acc
         }
         toSave.values.forEach { wordDao.insertWordWithForms(it.toWordEntity(), it.forms) }
+        dataChangeTracker.notifyDataChanged()
     }
 
     override suspend fun getWordById(id: Int): Result<WordDomain> = wordDao.getWordWithFormsById(id)?.let { Result.success(it.toDomain()) }
@@ -137,7 +143,13 @@ class WordRepositoryImpl @Inject constructor(
 
     override suspend fun deleteWord(word: WordDomain) = wordDao.deleteWord(word.toWordEntity())
 
-    override suspend fun deleteById(id: Int) = wordDao.deleteById(id)
+    override suspend fun deleteById(id: Int) {
+        wordDao.deleteById(id)
+        dataChangeTracker.notifyDataChanged()
+    }
 
-    override suspend fun deleteAllWords(): Int = wordDao.deleteAll()
+    override suspend fun deleteAllWords(): Int {
+        dataChangeTracker.notifyDataChanged()
+        return wordDao.deleteAll()
+    }
 }

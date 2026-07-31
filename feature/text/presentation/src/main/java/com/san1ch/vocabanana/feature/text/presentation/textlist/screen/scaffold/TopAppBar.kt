@@ -11,12 +11,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import com.san1ch.vocabanana.core.ui.compose.AnimatedLockIconButton
 import com.san1ch.vocabanana.core.ui.compose.AnimatedTitle
 import com.san1ch.vocabanana.core.ui.state.Resource
-import com.san1ch.vocabanana.core.ui.state.fold
 import com.san1ch.vocabanana.feature.text.presentation.R
 import com.san1ch.vocabanana.feature.text.presentation.textlist.screen.LocalIsPagerScrolling
 import com.san1ch.vocabanana.feature.text.presentation.textlist.screen.TextListScreenPage

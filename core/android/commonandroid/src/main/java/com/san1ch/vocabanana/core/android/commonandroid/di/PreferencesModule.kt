@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.Preferences
 import com.san1ch.vocabanana.core.android.commonandroid.datastore.DataStoreSettingsRepository
 import com.san1ch.vocabanana.core.android.commonandroid.datastore.DataStoreVocabularySettingsRepositoryImpl
 import com.san1ch.vocabanana.core.android.commonandroid.datastore.dataStore
+import com.san1ch.vocabanana.core.essentials.repositories.BackupSettingsRepository
 import com.san1ch.vocabanana.core.essentials.repositories.SettingsRepository
 import com.san1ch.vocabanana.core.essentials.repositories.VocabularySettingsRepository
 import dagger.Module
@@ -27,11 +28,13 @@ object PreferencesModule {
 
     @Provides
     @Singleton
-    fun provideSettingsRepository(dataStore: DataStore<Preferences>): SettingsRepository =
-        DataStoreSettingsRepository(dataStore)
+    fun provideSettingsRepository(dataStore: DataStore<Preferences>): SettingsRepository = DataStoreSettingsRepository(dataStore)
 
     @Provides
     @Singleton
-    fun provideVocabularySettingsRepository(dataStore: DataStore<Preferences>): VocabularySettingsRepository =
-        DataStoreVocabularySettingsRepositoryImpl(dataStore)
+    fun provideBackupSettingsRepository(dataStore: DataStore<Preferences>): BackupSettingsRepository = DataStoreSettingsRepository(dataStore)
+
+    @Provides
+    @Singleton
+    fun provideVocabularySettingsRepository(dataStore: DataStore<Preferences>): VocabularySettingsRepository = DataStoreVocabularySettingsRepositoryImpl(dataStore)
 }

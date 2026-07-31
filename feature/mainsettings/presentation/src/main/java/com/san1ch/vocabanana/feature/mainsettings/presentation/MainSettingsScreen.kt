@@ -1,5 +1,12 @@
 package com.san1ch.vocabanana.feature.mainsettings.presentation
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -8,12 +15,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -21,10 +28,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Slider
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -33,7 +38,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -42,11 +47,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.san1ch.vocabanana.core.essentials.model.AppThemeMode
 import com.san1ch.vocabanana.core.ui.compose.CollectUiEvents
 
-// The actions the user can take
-
 @Composable
-fun SettingsScreen(
-    viewModel: SettingsScreenViewModel = hiltViewModel(),
+fun MainSettingsScreen(
+    viewModel: MainSettingsScreenViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -54,7 +57,7 @@ fun SettingsScreen(
         events = viewModel.events,
     )
 
-    SettingsContent(
+    AppSettingsContent(
         state = state,
         onIntent = viewModel::onIntent,
     )
@@ -62,7 +65,7 @@ fun SettingsScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsContent(
+fun AppSettingsContent(
     state: SettingsUiState,
     onIntent: (SettingsIntent) -> Unit,
 ) {
@@ -95,10 +98,114 @@ fun SettingsContent(
                     onIntent(SettingsIntent.ChangeTheme(theme))
                 },
             )
+
+            SettingsSectionTitle(title = "Data & Backup")
+
+            BackupSections(
+                state = state,
+                onIntent = onIntent,
+            )
         }
     }
 }
-// --- PRIVATE BUILDING BLOCKS ---
+
+@Composable
+private fun BackupSections(
+    state: SettingsUiState,
+    onIntent: (SettingsIntent) -> Unit,
+) {
+    val context = LocalContext.current
+
+    val folderPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocumentTree(),
+    ) { uri ->
+        uri?.let { selectedUri ->
+            try {
+                val flags = android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION or
+                    android.content.Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                context.contentResolver.takePersistableUriPermission(selectedUri, flags)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+
+            onIntent(SettingsIntent.UpdateLocalPathUri(selectedUri))
+        }
+    }
+
+    SettingsSwitchItem(
+        label = "Local Backup",
+        checked = state.isLocalEnabled,
+        onCheckedChange = { onIntent(SettingsIntent.ToggleLocalBackup(it)) },
+    )
+
+    AnimatedVisibility(
+        visible = state.isLocalEnabled,
+        enter = fadeIn() + expandVertically(),
+        exit = fadeOut() + shrinkVertically(),
+    ) {
+        Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+            val pathText = state.selectedLocalPath.ifEmpty { "Not selected" }
+            Text(
+                text = "Path: $pathText",
+                style = MaterialTheme.typography.bodyMedium,
+                color = if (state.selectedLocalPath.isNotEmpty()) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.error,
+            )
+            Button(
+                onClick = { folderPickerLauncher.launch(null) },
+                modifier = Modifier.padding(top = 8.dp),
+            ) {
+                Text("Choose Backup Folder")
+            }
+
+            if (state.selectedLocalPath.isEmpty()) {
+                Text(
+                    text = "Please choose a folder to continue",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.padding(top = 4.dp),
+                )
+            }
+        }
+    }
+
+    SettingsSwitchItem(
+        label = "Cloud Backup",
+        checked = state.isCloudEnabled,
+        onCheckedChange = { onIntent(SettingsIntent.ToggleCloudBackup(it)) },
+    )
+
+    AnimatedVisibility(
+        visible = state.isCloudEnabled,
+        enter = fadeIn() + expandVertically(),
+        exit = fadeOut() + shrinkVertically(),
+    ) {
+        Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+            Text(
+                text = "Cloud synchronization settings will appear here.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.outline,
+            )
+        }
+    }
+
+    AnimatedVisibility(
+        visible = state.hasUnsavedChanges,
+        enter = fadeIn() + expandVertically(),
+        exit = fadeOut() + shrinkVertically(),
+    ) {
+        Column {
+            Button(
+                onClick = { onIntent(SettingsIntent.SaveBackupSettings) },
+                enabled = state.isSaveValid,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+            ) {
+                Text("Save Backup Settings")
+            }
+        }
+    }
+}
 
 @Composable
 private fun SettingsSectionTitle(title: String) {
@@ -106,7 +213,7 @@ private fun SettingsSectionTitle(title: String) {
         text = title,
         style = MaterialTheme.typography.labelLarge,
         color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+        modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
     )
 }
 
@@ -131,6 +238,24 @@ private fun SettingsClickableItem(
         )
         control?.invoke()
     }
+}
+
+@Composable
+private fun SettingsSwitchItem(
+    label: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+) {
+    SettingsClickableItem(
+        label = label,
+        onClick = { onCheckedChange(!checked) },
+        control = {
+            Switch(
+                checked = checked,
+                onCheckedChange = onCheckedChange,
+            )
+        },
+    )
 }
 
 @Composable
@@ -169,39 +294,4 @@ private fun SettingsDropdownItem(
             }
         },
     )
-}
-
-@Composable
-private fun SettingsSliderItem(
-    label: String,
-    value: Float,
-    onValueChange: (Float) -> Unit,
-) {
-    Column(modifier = Modifier.padding(16.dp)) {
-        Text(text = label, style = MaterialTheme.typography.bodyLarge)
-        Slider(value = value, onValueChange = onValueChange)
-    }
-}
-
-@Composable
-private fun SettingsInputItem(
-    label: String,
-    value: String,
-    onValueChange: (String) -> Unit,
-    placeholder: String,
-) {
-    Row(
-        modifier = Modifier.padding(16.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(text = label, modifier = Modifier.weight(1f))
-        TextField(
-            value = value,
-            onValueChange = onValueChange,
-            placeholder = { Text(placeholder) },
-            modifier = Modifier.width(150.dp),
-            singleLine = true,
-            colors = TextFieldDefaults.colors(focusedContainerColor = Color.Transparent),
-        )
-    }
 }

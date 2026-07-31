@@ -2,4 +2,7 @@
 <resources>
     <string name="unknown_error">Unknown error</string>
     <string name="there_is_no_data_by_request">There is no data by request</string>
+    <string name="last_backup_time">Last backup time: %s</string>
+    <string name="backup_success">Backup successful</string>
+    <string name="load_success">Load successful</string>
 </resources>

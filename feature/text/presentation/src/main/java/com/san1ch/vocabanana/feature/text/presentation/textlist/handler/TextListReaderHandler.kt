@@ -193,12 +193,7 @@ class TextListReaderHandler @Inject constructor(
         saveJob = scope.launch(Dispatchers.IO) {
             delay(500)
 
-            readingStateRepository.updateReadingState(textId) { readingState ->
-                readingState.copy(
-                    lastScrollPosition = progress,
-                    lastReadTime = System.currentTimeMillis(),
-                )
-            }
+            readingStateRepository.updateProgress(textId, System.currentTimeMillis(), progress)
         }
     }
 
@@ -224,11 +219,7 @@ class TextListReaderHandler @Inject constructor(
         }
 
         scope.launch(Dispatchers.IO) {
-            readingStateRepository.updateReadingState(selectedTextId) { readingState ->
-                readingState.copy(
-                    activeWordStates = states.toSet(),
-                )
-            }
+            readingStateRepository.updateWordStates(selectedTextId, states)
         }
     }
 
@@ -254,14 +245,7 @@ class TextListReaderHandler @Inject constructor(
         }
 
         scope.launch {
-            readingStateRepository.updateReadingState(selectedTextId) { readingState ->
-                readingState.copy(
-                    fontSize = settings.fontSize,
-                    lineSpacing = settings.lineSpacing,
-                    paragraphSpacing = settings.paragraphSpacing,
-                    horizontalPadding = settings.horizontalPadding,
-                )
-            }
+            readingStateRepository.updateAppearance(selectedTextId, settings)
         }
     }
 }

@@ -45,6 +45,7 @@ dependencies {
     implementation(projects.feature.text.presentation)
     implementation(projects.feature.vocabulary.presentation)
     implementation(projects.feature.word.presentation)
+    implementation(projects.feature.backup.presentation)
 
     implementation(libs.androidx.activity.compose)
 

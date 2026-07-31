@@ -7,6 +7,7 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -23,7 +24,7 @@ class CreateTextUseCaseTest {
     }
 
     @Test
-    fun `invoke should return failure when text name is not unique`() {
+    fun `invoke should return failure when text name is not unique`() = runTest {
         // Given
         val textName = "Existing Book"
         val content = "Some content"
@@ -41,7 +42,7 @@ class CreateTextUseCaseTest {
     }
 
     @Test
-    fun `invoke should return failure when domain validation fails`() {
+    fun `invoke should return failure when domain validation fails`() = runTest {
         // Given
         val textName = "Valid Title"
         val invalidContent = ""
@@ -59,7 +60,7 @@ class CreateTextUseCaseTest {
     }
 
     @Test
-    fun `invoke should successfully save text when name is unique and data is valid`() {
+    fun `invoke should successfully save text when name is unique and data is valid`() = runTest {
         // Given
         val textName = "Unique Title"
         val content = "This is a wonderful text for testing."

@@ -6,6 +6,7 @@ import com.san1ch.vocabanana.core.android.database.text.local.TextWordCountDao
 import com.san1ch.vocabanana.core.android.database.text.local.toDomain
 import com.san1ch.vocabanana.core.android.database.text.local.toEntity
 import com.san1ch.vocabanana.core.android.database.text.toDomainUnsafe
+import com.san1ch.vocabanana.core.essentials.DataChangeTracker
 import com.san1ch.vocabanana.core.essentials.extentionfuncs.toParagraphs
 import com.san1ch.vocabanana.core.essentials.model.text.TextDomain
 import com.san1ch.vocabanana.core.essentials.model.text.TextInfo
@@ -22,6 +23,7 @@ class TextRepositoryImpl @Inject constructor(
     private val textDao: TextDao,
     private val fileStorage: FileStorage,
     private val textWordCountDao: TextWordCountDao,
+    private val dataChangeTracker: DataChangeTracker,
 ) : TextRepository {
     override fun getWordIdsByTextIds(textIds: FilterType<Int>): Flow<List<Int>> = when (textIds) {
         is FilterType.All ->
@@ -73,12 +75,13 @@ class TextRepositoryImpl @Inject constructor(
         }
     }
 
-    override fun saveTexts(texts: List<TextDomain>) {
+    override suspend fun saveTexts(texts: List<TextDomain>) {
         val entities = texts.map { text ->
             val path = fileStorage.saveText(text.name, text.content)
             TextEntity(text.id, text.name, path)
         }
         textDao.insertTexts(entities)
+        dataChangeTracker.notifyDataChanged()
     }
 
     override suspend fun deleteTexts(textIds: List<Int>) {
@@ -87,6 +90,7 @@ class TextRepositoryImpl @Inject constructor(
         entities.forEach { fileStorage.deleteText(it.contentPath) }
 
         textDao.deleteTextsByIds(textIds)
+        dataChangeTracker.notifyDataChanged()
     }
 
     override fun isTextNameUnique(name: String): Boolean = !textDao.isNameUnique(name)
@@ -97,6 +101,7 @@ class TextRepositoryImpl @Inject constructor(
         if (textWordCounts.isEmpty()) return
         val entities = textWordCounts.map { it.toEntity() }
         textWordCountDao.insertWordCounts(entities)
+        dataChangeTracker.notifyDataChanged()
     }
 
     override suspend fun getWordCountInText(wordId: Int, textId: Int): TextWordCount? = textWordCountDao.getWordCountInText(wordId, textId)?.toDomain()

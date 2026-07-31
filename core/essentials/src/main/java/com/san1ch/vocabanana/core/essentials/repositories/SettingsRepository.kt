@@ -5,10 +5,12 @@ import kotlinx.coroutines.flow.Flow
 
 interface SettingsRepository {
     val initActiveFlow: Flow<Boolean>
-
     suspend fun setInitActive(value: Boolean)
 
+    // --- Theme Settings ---
     val themeFlow: Flow<AppThemeMode>
-
     suspend fun setTheme(value: AppThemeMode)
+
+    val lastDatabaseUpdateTime: Flow<Long>
+    suspend fun setLastDatabaseUpdateTime(time: Long)
 }

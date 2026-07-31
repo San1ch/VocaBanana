@@ -2,4 +2,8 @@
 <resources>
     <string name="vocabulary">Vocabulary</string>
     <string name="texts">Texts</string>
+    # need with parameter
+    <string name="last_backup_time">Last backup time: %1$s</string>
+    <string name="save_backup">Save Backup</string>
+    <string name="load_backup">Load backup</string>
 </resources>

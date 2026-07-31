@@ -10,7 +10,7 @@ data class WordFilter(
         WordState.LEARNING,
         WordState.NOT_KNOWN,
         WordState.KNOWN,
-        WordState.IGNORED
+        WordState.IGNORED,
     ),
     val isAscending: Boolean = false,
 )

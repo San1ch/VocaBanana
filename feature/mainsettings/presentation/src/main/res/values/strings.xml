@@ -2,4 +2,5 @@
 <resources>
     <string name="appearance">Appearance</string>
     <string name="app_theme">App Theme</string>
+    <string name="backup">Backup</string>
 </resources>

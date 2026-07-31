@@ -1,7 +1,5 @@
 package com.san1ch.vocabanana.core.ui.state
 
-import androidx.compose.runtime.Composable
-
 sealed interface Resource<out T> {
     data object Loading : Resource<Nothing>
     data object Empty : Resource<Nothing>

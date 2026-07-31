@@ -30,6 +30,9 @@
             <option value="$PROJECT_DIR$/core/essentials" />
             <option value="$PROJECT_DIR$/core/ui" />
             <option value="$PROJECT_DIR$/feature" />
+            <option value="$PROJECT_DIR$/feature/backup" />
+            <option value="$PROJECT_DIR$/feature/backup/domain" />
+            <option value="$PROJECT_DIR$/feature/backup/presentation" />
             <option value="$PROJECT_DIR$/feature/debug" />
             <option value="$PROJECT_DIR$/feature/debug/domain" />
             <option value="$PROJECT_DIR$/feature/debug/presentation" />
