@@ -10,6 +10,10 @@ class AndroidLogger @Inject constructor() : Logger {
         Timber.d(message)
     }
 
+    override fun d(tag: String, message: String) {
+        Timber.d("$tag: $message")
+    }
+
     override fun e(error: Throwable, message: String) {
         Timber.e(error, message)
     }

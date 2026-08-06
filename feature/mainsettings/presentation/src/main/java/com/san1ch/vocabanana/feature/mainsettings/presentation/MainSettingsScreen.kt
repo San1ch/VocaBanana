@@ -1,6 +1,10 @@
 package com.san1ch.vocabanana.feature.mainsettings.presentation
 
+import android.app.Activity
+import android.app.PendingIntent
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
@@ -32,6 +36,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -57,10 +62,69 @@ fun MainSettingsScreen(
         events = viewModel.events,
     )
 
+    val launchGoogleAuth = rememberGoogleAuthHandler(
+        onSuccess = {
+            viewModel.onIntent(SettingsIntent.GoogleAuthResolved)
+        },
+        onError = { code, message ->
+            Log.e("MainSettingsScreen", "Auth error code: $code, msg: $message")
+        },
+    )
+
+    LaunchedEffect(Unit) {
+        viewModel.uiEvent.collect { event ->
+            when (event) {
+                is SettingsUiEvent.LaunchGoogleConsent -> {
+                    launchGoogleAuth(event.pendingIntent)
+                }
+            }
+        }
+    }
     AppSettingsContent(
         state = state,
         onIntent = viewModel::onIntent,
     )
+}
+
+@Composable
+fun rememberGoogleAuthHandler(
+    onSuccess: () -> Unit,
+    onError: (Int, String?) -> Unit = { _, _ -> },
+): (PendingIntent) -> Unit {
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartIntentSenderForResult(),
+    ) { result ->
+        when (result.resultCode) {
+            Activity.RESULT_OK -> {
+                Log.d("GoogleAuthHandler", "Authorization successful!")
+                onSuccess()
+            }
+            Activity.RESULT_CANCELED -> {
+                val data = result.data
+                val extras = data?.extras
+                val errorMsg = extras?.keySet()?.joinToString(", ") { key -> "$key=${extras.get(key)}" } ?: "No extras"
+
+                Log.e("GoogleAuthHandler", "Authorization canceled by user or system. Extras: $errorMsg")
+                onError(Activity.RESULT_CANCELED, "User canceled or flow interrupted: $errorMsg")
+            }
+            else -> {
+                Log.e("GoogleAuthHandler", "Authorization failed with unknown resultCode: ${result.resultCode}")
+                onError(result.resultCode, "Unknown result code: ${result.resultCode}")
+            }
+        }
+    }
+
+    return remember {
+        { pendingIntent ->
+            try {
+                val intentSenderRequest = IntentSenderRequest.Builder(pendingIntent).build()
+                launcher.launch(intentSenderRequest)
+            } catch (e: Exception) {
+                Log.e("GoogleAuthHandler", "Failed to launch intent sender", e)
+                onError(-99, e.localizedMessage ?: "Launch exception")
+            }
+        }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -181,10 +245,27 @@ private fun BackupSections(
     ) {
         Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
             Text(
-                text = "Cloud synchronization settings will appear here.",
+                text = "What you can use for cloud backups",
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(bottom = 4.dp),
+            )
+            Text(
+                text = "Connect your Google account to securely store and sync your vocabulary data in your private Google Drive app folder.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.outline,
+                modifier = Modifier.padding(bottom = 8.dp),
             )
+
+            Button(
+                onClick = {
+                    onIntent(SettingsIntent.ConnectGoogleDriveClicked)
+                },
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text("Sign in with Google")
+            }
         }
     }
 

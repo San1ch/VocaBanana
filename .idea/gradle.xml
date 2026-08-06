@@ -27,6 +27,7 @@
             <option value="$PROJECT_DIR$/core/android" />
             <option value="$PROJECT_DIR$/core/android/commonandroid" />
             <option value="$PROJECT_DIR$/core/android/database" />
+            <option value="$PROJECT_DIR$/core/android/network" />
             <option value="$PROJECT_DIR$/core/essentials" />
             <option value="$PROJECT_DIR$/core/ui" />
             <option value="$PROJECT_DIR$/feature" />

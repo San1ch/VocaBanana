@@ -1,0 +1,162 @@
+package com.san1ch.vocabanana.core.android.network.googledrive
+
+import android.content.Context
+import com.san1ch.vocabanana.core.essentials.Logger
+import com.san1ch.vocabanana.core.essentials.backup.GoogleDriveTokenProvider
+import com.san1ch.vocabanana.core.essentials.network.CloudStorageClient
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
+import okhttp3.ResponseBody
+import retrofit2.http.GET
+import retrofit2.http.Header
+import retrofit2.http.Multipart
+import retrofit2.http.POST
+import retrofit2.http.PUT
+import retrofit2.http.Part
+import retrofit2.http.Path
+import retrofit2.http.Query
+import java.io.File
+import javax.inject.Inject
+
+@Serializable
+data class GoogleDriveFileListResponse(
+    @SerialName(value = "files")
+    val files: List<GoogleDriveFileItem>?
+)
+@Serializable
+data class GoogleDriveFileItem(
+    @SerialName("id")
+    val id: String,
+
+    @SerialName("name")
+    val name: String,
+
+    @SerialName("size")
+    val size: String? = null
+)
+
+class GoogleDriveService @Inject constructor(
+    private val tokenManager: GoogleDriveTokenProvider,
+    private val driveApiService: GoogleDriveApiService,
+    private val logger: Logger,
+    @param:ApplicationContext private val context: Context
+) : CloudStorageClient {
+    private val fileName = "vocabanana_backup.zip"
+    private val systemDriveFolder = "appDataFolder"
+
+    override suspend fun uploadOrUpdateBackup(backupFile: File): Result<Unit> = runCatching {
+        logger.d("GoogleDrive", "Starting cloud backup upload...")
+        val authHeader = getAuthHeader()
+
+        val searchQuery = "name = '$fileName' and trashed = false"
+        logger.d("GoogleDrive", "Searching file with query: $searchQuery")
+
+        val searchResult = driveApiService.listFiles(authHeader = authHeader, searchQuery = searchQuery)
+        logger.d("GoogleDrive", "Search result files count: ${searchResult.files?.size ?: 0}")
+
+        val existingFileId = searchResult.files?.firstOrNull()?.id
+        logger.d("GoogleDrive", "Existing file ID: $existingFileId")
+
+        val requestFile = backupFile.asRequestBody("application/zip".toMediaTypeOrNull())
+        val filePart = MultipartBody.Part.createFormData("file", backupFile.name, requestFile)
+
+        if (existingFileId != null) {
+            logger.d("GoogleDrive", "Updating existing file with ID: $existingFileId")
+            val metadataJson = """{"name":"$fileName"}"""
+            val metadataPart = MultipartBody.Part.createFormData(
+                "metadata", null,
+                metadataJson.toRequestBody("application/json".toMediaTypeOrNull())
+            )
+            driveApiService.updateBackupFile(authHeader, existingFileId, metadataPart, filePart)
+        } else {
+            logger.d("GoogleDrive", "Uploading new file...")
+            val metadataJson = """{"name":"$fileName", "parents":["$systemDriveFolder"]}"""
+            val metadataPart = MultipartBody.Part.createFormData(
+                "metadata", null,
+                metadataJson.toRequestBody("application/json".toMediaTypeOrNull())
+            )
+            driveApiService.uploadBackupFile(authHeader, metadataPart, filePart)
+        }
+        logger.d("GoogleDrive", "Cloud backup successfully uploaded/updated")
+    }.onFailure { e ->
+        logger.d("GoogleDrive", "Upload failed with error: ${e.message}")
+    }
+
+    override suspend fun downloadBackup(): Result<File> = runCatching {
+        logger.d("GoogleDrive", "Starting cloud backup download...")
+        val authHeader = getAuthHeader()
+
+        val searchQuery = "name = '$fileName' and trashed = false"
+        logger.d("GoogleDrive", "Searching file for download with query: $searchQuery")
+
+        val searchResult = driveApiService.listFiles(authHeader = authHeader, searchQuery = searchQuery)
+        logger.d("GoogleDrive", "Search result files count: ${searchResult.files?.size ?: 0}")
+
+        val fileId = searchResult.files?.firstOrNull()?.id
+            ?: throw IllegalStateException("Cloud backup file not found in appDataFolder").also {
+                logger.d("GoogleDrive", "Error: Cloud backup file not found!")
+            }
+
+        logger.d("GoogleDrive", "Found file ID to download: $fileId")
+        val responseBody = driveApiService.downloadBackupFile(authHeader, fileId)
+
+        val tempFile = File(context.cacheDir, "downloaded_backup.zip")
+        logger.d("GoogleDrive", "Writing downloaded bytes to temp file: ${tempFile.absolutePath}")
+
+        responseBody.use { body ->
+            tempFile.outputStream().use { outputStream ->
+                body.byteStream().copyTo(outputStream)
+            }
+        }
+
+        logger.d("GoogleDrive", "Download completed successfully, file size: ${tempFile.length()} bytes")
+        tempFile
+    }.onFailure { e ->
+        logger.d("GoogleDrive", "Download failed with error: ${e.message}")
+    }
+
+    private suspend fun getAuthHeader(): String {
+        val tokenResult = tokenManager.obtainAccessToken()
+        val accessToken = tokenResult.getOrThrow()
+        return "Bearer $accessToken"
+    }
+}
+
+interface GoogleDriveApiService {
+
+    @GET("drive/v3/files")
+    suspend fun listFiles(
+        @Header("Authorization") authHeader: String,
+        @Query("spaces") spaces: String = "appDataFolder",
+        @Query("q") searchQuery: String,
+        @Query("fields") fields: String = "files(id,name,size)"
+    ): GoogleDriveFileListResponse
+
+    @Multipart
+    @POST("upload/drive/v3/files?uploadType=multipart")
+    suspend fun uploadBackupFile(
+        @Header("Authorization") authHeader: String,
+        @Part metadata: MultipartBody.Part,
+        @Part file: MultipartBody.Part
+    ): GoogleDriveFileItem
+
+    @Multipart
+    @PUT("upload/drive/v3/files/{fileId}?uploadType=multipart")
+    suspend fun updateBackupFile(
+        @Header("Authorization") authHeader: String,
+        @Path("fileId") fileId: String,
+        @Part metadata: MultipartBody.Part,
+        @Part file: MultipartBody.Part
+    ): GoogleDriveFileItem
+
+    @GET("drive/v3/files/{fileId}?alt=media")
+    suspend fun downloadBackupFile(
+        @Header("Authorization") authHeader: String,
+        @Path("fileId") fileId: String
+    ): ResponseBody
+}

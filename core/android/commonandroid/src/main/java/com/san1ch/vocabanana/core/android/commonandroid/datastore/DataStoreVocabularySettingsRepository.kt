@@ -18,7 +18,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class DataStoreVocabularySettingsRepositoryImpl @Inject constructor(
+class DataStoreVocabularySettingsRepository @Inject constructor(
     private val dataStore: DataStore<Preferences>,
 ) : VocabularySettingsRepository {
 

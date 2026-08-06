@@ -25,8 +25,6 @@ import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.CloudDownload
 import androidx.compose.material.icons.filled.CloudSync
 import androidx.compose.material.icons.filled.CloudUpload
-import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -56,7 +54,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.san1ch.vocabanana.core.ui.compose.AnimatedIconSwitch
 import com.san1ch.vocabanana.core.ui.compose.AppConfirmDialog
 import com.san1ch.vocabanana.core.ui.compose.CollectUiEvents
 import com.san1ch.vocabanana.core.ui.theme.BackupColor
@@ -71,7 +68,7 @@ fun MainScreen(
         contract = ActivityResultContracts.OpenDocument(),
     ) { uri ->
         uri?.let {
-            viewModel.onIntent(MainUiIntent.LoadBackup(it.toString()))
+            viewModel.onIntent(MainUiIntent.LoadLocalBackup(it.toString()))
         }
     }
 
@@ -140,12 +137,32 @@ fun MainContent(
             }
         }
     }
+
+    // Local backup confirm dialog
     AppConfirmDialog(
-        show = state.isConfirmBackupWindowOpen,
+        show = state.isConfirmLocalBackupWindowOpen,
         title = "Save backup",
         text = "Do you want to save backup?",
-        onConfirm = { onIntent(MainUiIntent.Backup) },
-        onDismiss = { onIntent(MainUiIntent.CloseConfirmBackupWindow) },
+        onConfirm = { onIntent(MainUiIntent.LocalBackup) },
+        onDismiss = { onIntent(MainUiIntent.CloseConfirmLocalBackupWindow) },
+    )
+
+    // Cloud backup save confirm dialog
+    AppConfirmDialog(
+        show = state.isConfirmCloudBackupWindowOpen,
+        title = "Save Cloud Backup",
+        text = "Do you want to save backup to the cloud?",
+        onConfirm = { onIntent(MainUiIntent.BackupCloud) },
+        onDismiss = { onIntent(MainUiIntent.CloseConfirmCloudBackupWindow) },
+    )
+
+    // Cloud backup restore confirm dialog
+    AppConfirmDialog(
+        show = state.isConfirmLoadCloudBackupWindowOpen,
+        title = "Load Cloud Backup",
+        text = "Do you want to restore backup from the cloud? Current local data may be overwritten.",
+        onConfirm = { onIntent(MainUiIntent.LoadCloudBackup) },
+        onDismiss = { onIntent(MainUiIntent.CloseConfirmLoadCloudBackupWindow) },
     )
 }
 
@@ -235,65 +252,111 @@ private fun MainTopBarActions(
         }
     }
 
-    if (state.isLocalBackupEnabled) {
+    // Show backup menu if at least one backup type is enabled
+    if (state.isLocalBackupEnabled || state.isCloudBackupEnabled) {
         var isBackupMenuExpanded by remember { mutableStateOf(false) }
 
-        val backupTint = if (state.isBackupNeedUpdate) {
+        // Determine general backup status tint
+        val needsUpdate = state.isLocalBackupNeedUpdate || state.isCloudBackupNeedUpdate
+        val backupTint = if (needsUpdate) {
             BackupColor.NeedUpdate
         } else {
             LocalContentColor.current
         }
 
         Box {
-            AnimatedIconSwitch(
-                checked = isBackupMenuExpanded,
-                firstIcon = Icons.Default.CloudSync,
-                secondIcon = Icons.Default.KeyboardArrowUp,
-                onFirstClick = { isBackupMenuExpanded = true },
-                onSecondClick = { isBackupMenuExpanded = false },
-                firstTint = backupTint,
-                secondTint = LocalContentColor.current,
-                firstContentDescription = "Backup Options",
-                secondContentDescription = "Close Menu",
-            )
+            IconButton(onClick = { isBackupMenuExpanded = true }) {
+                Icon(
+                    imageVector = Icons.Default.CloudSync,
+                    contentDescription = "Backup Options",
+                    tint = backupTint,
+                )
+            }
 
             DropdownMenu(
                 expanded = isBackupMenuExpanded,
                 onDismissRequest = { isBackupMenuExpanded = false },
             ) {
-                DropdownMenuItem(
-                    text = { Text(stringResource(R.string.save_backup)) },
-                    leadingIcon = {
-                        Icon(
-                            imageVector = Icons.Default.CloudUpload,
-                            contentDescription = "Save Backup",
-                            tint = backupTint,
-                        )
-                    },
-                    onClick = {
-                        isBackupMenuExpanded = false
-                        if (state.isBackupNeedUpdate) {
-                            onIntent(MainUiIntent.OpenConfirmBackupWindow)
-                        } else {
-                            onIntent(MainUiIntent.ShowLastBackupTime)
-                        }
-                    },
-                )
+                // Local Backup Options
+                if (state.isLocalBackupEnabled) {
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.save_local_backup)) },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.CloudUpload,
+                                contentDescription = "Save Local Backup",
+                                tint = backupTint,
+                            )
+                        },
+                        onClick = {
+                            isBackupMenuExpanded = false
+                            if (state.isLocalBackupNeedUpdate) {
+                                onIntent(MainUiIntent.OpenConfirmLocalBackupWindow)
+                            } else {
+                                onIntent(MainUiIntent.ShowLastBackupTime)
+                            }
+                        },
+                    )
 
-                DropdownMenuItem(
-                    text = { Text(stringResource(R.string.load_backup)) },
-                    leadingIcon = {
-                        Icon(
-                            imageVector = Icons.Default.CloudDownload,
-                            contentDescription = "Load Backup",
-                            tint = LocalContentColor.current,
-                        )
-                    },
-                    onClick = {
-                        isBackupMenuExpanded = false
-                        onBackupPicker()
-                    },
-                )
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.load_local_backup)) },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.CloudDownload,
+                                contentDescription = "Load Local Backup",
+                                tint = LocalContentColor.current,
+                            )
+                        },
+                        onClick = {
+                            isBackupMenuExpanded = false
+                            onBackupPicker()
+                        },
+                    )
+                }
+
+                // Cloud Backup Options
+                if (state.isCloudBackupEnabled) {
+                    val cloudNeedsUpdate = state.isCloudBackupNeedUpdate
+                    val cloudBackupTint = if (cloudNeedsUpdate) {
+                        BackupColor.NeedUpdate
+                    } else {
+                        LocalContentColor.current
+                    }
+
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.save_cloud_backup)) },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.CloudUpload,
+                                contentDescription = "Save Cloud Backup",
+                                tint = cloudBackupTint,
+                            )
+                        },
+                        onClick = {
+                            isBackupMenuExpanded = false
+                            if (state.isCloudBackupNeedUpdate) {
+                                onIntent(MainUiIntent.OpenConfirmCloudBackupWindow)
+                            } else {
+                                onIntent(MainUiIntent.ShowLastCloudBackupTime)
+                            }
+                        },
+                    )
+
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.load_cloud_backup)) },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.CloudDownload,
+                                contentDescription = "Load Cloud Backup",
+                                tint = LocalContentColor.current,
+                            )
+                        },
+                        onClick = {
+                            isBackupMenuExpanded = false
+                            onIntent(MainUiIntent.OpenConfirmLoadCloudBackupWindow)
+                        },
+                    )
+                }
             }
         }
     }

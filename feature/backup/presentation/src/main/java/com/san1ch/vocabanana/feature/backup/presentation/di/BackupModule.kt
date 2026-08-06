@@ -2,7 +2,7 @@ package com.san1ch.vocabanana.feature.backup.presentation.di
 
 import com.san1ch.vocabanana.core.essentials.backup.CloudBackupManager
 import com.san1ch.vocabanana.core.essentials.backup.LocalBackupManager
-import com.san1ch.vocabanana.core.essentials.resources.BackupStringProvider
+import com.san1ch.vocabanana.core.essentials.resources.featureproviders.BackupStringProvider
 import com.san1ch.vocabanana.feature.backup.presentation.CloudBackupManagerImpl
 import com.san1ch.vocabanana.feature.backup.presentation.LocalBackupManagerImpl
 import com.san1ch.vocabanana.feature.backup.presentation.stringprovider.BackupStringProviderImpl

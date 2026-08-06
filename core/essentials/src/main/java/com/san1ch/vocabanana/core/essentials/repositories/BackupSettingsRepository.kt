@@ -15,8 +15,12 @@ interface BackupSettingsRepository {
     val isCloudBackupEnabledFlow: Flow<Boolean>
     suspend fun setCloudBackupEnabled(enabled: Boolean)
 
-    val lastBackupTimeFlow: Flow<Long>
-    suspend fun setLastBackupTime(time: Long)
+    val lastLocalBackupTimeFlow: Flow<Long>
+    suspend fun setLastLocalBackupTime(time: Long)
 
-    val isBackupNeedUpdateFlow: Flow<Boolean>
+    val lastCloudBackupTimeFlow: Flow<Long>
+    suspend fun setLastCloudBackupTime(time: Long)
+
+    val isLocalBackupNeedUpdateFlow: Flow<Boolean>
+    val isCloudBackupNeedUpdateFlow: Flow<Boolean>
 }

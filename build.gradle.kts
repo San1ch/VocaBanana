@@ -1,3 +1,7 @@
+plugins{
+    alias(libs.plugins.kotlin.serialization) apply false
+}
+
 allprojects {
     configurations.all {
         resolutionStrategy {
