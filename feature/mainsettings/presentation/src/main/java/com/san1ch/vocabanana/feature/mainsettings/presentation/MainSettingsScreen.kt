@@ -99,16 +99,26 @@ fun rememberGoogleAuthHandler(
                 Log.d("GoogleAuthHandler", "Authorization successful!")
                 onSuccess()
             }
+
             Activity.RESULT_CANCELED -> {
                 val data = result.data
                 val extras = data?.extras
-                val errorMsg = extras?.keySet()?.joinToString(", ") { key -> "$key=${extras.get(key)}" } ?: "No extras"
+                val errorMsg =
+                    extras?.keySet()?.joinToString(", ") { key -> "$key=${extras.get(key)}" }
+                        ?: "No extras"
 
-                Log.e("GoogleAuthHandler", "Authorization canceled by user or system. Extras: $errorMsg")
+                Log.e(
+                    "GoogleAuthHandler",
+                    "Authorization canceled by user or system. Extras: $errorMsg",
+                )
                 onError(Activity.RESULT_CANCELED, "User canceled or flow interrupted: $errorMsg")
             }
+
             else -> {
-                Log.e("GoogleAuthHandler", "Authorization failed with unknown resultCode: ${result.resultCode}")
+                Log.e(
+                    "GoogleAuthHandler",
+                    "Authorization failed with unknown resultCode: ${result.resultCode}",
+                )
                 onError(result.resultCode, "Unknown result code: ${result.resultCode}")
             }
         }
@@ -198,12 +208,12 @@ private fun BackupSections(
 
     SettingsSwitchItem(
         label = "Local Backup",
-        checked = state.isLocalEnabled,
+        checked = state.isLocalToggleEnabled,
         onCheckedChange = { onIntent(SettingsIntent.ToggleLocalBackup(it)) },
     )
 
     AnimatedVisibility(
-        visible = state.isLocalEnabled,
+        visible = state.isLocalToggleEnabled,
         enter = fadeIn() + expandVertically(),
         exit = fadeOut() + shrinkVertically(),
     ) {
@@ -234,12 +244,12 @@ private fun BackupSections(
 
     SettingsSwitchItem(
         label = "Cloud Backup",
-        checked = state.isCloudEnabled,
+        checked = state.isCloudToggleEnabled,
         onCheckedChange = { onIntent(SettingsIntent.ToggleCloudBackup(it)) },
     )
 
     AnimatedVisibility(
-        visible = state.isCloudEnabled,
+        visible = state.isCloudToggleEnabled,
         enter = fadeIn() + expandVertically(),
         exit = fadeOut() + shrinkVertically(),
     ) {
@@ -258,13 +268,17 @@ private fun BackupSections(
                 modifier = Modifier.padding(bottom = 8.dp),
             )
 
+            // First is "text", second is "onClick"
+            val button: Pair<String, () -> Unit> = when {
+                state.isCloudBackupEnabled -> Pair("Disconnect") { onIntent(SettingsIntent.DisconnectGoogleDriveClicked) }
+
+                else -> Pair("Sign in with Google") { onIntent(SettingsIntent.ConnectGoogleDriveClicked) }
+            }
             Button(
-                onClick = {
-                    onIntent(SettingsIntent.ConnectGoogleDriveClicked)
-                },
+                onClick = button.second,
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                Text("Sign in with Google")
+                Text(button.first)
             }
         }
     }

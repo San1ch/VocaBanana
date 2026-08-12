@@ -72,7 +72,7 @@ class TextListDictionaryHandler @Inject constructor(
                 )
             }
 
-            TextListUiIntent.Dictionary.ClearIdToGenereteWords -> {
+            TextListUiIntent.Dictionary.ClearIdToGenerateWords -> {
                 updateState {
                     it.copy(
                         currentIdToGenerateWords = null,

@@ -67,16 +67,14 @@ fun MainScreen(
     val backupPicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument(),
     ) { uri ->
-        uri?.let {
-            viewModel.onIntent(MainUiIntent.LoadLocalBackup(it.toString()))
-        }
+        uri?.let { viewModel.onIntent(MainUiIntent.LoadLocalBackup(it.toString())) }
     }
 
     val state by viewModel.uiState.collectAsState()
 
     MainContent(
-        onIntent = viewModel::onIntent,
         state = state,
+        onIntent = viewModel::onIntent,
         onBackupPicker = { backupPicker.launch(arrayOf("*/*")) },
     )
 }
@@ -138,7 +136,14 @@ fun MainContent(
         }
     }
 
-    // Local backup confirm dialog
+    MainBackupDialogs(state = state, onIntent = onIntent)
+}
+
+@Composable
+private fun MainBackupDialogs(
+    state: MainUiState,
+    onIntent: (MainUiIntent) -> Unit,
+) {
     AppConfirmDialog(
         show = state.isConfirmLocalBackupWindowOpen,
         title = "Save backup",
@@ -147,7 +152,6 @@ fun MainContent(
         onDismiss = { onIntent(MainUiIntent.CloseConfirmLocalBackupWindow) },
     )
 
-    // Cloud backup save confirm dialog
     AppConfirmDialog(
         show = state.isConfirmCloudBackupWindowOpen,
         title = "Save Cloud Backup",
@@ -156,7 +160,6 @@ fun MainContent(
         onDismiss = { onIntent(MainUiIntent.CloseConfirmCloudBackupWindow) },
     )
 
-    // Cloud backup restore confirm dialog
     AppConfirmDialog(
         show = state.isConfirmLoadCloudBackupWindowOpen,
         title = "Load Cloud Backup",
@@ -173,24 +176,21 @@ fun MenuCard(
     accentColor: Color,
     onClick: () -> Unit,
 ) {
+    val containerColor = if (isSystemInDarkTheme()) {
+        MaterialTheme.colorScheme.surface
+    } else {
+        Color.White
+    }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .height(130.dp)
-            .clickable { onClick() },
+            .clickable(onClick = onClick),
         shape = MaterialTheme.shapes.large,
-        colors = CardDefaults.cardColors(
-            containerColor = if (isSystemInDarkTheme()) {
-                MaterialTheme.colorScheme.surface
-            } else {
-                Color.White
-            },
-        ),
+        colors = CardDefaults.cardColors(containerColor = containerColor),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        border = BorderStroke(
-            width = 1.dp,
-            color = accentColor.copy(alpha = 0.2f),
-        ),
+        border = BorderStroke(width = 1.dp, color = accentColor.copy(alpha = 0.2f)),
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             Surface(
@@ -252,17 +252,16 @@ private fun MainTopBarActions(
         }
     }
 
-    // Show backup menu if at least one backup type is enabled
     if (state.isLocalBackupEnabled || state.isCloudBackupEnabled) {
         var isBackupMenuExpanded by remember { mutableStateOf(false) }
 
-        // Determine general backup status tint
-        val needsUpdate = state.isLocalBackupNeedUpdate || state.isCloudBackupNeedUpdate
-        val backupTint = if (needsUpdate) {
-            BackupColor.NeedUpdate
-        } else {
-            LocalContentColor.current
-        }
+        val backupTint =
+            if (state.isLocalBackupNeedUpdate || state.isCloudBackupNeedUpdate) BackupColor.NeedUpdate else LocalContentColor.current
+
+        val localBackupTint =
+            if (state.isLocalBackupNeedUpdate) BackupColor.NeedUpdate else LocalContentColor.current
+        val cloudBackupTint =
+            if (state.isCloudBackupNeedUpdate) BackupColor.NeedUpdate else LocalContentColor.current
 
         Box {
             IconButton(onClick = { isBackupMenuExpanded = true }) {
@@ -277,7 +276,6 @@ private fun MainTopBarActions(
                 expanded = isBackupMenuExpanded,
                 onDismissRequest = { isBackupMenuExpanded = false },
             ) {
-                // Local Backup Options
                 if (state.isLocalBackupEnabled) {
                     DropdownMenuItem(
                         text = { Text(stringResource(R.string.save_local_backup)) },
@@ -285,7 +283,7 @@ private fun MainTopBarActions(
                             Icon(
                                 imageVector = Icons.Default.CloudUpload,
                                 contentDescription = "Save Local Backup",
-                                tint = backupTint,
+                                tint = localBackupTint,
                             )
                         },
                         onClick = {
@@ -314,15 +312,7 @@ private fun MainTopBarActions(
                     )
                 }
 
-                // Cloud Backup Options
                 if (state.isCloudBackupEnabled) {
-                    val cloudNeedsUpdate = state.isCloudBackupNeedUpdate
-                    val cloudBackupTint = if (cloudNeedsUpdate) {
-                        BackupColor.NeedUpdate
-                    } else {
-                        LocalContentColor.current
-                    }
-
                     DropdownMenuItem(
                         text = { Text(stringResource(R.string.save_cloud_backup)) },
                         leadingIcon = {
@@ -361,12 +351,7 @@ private fun MainTopBarActions(
         }
     }
 
-    IconButton(
-        onClick = { onIntent(MainUiIntent.NavigateToSettings) },
-    ) {
-        Icon(
-            Icons.Default.Settings,
-            contentDescription = "Settings",
-        )
+    IconButton(onClick = { onIntent(MainUiIntent.NavigateToSettings) }) {
+        Icon(Icons.Default.Settings, contentDescription = "Settings")
     }
 }

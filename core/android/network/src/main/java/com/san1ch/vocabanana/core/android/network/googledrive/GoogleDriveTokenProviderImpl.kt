@@ -20,20 +20,22 @@ class GoogleDriveTokenProviderImpl @Inject constructor(
 
     override suspend fun obtainAccessToken(): Result<String> = suspendCancellableCoroutine { continuation ->
         val requestedScopes = listOf(Scope("https://www.googleapis.com/auth/drive.appfolder"))
-        val request = AuthorizationRequest.builder()
+
+        val requestBuilder = AuthorizationRequest.builder()
             .setRequestedScopes(requestedScopes)
-            .build()
+
+        val request = requestBuilder.build()
 
         authorizationClient.authorize(request)
             .addOnSuccessListener { result ->
                 if (result.hasResolution()) {
                     val pendingIntent = result.pendingIntent
                     if (pendingIntent != null) {
-                        continuation.resume(Result.failure(
-                            DriveConsentRequiredException(
-                                pendingIntent
+                        continuation.resume(
+                            Result.failure(
+                                DriveConsentRequiredException(pendingIntent)
                             )
-                        ))
+                        )
                     } else {
                         continuation.resume(Result.failure(IllegalStateException("Resolution required but pendingIntent is null")))
                     }
@@ -51,5 +53,3 @@ class GoogleDriveTokenProviderImpl @Inject constructor(
             }
     }
 }
-
-const val systemDriveFolder = "appDataFolder"

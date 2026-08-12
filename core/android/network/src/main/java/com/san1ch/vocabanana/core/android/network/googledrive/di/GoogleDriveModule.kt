@@ -1,6 +1,8 @@
 package com.san1ch.vocabanana.core.android.network.googledrive.di
 
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
+import com.san1ch.vocabanana.core.android.network.googledrive.GoogleApiStringProviderImpl
+import com.san1ch.vocabanana.core.android.network.googledrive.GoogleAuthManagerImpl
 import com.san1ch.vocabanana.core.android.network.googledrive.GoogleDriveApiService
 import com.san1ch.vocabanana.core.android.network.googledrive.GoogleDriveConfig
 import com.san1ch.vocabanana.core.android.network.googledrive.GoogleDriveService
@@ -10,6 +12,8 @@ import com.san1ch.vocabanana.core.android.network.googledrive.clients.createGoog
 import com.san1ch.vocabanana.core.android.network.googledrive.convertor.createGoogleDriveJson
 import com.san1ch.vocabanana.core.essentials.backup.GoogleDriveTokenProvider
 import com.san1ch.vocabanana.core.essentials.network.CloudStorageClient
+import com.san1ch.vocabanana.core.essentials.network.GoogleAuthManager
+import com.san1ch.vocabanana.core.essentials.resources.network.GoogleApiStringProvider
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -64,4 +68,16 @@ interface GoogleDriveBindModule{
     fun bindGoogleDriveTokenManager(
         impl: GoogleDriveTokenProviderImpl,
     ): GoogleDriveTokenProvider
+
+    @Binds
+    @Singleton
+    fun bindGoogleAuthManager(
+        impl: GoogleAuthManagerImpl,
+    ): GoogleAuthManager
+
+    @Binds
+    @Singleton
+    fun bindGoogleApiStringProvider(
+        impl: GoogleApiStringProviderImpl,
+    ): GoogleApiStringProvider
 }

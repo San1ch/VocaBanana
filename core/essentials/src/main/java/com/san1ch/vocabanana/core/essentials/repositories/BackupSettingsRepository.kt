@@ -9,9 +9,6 @@ interface BackupSettingsRepository {
     val isLocalBackupEnabledFlow: Flow<Boolean>
     suspend fun setLocalBackupEnabled(enabled: Boolean)
 
-    val cloudEmailFlow: Flow<String>
-    suspend fun setCloudEmail(email: String)
-
     val isCloudBackupEnabledFlow: Flow<Boolean>
     suspend fun setCloudBackupEnabled(enabled: Boolean)
 

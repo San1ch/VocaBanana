@@ -88,10 +88,11 @@ fun VocabularyListPage(
     onMenuClick: () -> Unit,
 ) {
     var wordToDelete by remember { mutableStateOf<WordUi?>(null) }
-    // Pick a surface color for the "Connected" look
     val containerColor = MaterialTheme.colorScheme.surface
-
     var isSearchVisible by remember { mutableStateOf(false) }
+
+    // Local state for instant UI feedback
+    var localQuery by remember(wordFilter.searchQuery) { mutableStateOf(wordFilter.searchQuery) }
 
     DeleteConfirmDialog(
         item = wordToDelete,
@@ -104,12 +105,11 @@ fun VocabularyListPage(
 
     Scaffold(
         topBar = {
-            // Stack the AppBar and Stats together to make them look like one unit
             Column(modifier = Modifier.background(containerColor)) {
                 TopAppBar(
                     title = { Text(stringResource(R.string.vocabulary)) },
                     colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = containerColor, // Same color as column
+                        containerColor = containerColor,
                     ),
                     navigationIcon = {
                         IconButton(onClick = onMenuClick) {
@@ -131,23 +131,23 @@ fun VocabularyListPage(
                 )
 
                 SearchBarField(
-                    query = wordFilter.searchQuery,
-                    onQueryChange = { onIntent(VocabularyIntent.UpdateSearchQuery(it)) },
+                    query = localQuery,
+                    onQueryChange = { newQuery ->
+                        localQuery = newQuery
+                        onIntent(VocabularyIntent.UpdateSearchQuery(newQuery))
+                    },
                     isVisible = isSearchVisible,
                 )
-                // The stats header now sits right under the title with NO gaps
-                VocabularyStatsHeader(stats = stats, backgroundColor = containerColor)
 
-                // Subtle line to separate the header from the scrolling list
+                VocabularyStatsHeader(stats = stats, backgroundColor = containerColor)
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
             }
         },
     ) { padding ->
-        // LazyColumn fills the rest of the screen
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding), // This padding now starts AFTER the combined header
+                .padding(padding),
             contentPadding = PaddingValues(bottom = 80.dp),
         ) {
             items(words, key = { it.id }) { word ->

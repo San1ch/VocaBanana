@@ -20,13 +20,13 @@ class DataStoreBackupSettingsRepository @Inject constructor(
         val IS_LOCAL_ENABLED = booleanPreferencesKey("is_local_enabled")
         val LOCAL_BACKUP_PATH = stringPreferencesKey("local_backup_path")
         val IS_CLOUD_ENABLED = booleanPreferencesKey("is_cloud_enabled")
-        val CLOUD_EMAIL = stringPreferencesKey("cloud_email")
 
         // Separate backup timestamps for local and cloud
         val LAST_LOCAL_BACKUP_TIME = longPreferencesKey("last_local_backup_time")
         val LAST_CLOUD_BACKUP_TIME = longPreferencesKey("last_cloud_backup_time")
 
         val LAST_DB_UPDATE_TIME = longPreferencesKey("last_db_update_time")
+        val FORCE_ACCOUNT_PICKER = booleanPreferencesKey("force_account_picker")
     }
 
     override val localBackupPathFlow: Flow<String> =
@@ -41,13 +41,6 @@ class DataStoreBackupSettingsRepository @Inject constructor(
 
     override suspend fun setLocalBackupEnabled(enabled: Boolean) {
         dataStore.edit { it[Keys.IS_LOCAL_ENABLED] = enabled }
-    }
-
-    override val cloudEmailFlow: Flow<String> =
-        dataStore.data.map { it[Keys.CLOUD_EMAIL] ?: "" }
-
-    override suspend fun setCloudEmail(email: String) {
-        dataStore.edit { it[Keys.CLOUD_EMAIL] = email }
     }
 
     override val isCloudBackupEnabledFlow: Flow<Boolean> =

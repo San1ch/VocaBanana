@@ -2,12 +2,14 @@ package com.san1ch.vocabanana.feature.mainsettings.presentation
 
 import android.app.PendingIntent
 import android.net.Uri
+import androidx.core.net.toUri
 import androidx.lifecycle.viewModelScope
 import com.san1ch.vocabanana.core.essentials.Logger
-import com.san1ch.vocabanana.core.essentials.backup.GoogleDriveTokenProvider
 import com.san1ch.vocabanana.core.essentials.model.AppThemeMode
+import com.san1ch.vocabanana.core.essentials.network.GoogleAuthManager
 import com.san1ch.vocabanana.core.essentials.repositories.BackupSettingsRepository
 import com.san1ch.vocabanana.core.essentials.repositories.SettingsRepository
+import com.san1ch.vocabanana.core.essentials.resources.network.GoogleApiStringProvider
 import com.san1ch.vocabanana.core.ui.BaseViewModel
 import com.san1ch.vocabanana.core.ui.exception.DriveConsentRequiredException
 import com.san1ch.vocabanana.core.ui.model.UiEvent
@@ -30,7 +32,8 @@ class MainSettingsScreenViewModel @Inject constructor(
     private val settingsRepository: SettingsRepository,
     private val backupSettingsRepository: BackupSettingsRepository,
     private val settingsRouter: SettingsRouter,
-    private val tokenManager: GoogleDriveTokenProvider,
+    private val googleAuthManager: GoogleAuthManager,
+    private val googleApiStringProvider: GoogleApiStringProvider,
     private val logger: Logger,
 ) : BaseViewModel() {
 
@@ -47,7 +50,7 @@ class MainSettingsScreenViewModel @Inject constructor(
 
         backupSettingsRepository.localBackupPathFlow.onEach { rawPath ->
             val readablePath = if (rawPath.isNotBlank() && rawPath.startsWith("content://")) {
-                formatUriToReadablePath(Uri.parse(rawPath))
+                formatUriToReadablePath(rawPath.toUri())
             } else {
                 rawPath
             }
@@ -64,17 +67,8 @@ class MainSettingsScreenViewModel @Inject constructor(
         backupSettingsRepository.isLocalBackupEnabledFlow.onEach { enabled ->
             _uiState.update {
                 it.copy(
-                    currentIsLocalEnabled = enabled,
-                    isLocalEnabled = enabled,
-                )
-            }
-        }.launchIn(viewModelScope)
-
-        backupSettingsRepository.cloudEmailFlow.onEach { email ->
-            _uiState.update {
-                it.copy(
-                    currentCloudEmail = email,
-                    selectedCloudEmail = email,
+                    isLocalBackupEnabled = enabled,
+                    isLocalToggleEnabled = enabled,
                 )
             }
         }.launchIn(viewModelScope)
@@ -82,8 +76,8 @@ class MainSettingsScreenViewModel @Inject constructor(
         backupSettingsRepository.isCloudBackupEnabledFlow.onEach { enabled ->
             _uiState.update {
                 it.copy(
-                    currentIsCloudEnabled = enabled,
-                    isCloudEnabled = enabled,
+                    isCloudBackupEnabled = enabled,
+                    isCloudToggleEnabled = enabled,
                 )
             }
         }.launchIn(viewModelScope)
@@ -102,11 +96,11 @@ class MainSettingsScreenViewModel @Inject constructor(
             }
 
             is SettingsIntent.ToggleLocalBackup -> {
-                _uiState.update { it.copy(isLocalEnabled = intent.enabled) }
+                _uiState.update { it.copy(isLocalToggleEnabled = intent.enabled) }
             }
 
             is SettingsIntent.ToggleCloudBackup -> {
-                _uiState.update { it.copy(isCloudEnabled = intent.enabled) }
+                _uiState.update { it.copy(isCloudToggleEnabled = intent.enabled) }
             }
 
             is SettingsIntent.UpdateLocalPathUri -> {
@@ -120,16 +114,12 @@ class MainSettingsScreenViewModel @Inject constructor(
                 }
             }
 
-            is SettingsIntent.UpdateCloudEmail -> {
-                _uiState.update { it.copy(selectedCloudEmail = intent.email) }
-            }
-
             is SettingsIntent.ConnectGoogleDriveClicked -> {
                 requestGoogleDriveAuth()
             }
 
             is SettingsIntent.GoogleAuthResolved -> {
-                requestGoogleDriveAuth()
+                sendEvent(UiEvent.ShowToast(googleApiStringProvider.authSuccessMessage))
             }
 
             is SettingsIntent.SaveBackupSettings -> {
@@ -137,38 +127,40 @@ class MainSettingsScreenViewModel @Inject constructor(
                     viewModelScope.launch(Dispatchers.IO) {
                         val state = uiState.value
 
-                        backupSettingsRepository.setLocalBackupEnabled(state.isLocalEnabled)
-                        if (state.isLocalEnabled) {
+                        backupSettingsRepository.setLocalBackupEnabled(state.isLocalToggleEnabled)
+                        if (state.isLocalToggleEnabled) {
                             backupSettingsRepository.setLocalBackupPath(state.rawLocalUri)
                         } else {
                             backupSettingsRepository.setLocalBackupPath("")
                         }
-
-                        backupSettingsRepository.setCloudBackupEnabled(state.isCloudEnabled)
-                        if (state.isCloudEnabled) {
-                            backupSettingsRepository.setCloudEmail(state.selectedCloudEmail)
-                        } else {
-                            backupSettingsRepository.setCloudEmail("")
-                        }
+                    }
+                }
+            }
+            is SettingsIntent.DisconnectGoogleDriveClicked -> {
+                viewModelScope.launch(Dispatchers.IO) {
+                    googleAuthManager.revokeAccess().onSuccess {
+                        backupSettingsRepository.setCloudBackupEnabled(false)
+                    }.onFailure { error ->
                     }
                 }
             }
         }
     }
-
     private fun requestGoogleDriveAuth() {
         viewModelScope.launch {
-            val result = tokenManager.obtainAccessToken()
-            result.onSuccess { token ->
-                _uiState.update { it.copy(selectedCloudEmail = "Connected Google Account") }
+            val result = googleAuthManager.requestAccount()
+
+            result.onSuccess {
+                backupSettingsRepository.setCloudBackupEnabled(true)
+                sendEvent(UiEvent.ShowToast(googleApiStringProvider.authSuccessMessage))
             }.onFailure { error ->
-                when (val error = error) {
+                when (error) {
                     is DriveConsentRequiredException -> {
                         _uiEvent.emit(SettingsUiEvent.LaunchGoogleConsent(error.pendingIntent))
                     }
-
                     else -> {
                         val errorMessage = error.message ?: return@onFailure
+                        _uiState.update { it.copy(isCloudToggleEnabled = false) }
                         sendEvent(UiEvent.ShowToast(errorMessage))
                     }
                 }
@@ -202,33 +194,25 @@ data class SettingsUiState(
     val selectedLocalPath: String = "",
     val rawLocalUri: String = "",
 
-    val currentIsLocalEnabled: Boolean = false,
-    val isLocalEnabled: Boolean = false,
+    val isLocalBackupEnabled: Boolean = false,
+    val isLocalToggleEnabled: Boolean = false,
 
-    val currentCloudEmail: String = "",
-    val selectedCloudEmail: String = "",
-    val currentIsCloudEnabled: Boolean = false,
-    val isCloudEnabled: Boolean = false,
+    val isCloudBackupEnabled: Boolean = false,
+    val isCloudToggleEnabled: Boolean = false,
 ) {
     val hasUnsavedChanges: Boolean
         get() = (currentLocalPath != selectedLocalPath) ||
-            (currentCloudEmail != selectedCloudEmail) ||
-            (currentIsLocalEnabled != isLocalEnabled) ||
-            (currentIsCloudEnabled != isCloudEnabled)
+            (isLocalBackupEnabled != isLocalToggleEnabled)
 
     val isSaveValid: Boolean
         get() {
-            val localValid = if (isLocalEnabled) {
+            val localValid = if (isLocalToggleEnabled) {
                 rawLocalUri.isNotBlank() || currentLocalPath.isNotBlank()
             } else {
                 true
             }
 
-            val cloudValid = if (isCloudEnabled) {
-                selectedCloudEmail.isNotBlank()
-            } else {
-                true
-            }
+            val cloudValid = true
 
             return localValid && cloudValid
         }
@@ -240,10 +224,10 @@ sealed interface SettingsIntent {
     data class ToggleLocalBackup(val enabled: Boolean) : SettingsIntent
     data class ToggleCloudBackup(val enabled: Boolean) : SettingsIntent
     data class UpdateLocalPathUri(val uri: Uri) : SettingsIntent
-    data class UpdateCloudEmail(val email: String) : SettingsIntent
     object ConnectGoogleDriveClicked : SettingsIntent
     object GoogleAuthResolved : SettingsIntent
     object SaveBackupSettings : SettingsIntent
+    object DisconnectGoogleDriveClicked : SettingsIntent
 }
 
 sealed interface SettingsUiEvent {
