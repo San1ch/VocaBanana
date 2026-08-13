@@ -32,4 +32,10 @@ captures/
 *.jks
 *.dm
 output-metadata.json
+
+
+
+
+
+
 /my-release-key.zip
