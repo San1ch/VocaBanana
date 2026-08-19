@@ -17,5 +17,4 @@ abstract class AbstractApplication : Application() {
             Timber.plant(Timber.DebugTree())
         }
     }
-
 }

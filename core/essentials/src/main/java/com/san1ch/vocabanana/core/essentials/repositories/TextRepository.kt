@@ -13,7 +13,7 @@ interface TextRepository {
     suspend fun getTextsByIds(ids: List<Int>): List<TextDomain>
     fun getTextsMetadata(): Flow<List<TextInfo>>
     fun getTextMetadataByIdFlow(id: Int): Flow<TextInfo?>
-    fun saveTexts(texts: List<TextDomain>)
+    suspend fun saveTexts(texts: List<TextDomain>)
     suspend fun deleteTexts(textIds: List<Int>)
 
     fun isTextNameUnique(name: String): Boolean

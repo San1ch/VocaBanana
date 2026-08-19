@@ -88,10 +88,11 @@ fun VocabularyListPage(
     onMenuClick: () -> Unit,
 ) {
     var wordToDelete by remember { mutableStateOf<WordUi?>(null) }
-    // Pick a surface color for the "Connected" look
     val containerColor = MaterialTheme.colorScheme.surface
-
     var isSearchVisible by remember { mutableStateOf(false) }
+
+    // Local state for instant UI feedback
+    var localQuery by remember(wordFilter.searchQuery) { mutableStateOf(wordFilter.searchQuery) }
 
     DeleteConfirmDialog(
         item = wordToDelete,
@@ -104,12 +105,11 @@ fun VocabularyListPage(
 
     Scaffold(
         topBar = {
-            // Stack the AppBar and Stats together to make them look like one unit
             Column(modifier = Modifier.background(containerColor)) {
                 TopAppBar(
                     title = { Text(stringResource(R.string.vocabulary)) },
                     colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = containerColor, // Same color as column
+                        containerColor = containerColor,
                     ),
                     navigationIcon = {
                         IconButton(onClick = onMenuClick) {
@@ -131,23 +131,23 @@ fun VocabularyListPage(
                 )
 
                 SearchBarField(
-                    query = wordFilter.searchQuery,
-                    onQueryChange = { onIntent(VocabularyIntent.UpdateSearchQuery(it)) },
+                    query = localQuery,
+                    onQueryChange = { newQuery ->
+                        localQuery = newQuery
+                        onIntent(VocabularyIntent.UpdateSearchQuery(newQuery))
+                    },
                     isVisible = isSearchVisible,
                 )
-                // The stats header now sits right under the title with NO gaps
-                VocabularyStatsHeader(stats = stats, backgroundColor = containerColor)
 
-                // Subtle line to separate the header from the scrolling list
+                VocabularyStatsHeader(stats = stats, backgroundColor = containerColor)
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
             }
         },
     ) { padding ->
-        // LazyColumn fills the rest of the screen
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding), // This padding now starts AFTER the combined header
+                .padding(padding),
             contentPadding = PaddingValues(bottom = 80.dp),
         ) {
             items(words, key = { it.id }) { word ->
@@ -234,7 +234,6 @@ fun VocabularyDrawerContent(
                 color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
             )
 
-
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -289,7 +288,6 @@ fun VocabularyDrawerContent(
     }
 }
 
-
 @Composable
 fun SortOptionChip(
     modifier: Modifier = Modifier,
@@ -297,12 +295,10 @@ fun SortOptionChip(
     selected: Boolean,
     onClick: () -> Unit,
 ) {
-
     val backgroundColor by androidx.compose.animation.animateColorAsState(
         targetValue = if (selected) MaterialTheme.colorScheme.primary else Color.Transparent,
         label = "sortBgColor",
     )
-
 
     val textColor by androidx.compose.animation.animateColorAsState(
         targetValue = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
@@ -310,9 +306,13 @@ fun SortOptionChip(
     )
 
     val borderColor =
-        if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant.copy(
-            alpha = 0.6f
-        )
+        if (selected) {
+            MaterialTheme.colorScheme.primary
+        } else {
+            MaterialTheme.colorScheme.outlineVariant.copy(
+                alpha = 0.6f,
+            )
+        }
 
     Surface(
         modifier = modifier
@@ -409,7 +409,6 @@ fun getStateColor(state: WordState, isDarkTheme: Boolean): Color = when (state) 
     }
 }
 
-
 @Composable
 fun VocabularyStatsHeader(
     stats: VocabularyStats,
@@ -503,7 +502,7 @@ fun VocabularyStatsHeader(
                                 PieChartData.Slice(
                                     stringResource(R.string.known_stats),
                                     stats.known.toFloat(),
-                                    AppColor.Known
+                                    AppColor.Known,
                                 ),
                                 PieChartData.Slice(
                                     stringResource(R.string.learning_stats),
@@ -536,17 +535,17 @@ fun VocabularyStatsHeader(
                         StatRow(
                             AppColor.Learn,
                             stringResource(R.string.learning_stats),
-                            stats.learning
+                            stats.learning,
                         )
                         StatRow(
                             AppColor.NotKnow,
                             stringResource(R.string.not_known_stats),
-                            stats.notKnown
+                            stats.notKnown,
                         )
                         StatRow(
                             AppColor.Ignore,
                             stringResource(R.string.ignored_stats),
-                            stats.ignored
+                            stats.ignored,
                         )
                     }
                 }
@@ -570,7 +569,6 @@ fun StatRow(color: Color, label: String, count: Int) {
         Text("$label: $count", style = MaterialTheme.typography.bodySmall)
     }
 }
-
 
 @Composable
 fun WordListItem(

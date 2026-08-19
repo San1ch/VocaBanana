@@ -40,6 +40,13 @@ detekt = "1.23.8"
 spotless = "7.2.1"
 
 # Network
+retrofit = "3.0.0"
+okhttp = "4.11.0"
+retrofit-kotlinx-serialization-converter = "1.0.0"
+
+credentials = "1.6.0"
+play-services-auth = "21.6.0"
+
 
 # Serialization
 kotlinx-serialization-json = "1.8.0"
@@ -98,6 +105,14 @@ kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-cor
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinx-coroutines" }
 
 # Network
+retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
+retrofit-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "retrofit" }
+okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
+retrofit-kotlinx-serialization-converter = { module = "com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter", version.ref = "retrofit-kotlinx-serialization-converter" }
+
+androidx-credentials = { module = "androidx.credentials:credentials", version.ref = "credentials" }
+androidx-credentials-play-services-auth = { module = "androidx.credentials:credentials-play-services-auth", version.ref = "credentials" }
+play-services-auth = { module = "com.google.android.gms:play-services-auth", version.ref = "play-services-auth" }
 
 # JSON Serialization
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization-json" }
@@ -123,7 +138,6 @@ androidx-compose-animation = { group = "androidx.compose.animation", name = "ani
 androidx-foundation-layout = { group = "androidx.compose.foundation", name = "foundation-layout", version.ref = "foundation" }
 androidx-foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "foundation" }
 androidx-compose-runtime = { group = "androidx.compose.runtime", name = "runtime" }
-
 # Testing
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 junit-bom = { group = "org.junit", name = "junit-bom", version.ref = "junit-jupiter" }

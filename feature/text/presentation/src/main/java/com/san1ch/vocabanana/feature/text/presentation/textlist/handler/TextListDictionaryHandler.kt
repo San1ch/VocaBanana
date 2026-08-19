@@ -26,7 +26,7 @@ class TextListDictionaryHandler @Inject constructor(
     private val getWordsWithCountUseCase: GetWordsWithCountUseCase,
     private val generateWordsFromText: GenerateWordsFromTextUseCase,
     private val generateWordsFromTextUiMapper: GenerateWordsFromTextUiMapper,
-    private val logger: Logger
+    private val logger: Logger,
 ) {
 
     fun handle(
@@ -48,7 +48,7 @@ class TextListDictionaryHandler @Inject constructor(
 
                         updateState { it.copy(showWordInfoState = WordInfoState.Hidden) }
                         return
-                    }
+                    },
                 )
             }
 
@@ -72,7 +72,7 @@ class TextListDictionaryHandler @Inject constructor(
                 )
             }
 
-            TextListUiIntent.Dictionary.ClearIdToGenereteWords -> {
+            TextListUiIntent.Dictionary.ClearIdToGenerateWords -> {
                 updateState {
                     it.copy(
                         currentIdToGenerateWords = null,
@@ -110,7 +110,7 @@ class TextListDictionaryHandler @Inject constructor(
                     val textWordCount = textRepository.getWordCountInText(wordId, textId) ?: run {
                         logger.e(
                             IllegalStateException("Data missing"),
-                            "Failed to find word count for wordId=$wordId and textId=$textId"
+                            "Failed to find word count for wordId=$wordId and textId=$textId",
                         )
 
                         updateState { it.copy(showWordInfoState = WordInfoState.NotFound(word)) }

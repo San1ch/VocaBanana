@@ -49,6 +49,6 @@ fun TextListOverlays(
         textId = state.currentIdToGenerateWords,
         generatingState = state.generatingState,
         onIntent = onIntent,
-        onDismiss = { onIntent(TextListUiIntent.Dictionary.ClearIdToGenereteWords) },
+        onDismiss = { onIntent(TextListUiIntent.Dictionary.ClearIdToGenerateWords) },
     )
 }

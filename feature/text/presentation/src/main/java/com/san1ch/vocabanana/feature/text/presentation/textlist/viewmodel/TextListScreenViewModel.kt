@@ -76,7 +76,7 @@ sealed class TextListUiIntent {
         object CloseWordInfo : Dictionary()
         data class OxfordMoreInfo(val word: String) : Dictionary()
         data class GenerateWords(val textId: Int) : Dictionary()
-        object ClearIdToGenereteWords : Dictionary()
+        object ClearIdToGenerateWords : Dictionary()
     }
 
     sealed class Management : TextListUiIntent() {

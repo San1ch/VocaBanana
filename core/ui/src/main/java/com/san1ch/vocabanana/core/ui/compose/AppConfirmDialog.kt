@@ -16,7 +16,9 @@ fun AppConfirmDialog(
     dismissText: String = "No",
     onConfirm: () -> Unit,
     onDismiss: () -> Unit,
+    show: Boolean,
 ) {
+    if (!show) return
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(text = title, style = MaterialTheme.typography.headlineSmall) },
@@ -42,13 +44,14 @@ fun <T> DeleteConfirmDialog(
     onDismiss: () -> Unit,
     onConfirm: (T) -> Unit,
 ) {
-    if (item != null) {
+    item?.let { safeItem ->
         AppConfirmDialog(
             title = title,
             text = text,
             confirmText = stringResource(R.string.delete),
-            onConfirm = { onConfirm(item) },
+            onConfirm = { onConfirm(safeItem) },
             onDismiss = onDismiss,
+            show = true,
         )
     }
 }

@@ -95,6 +95,7 @@ private fun NotFoundContent(
         Text(
             text = "The word '${state.word}' is missing from your dictionary.",
             style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.primary,
         )
         ActionSection(word = state.word, onOxfordClick = onOxfordClick)
     }
@@ -118,6 +119,7 @@ private fun FoundContent(
                 Text(
                     text = state.word.lemma,
                     style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Bold,
                 )
                 Spacer(Modifier.height(2.dp))

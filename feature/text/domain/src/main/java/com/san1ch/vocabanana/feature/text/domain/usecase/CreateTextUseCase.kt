@@ -10,7 +10,7 @@ import javax.inject.Inject
 class CreateTextUseCase @Inject constructor(
     private val textRepository: TextRepository,
 ) {
-    operator fun invoke(
+    suspend operator fun invoke(
         textName: String,
         content: String,
     ): Result<Unit> {

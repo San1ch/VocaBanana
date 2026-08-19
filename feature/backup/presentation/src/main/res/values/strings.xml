@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="last_backup_time">Last backup time: %s</string>
+    <string name="backup_success">Backup successful</string>
+    <string name="load_success">Load successful</string>
+    <string name="drive_consent_required">Google Drive consent required</string>
+</resources>

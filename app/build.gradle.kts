@@ -37,6 +37,7 @@ dependencies {
     implementation(projects.core.android.database)
     implementation(projects.core.android.commonandroid)
     implementation(projects.core.ui)
+    implementation(projects.core.android.network)
 
     implementation(projects.feature.debug.presentation)
     implementation(projects.feature.init.presentation)
@@ -45,6 +46,7 @@ dependencies {
     implementation(projects.feature.text.presentation)
     implementation(projects.feature.vocabulary.presentation)
     implementation(projects.feature.word.presentation)
+    implementation(projects.feature.backup.presentation)
 
     implementation(libs.androidx.activity.compose)
 

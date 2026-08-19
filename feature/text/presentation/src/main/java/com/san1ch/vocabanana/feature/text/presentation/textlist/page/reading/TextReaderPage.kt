@@ -2,10 +2,9 @@ package com.san1ch.vocabanana.feature.text.presentation.textlist.page.reading
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
@@ -43,7 +42,7 @@ fun TextReaderPage(
         val targetIndex = (savedProgress * text.content.size).toInt()
         targetIndex.coerceIn(0, maxOf(0, text.content.size - 1))
     }
-    val listState = remember(text.id) {
+    val listState = remember(text.id, text.textAppearanceSettings) {
         LazyListState(
             firstVisibleItemIndex = initialIndex,
         )
@@ -74,16 +73,16 @@ fun TextReaderPage(
                 ParagraphViewItem(
                     paragraphText = paragraph,
                     settings = settings,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = settings.paragraphSpacing.dp),
                     onWordClick = { word ->
                         onIntent(
-                            TextListUiIntent.Dictionary.WordClicked(
-                                word,
-                            ),
+                            TextListUiIntent.Dictionary.WordClicked(word),
                         )
                     },
                     currentActiveState = text.activeWordStates,
                 )
-                Spacer(modifier = Modifier.height(settings.paragraphSpacing.dp))
             }
         }
     }
@@ -93,6 +92,7 @@ fun TextReaderPage(
 fun ParagraphViewItem(
     paragraphText: List<TextToken>,
     settings: TextAppearanceSettings,
+    modifier: Modifier = Modifier,
     onWordClick: (String) -> Unit,
     currentActiveState: Set<WordState>,
 ) {
@@ -136,6 +136,6 @@ fun ParagraphViewItem(
             fontSize = settings.fontSize.sp,
             lineHeight = (settings.fontSize + settings.lineSpacing).sp,
         ),
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier,
     )
 }

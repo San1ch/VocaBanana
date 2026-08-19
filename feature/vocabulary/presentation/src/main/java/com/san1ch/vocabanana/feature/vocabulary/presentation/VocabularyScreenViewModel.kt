@@ -1,15 +1,15 @@
 package com.san1ch.vocabanana.feature.vocabulary.presentation
 
 import androidx.lifecycle.viewModelScope
+import com.san1ch.vocabanana.core.essentials.model.SortType
+import com.san1ch.vocabanana.core.essentials.model.WordFilter
 import com.san1ch.vocabanana.core.essentials.model.fold
 import com.san1ch.vocabanana.core.essentials.model.word.WordState
+import com.san1ch.vocabanana.core.essentials.repositories.VocabularySettingsRepository
 import com.san1ch.vocabanana.core.essentials.repositories.WordRepository
 import com.san1ch.vocabanana.core.essentials.usecases.GetWordsWithCountUseCase
 import com.san1ch.vocabanana.core.ui.BaseViewModel
-import com.san1ch.vocabanana.core.essentials.model.SortType
 import com.san1ch.vocabanana.core.ui.model.UiEvent
-import com.san1ch.vocabanana.core.essentials.model.WordFilter
-import com.san1ch.vocabanana.core.essentials.repositories.VocabularySettingsRepository
 import com.san1ch.vocabanana.core.ui.model.WordUi
 import com.san1ch.vocabanana.core.ui.model.filterAndSort
 import com.san1ch.vocabanana.core.ui.model.toDomain

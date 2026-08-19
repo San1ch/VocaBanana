@@ -19,6 +19,10 @@ object AppColor {
     val Ignore = Color(0xFF696969)
 }
 
+object BackupColor {
+    val NeedUpdate = Color(0xFFE35858)
+}
+
 object MileStoneColor {
     val Novice = Color(0xFFF53844)
     val Learner = Color(0xFFEC9F05)

@@ -5,6 +5,8 @@ import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
 import org.jetbrains.kotlin.gradle.dsl.KotlinAndroidProjectExtension
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.io.FileInputStream
+import java.util.Properties
 
 class CustomAndroidApplicationPlugin : Plugin<Project> {
     override fun apply(target: Project) {
@@ -12,6 +14,12 @@ class CustomAndroidApplicationPlugin : Plugin<Project> {
             pluginManager.apply("com.android.application")
             pluginManager.apply("org.jetbrains.kotlin.android")
             pluginManager.apply("org.jetbrains.kotlin.plugin.compose")
+
+            val localProperties = Properties()
+            val localPropertiesFile = rootProject.file("local.properties")
+            if (localPropertiesFile.exists()) {
+                FileInputStream(localPropertiesFile).use { localProperties.load(it) }
+            }
 
             extensions.configure<ApplicationExtension> {
                 compileSdk = Const.TargetSdk
@@ -22,9 +30,34 @@ class CustomAndroidApplicationPlugin : Plugin<Project> {
                     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
                 }
 
+                signingConfigs {
+                    create("release") {
+                        val ciStoreFile = System.getenv("KEYSTORE_PATH")
+                        val ciStorePassword = System.getenv("KEYSTORE_PASSWORD")
+                        val ciKeyAlias = System.getenv("KEY_ALIAS")
+                        val ciKeyPassword = System.getenv("KEY_PASSWORD")
+
+                        if (!ciStoreFile.isNullOrEmpty()) {
+                            storeFile = file(ciStoreFile)
+                            storePassword = ciStorePassword
+                            keyAlias = ciKeyAlias
+                            keyPassword = ciKeyPassword
+                        } else {
+                            val localStorePath = localProperties.getProperty("signing.storeFile")
+                            if (!localStorePath.isNullOrEmpty()) {
+                                storeFile = file(localStorePath)
+                                storePassword = localProperties.getProperty("signing.storePassword")
+                                keyAlias = localProperties.getProperty("signing.keyAlias")
+                                keyPassword = localProperties.getProperty("signing.keyPassword")
+                            }
+                        }
+                    }
+                }
+
                 buildTypes {
                     getByName("release") {
                         isMinifyEnabled = true
+                        signingConfig = signingConfigs.getByName("release")
                         proguardFiles(
                             getDefaultProguardFile("proguard-android-optimize.txt"),
                             "proguard-rules.pro"
@@ -52,7 +85,6 @@ class CustomAndroidApplicationPlugin : Plugin<Project> {
                     buildConfig = true
                     compose = true
                 }
-
             }
 
             extensions.configure<KotlinAndroidProjectExtension> {
