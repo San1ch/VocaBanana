@@ -89,7 +89,10 @@ class GoogleAuthManagerImpl @Inject constructor(
 
                     // 10("NO_ACCESS_TOKEN") and 16("CANCELED") are success codes, because  and  are not errors in this context
                     if (statusCode == 10 || statusCode == 16) {
-                        logger.d(tag = "GoogleAuthManagerImpl", message = "Current status code: $statusCode")
+                        logger.d(
+                            tag = "GoogleAuthManagerImpl",
+                            message = "Current status code: $statusCode"
+                        )
                         continuation.resume(Result.success(Unit))
                     } else {
                         logger.e(message = "GoogleAuthManagerImpl revoke failed", error = exception)
@@ -98,4 +101,13 @@ class GoogleAuthManagerImpl @Inject constructor(
                 }
         }
 
+    override suspend fun getUserEmail(): Result<String> =
+        suspendCancellableCoroutine { continuation ->
+            val accountManager = AccountManager.get(context)
+            val googleAccounts = accountManager.getAccountsByType("com.google")
+            when (val email = googleAccounts.firstOrNull()?.name) {
+                null -> continuation.resume(Result.failure(IllegalStateException("No Google account found")))
+                else -> continuation.resume(Result.success(email))
+            }
+        }
 }

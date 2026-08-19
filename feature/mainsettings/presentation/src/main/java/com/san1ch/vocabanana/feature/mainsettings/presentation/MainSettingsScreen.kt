@@ -15,6 +15,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -45,7 +46,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -106,19 +110,10 @@ fun rememberGoogleAuthHandler(
                 val errorMsg =
                     extras?.keySet()?.joinToString(", ") { key -> "$key=${extras.get(key)}" }
                         ?: "No extras"
-
-                Log.e(
-                    "GoogleAuthHandler",
-                    "Authorization canceled by user or system. Extras: $errorMsg",
-                )
                 onError(Activity.RESULT_CANCELED, "User canceled or flow interrupted: $errorMsg")
             }
 
             else -> {
-                Log.e(
-                    "GoogleAuthHandler",
-                    "Authorization failed with unknown resultCode: ${result.resultCode}",
-                )
                 onError(result.resultCode, "Unknown result code: ${result.resultCode}")
             }
         }
@@ -254,20 +249,31 @@ private fun BackupSections(
         exit = fadeOut() + shrinkVertically(),
     ) {
         Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
-            Text(
-                text = "What you can use for cloud backups",
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(bottom = 4.dp),
-            )
-            Text(
-                text = "Connect your Google account to securely store and sync your vocabulary data in your private Google Drive app folder.",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.outline,
-                modifier = Modifier.padding(bottom = 8.dp),
-            )
 
+            if(state.isCloudBackupEnabled && state.currentUserEmail != null){
+                Text(
+                    text = buildAnnotatedString {
+                        append("Connected to: ")
+                        withStyle(
+                            style = SpanStyle(
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.Bold
+                            )
+                        ) {
+                            append(state.currentUserEmail)
+                        }
+                    },
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Spacer(modifier = Modifier.padding(vertical = 4.dp))
+            } else{
+                Text(
+                    text = "Connect your Google account to securely store and sync your vocabulary data in your private Google Drive app folder.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.outline,
+                    modifier = Modifier.padding(bottom = 8.dp),
+                )
+            }
             // First is "text", second is "onClick"
             val button: Pair<String, () -> Unit> = when {
                 state.isCloudBackupEnabled -> Pair("Disconnect") { onIntent(SettingsIntent.DisconnectGoogleDriveClicked) }

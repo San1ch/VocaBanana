@@ -26,7 +26,7 @@ class DataStoreBackupSettingsRepository @Inject constructor(
         val LAST_CLOUD_BACKUP_TIME = longPreferencesKey("last_cloud_backup_time")
 
         val LAST_DB_UPDATE_TIME = longPreferencesKey("last_db_update_time")
-        val FORCE_ACCOUNT_PICKER = booleanPreferencesKey("force_account_picker")
+        val CURRENT_USER_EMAIL = stringPreferencesKey("email")
     }
 
     override val localBackupPathFlow: Flow<String> =
@@ -34,6 +34,10 @@ class DataStoreBackupSettingsRepository @Inject constructor(
 
     override suspend fun setLocalBackupPath(path: String) {
         dataStore.edit { it[Keys.LOCAL_BACKUP_PATH] = path }
+    }
+
+    override suspend fun clearLocalBackupPath() {
+        dataStore.edit { it.remove(Keys.LOCAL_BACKUP_PATH) }
     }
 
     override val isLocalBackupEnabledFlow: Flow<Boolean> =
@@ -79,5 +83,16 @@ class DataStoreBackupSettingsRepository @Inject constructor(
         lastDatabaseUpdateTime,
     ) { lastCloudBackupTime, lastDatabaseUpdateTime ->
         lastDatabaseUpdateTime > lastCloudBackupTime
+    }
+
+    override val currentUserEmailFlow: Flow<String?> =
+        dataStore.data.map { it[Keys.CURRENT_USER_EMAIL] }
+
+    override suspend fun setCurrentUserEmail(email: String) {
+        dataStore.edit { it[Keys.CURRENT_USER_EMAIL] = email }
+    }
+
+    override suspend fun clearCurrentUserEmail() {
+        dataStore.edit { it.remove(Keys.CURRENT_USER_EMAIL) }
     }
 }

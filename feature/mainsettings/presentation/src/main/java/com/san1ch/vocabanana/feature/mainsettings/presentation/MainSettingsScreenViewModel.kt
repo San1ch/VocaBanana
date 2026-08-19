@@ -44,6 +44,10 @@ class MainSettingsScreenViewModel @Inject constructor(
     val uiEvent: SharedFlow<SettingsUiEvent> = _uiEvent.asSharedFlow()
 
     init {
+        observeSettings()
+    }
+
+    private fun observeSettings() {
         settingsRepository.themeFlow.onEach { theme ->
             _uiState.update { it.copy(currentTheme = theme) }
         }.launchIn(viewModelScope)
@@ -80,6 +84,11 @@ class MainSettingsScreenViewModel @Inject constructor(
                     isCloudToggleEnabled = enabled,
                 )
             }
+        }.launchIn(viewModelScope)
+
+        // Додаємо наглядання за email
+        backupSettingsRepository.currentUserEmailFlow.onEach { email ->
+            _uiState.update { it.copy(currentUserEmail = email) }
         }.launchIn(viewModelScope)
     }
 
@@ -119,7 +128,7 @@ class MainSettingsScreenViewModel @Inject constructor(
             }
 
             is SettingsIntent.GoogleAuthResolved -> {
-                sendEvent(UiEvent.ShowToast(googleApiStringProvider.authSuccessMessage))
+                requestGoogleDriveAuth()
             }
 
             is SettingsIntent.SaveBackupSettings -> {
@@ -131,7 +140,7 @@ class MainSettingsScreenViewModel @Inject constructor(
                         if (state.isLocalToggleEnabled) {
                             backupSettingsRepository.setLocalBackupPath(state.rawLocalUri)
                         } else {
-                            backupSettingsRepository.setLocalBackupPath("")
+                            backupSettingsRepository.clearLocalBackupPath()
                         }
                     }
                 }
@@ -140,6 +149,7 @@ class MainSettingsScreenViewModel @Inject constructor(
                 viewModelScope.launch(Dispatchers.IO) {
                     googleAuthManager.revokeAccess().onSuccess {
                         backupSettingsRepository.setCloudBackupEnabled(false)
+                        backupSettingsRepository.clearCurrentUserEmail()
                     }.onFailure { error ->
                     }
                 }
@@ -152,6 +162,7 @@ class MainSettingsScreenViewModel @Inject constructor(
 
             result.onSuccess {
                 backupSettingsRepository.setCloudBackupEnabled(true)
+                backupSettingsRepository.setCurrentUserEmail(googleAuthManager.getUserEmail().getOrNull() ?: "")
                 sendEvent(UiEvent.ShowToast(googleApiStringProvider.authSuccessMessage))
             }.onFailure { error ->
                 when (error) {
@@ -199,6 +210,8 @@ data class SettingsUiState(
 
     val isCloudBackupEnabled: Boolean = false,
     val isCloudToggleEnabled: Boolean = false,
+
+    val currentUserEmail: String? = null,
 ) {
     val hasUnsavedChanges: Boolean
         get() = (currentLocalPath != selectedLocalPath) ||

@@ -15,6 +15,7 @@ import okhttp3.ResponseBody
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.Multipart
+import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Part
@@ -53,7 +54,7 @@ class GoogleDriveService @Inject constructor(
         logger.d("GoogleDrive", "Starting cloud backup upload...")
         val authHeader = getAuthHeader()
 
-        val searchQuery = "name = '$fileName' and trashed = false"
+        val searchQuery = "name = '$fileName' and '$systemDriveFolder' in parents and trashed = false"
         logger.d("GoogleDrive", "Searching file with query: $searchQuery")
 
         val searchResult = driveApiService.listFiles(authHeader = authHeader, searchQuery = searchQuery)
@@ -72,7 +73,12 @@ class GoogleDriveService @Inject constructor(
                 "metadata", null,
                 metadataJson.toRequestBody("application/json".toMediaTypeOrNull())
             )
-            driveApiService.updateBackupFile(authHeader, existingFileId, metadataPart, filePart)
+            driveApiService.updateBackupFile(
+                authHeader = authHeader,
+                fileId = existingFileId,
+                metadata = metadataPart,
+                file = filePart
+            )
         } else {
             logger.d("GoogleDrive", "Uploading new file...")
             val metadataJson = """{"name":"$fileName", "parents":["$systemDriveFolder"]}"""
@@ -80,7 +86,11 @@ class GoogleDriveService @Inject constructor(
                 "metadata", null,
                 metadataJson.toRequestBody("application/json".toMediaTypeOrNull())
             )
-            driveApiService.uploadBackupFile(authHeader, metadataPart, filePart)
+            driveApiService.uploadBackupFile(
+                authHeader = authHeader,
+                metadata = metadataPart,
+                file = filePart
+            )
         }
         logger.d("GoogleDrive", "Cloud backup successfully uploaded/updated")
     }.onFailure { e ->
@@ -138,25 +148,28 @@ interface GoogleDriveApiService {
     ): GoogleDriveFileListResponse
 
     @Multipart
-    @POST("upload/drive/v3/files?uploadType=multipart")
+    @POST("upload/drive/v3/files")
     suspend fun uploadBackupFile(
         @Header("Authorization") authHeader: String,
+        @Query("uploadType") uploadType: String = "multipart",
         @Part metadata: MultipartBody.Part,
         @Part file: MultipartBody.Part
     ): GoogleDriveFileItem
 
     @Multipart
-    @PUT("upload/drive/v3/files/{fileId}?uploadType=multipart")
+    @PATCH("upload/drive/v3/files/{fileId}")
     suspend fun updateBackupFile(
         @Header("Authorization") authHeader: String,
         @Path("fileId") fileId: String,
+        @Query("uploadType") uploadType: String = "multipart",
         @Part metadata: MultipartBody.Part,
         @Part file: MultipartBody.Part
     ): GoogleDriveFileItem
 
-    @GET("drive/v3/files/{fileId}?alt=media")
+    @GET("drive/v3/files/{fileId}")
     suspend fun downloadBackupFile(
         @Header("Authorization") authHeader: String,
-        @Path("fileId") fileId: String
+        @Path("fileId") fileId: String,
+        @Query("alt") alt: String = "media"
     ): ResponseBody
 }

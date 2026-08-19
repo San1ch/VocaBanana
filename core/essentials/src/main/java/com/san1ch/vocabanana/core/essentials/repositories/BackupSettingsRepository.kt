@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.Flow
 interface BackupSettingsRepository {
     val localBackupPathFlow: Flow<String>
     suspend fun setLocalBackupPath(path: String)
+    suspend fun clearLocalBackupPath()
 
     val isLocalBackupEnabledFlow: Flow<Boolean>
     suspend fun setLocalBackupEnabled(enabled: Boolean)
@@ -20,4 +21,8 @@ interface BackupSettingsRepository {
 
     val isLocalBackupNeedUpdateFlow: Flow<Boolean>
     val isCloudBackupNeedUpdateFlow: Flow<Boolean>
+
+    val currentUserEmailFlow: Flow<String?>
+    suspend fun setCurrentUserEmail(email: String)
+    suspend fun clearCurrentUserEmail()
 }
