@@ -29,6 +29,7 @@ sealed class DebugIntent {
     object PrintWords : DebugIntent()
 
     object PrintWordCounts : DebugIntent()
+    object DeleteCloudBackup : DebugIntent()
 }
 
 @Composable
@@ -37,6 +38,7 @@ fun DebugScreen(
 ) {
     val textsState by viewModel.textsState.collectAsState()
     val selectedId by viewModel.selectedTextId.collectAsStateWithLifecycle()
+    val isCloudBackupEnabled by viewModel.isCloudBackupEnabled.collectAsState()
 
     CollectUiEvents(
         viewModel.events,
@@ -49,6 +51,7 @@ fun DebugScreen(
                 texts = texts,
                 selectedId = selectedId,
                 onIntent = viewModel::onIntent,
+                isCloudBackupEnabled = isCloudBackupEnabled,
             )
         },
     )
@@ -59,6 +62,7 @@ fun DebugContent(
     texts: List<TextPreview>,
     selectedId: Int?,
     onIntent: (DebugIntent) -> Unit,
+    isCloudBackupEnabled: Boolean?,
 ) {
     Column(
         modifier = Modifier
@@ -88,6 +92,13 @@ fun DebugContent(
             onClick = { onIntent(DebugIntent.PrintWordCounts) },
         ) {
             Text(stringResource(R.string.print_counts))
+        }
+        if (isCloudBackupEnabled != null && isCloudBackupEnabled) {
+            Button(
+                onClick = { onIntent(DebugIntent.DeleteCloudBackup) },
+            ) {
+                Text(stringResource(R.string.delete_cloud_backup))
+            }
         }
     }
 }

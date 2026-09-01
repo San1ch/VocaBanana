@@ -1,3 +1,4 @@
+/* <<<<<<<<<<<<<<  ✨ Windsurf Command 🌟 >>>>>>>>>>>>>>>> */
 package com.san1ch.vocabanana.core.android.network.googledrive
 
 import android.content.Context
@@ -12,12 +13,12 @@ import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.ResponseBody
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.Multipart
 import retrofit2.http.PATCH
 import retrofit2.http.POST
-import retrofit2.http.PUT
 import retrofit2.http.Part
 import retrofit2.http.Path
 import retrofit2.http.Query
@@ -29,6 +30,7 @@ data class GoogleDriveFileListResponse(
     @SerialName(value = "files")
     val files: List<GoogleDriveFileItem>?
 )
+
 @Serializable
 data class GoogleDriveFileItem(
     @SerialName("id")
@@ -41,7 +43,7 @@ data class GoogleDriveFileItem(
     val size: String? = null
 )
 
-class GoogleDriveService @Inject constructor(
+class GoogleDriveStorageClient @Inject constructor(
     private val tokenManager: GoogleDriveTokenProvider,
     private val driveApiService: GoogleDriveApiService,
     private val logger: Logger,
@@ -54,10 +56,12 @@ class GoogleDriveService @Inject constructor(
         logger.d("GoogleDrive", "Starting cloud backup upload...")
         val authHeader = getAuthHeader()
 
-        val searchQuery = "name = '$fileName' and '$systemDriveFolder' in parents and trashed = false"
+        val searchQuery =
+            "name = '$fileName' and '$systemDriveFolder' in parents and trashed = false"
         logger.d("GoogleDrive", "Searching file with query: $searchQuery")
 
-        val searchResult = driveApiService.listFiles(authHeader = authHeader, searchQuery = searchQuery)
+        val searchResult =
+            driveApiService.listFiles(authHeader = authHeader, searchQuery = searchQuery)
         logger.d("GoogleDrive", "Search result files count: ${searchResult.files?.size ?: 0}")
 
         val existingFileId = searchResult.files?.firstOrNull()?.id
@@ -104,7 +108,8 @@ class GoogleDriveService @Inject constructor(
         val searchQuery = "name = '$fileName' and trashed = false"
         logger.d("GoogleDrive", "Searching file for download with query: $searchQuery")
 
-        val searchResult = driveApiService.listFiles(authHeader = authHeader, searchQuery = searchQuery)
+        val searchResult =
+            driveApiService.listFiles(authHeader = authHeader, searchQuery = searchQuery)
         logger.d("GoogleDrive", "Search result files count: ${searchResult.files?.size ?: 0}")
 
         val fileId = searchResult.files?.firstOrNull()?.id
@@ -124,17 +129,48 @@ class GoogleDriveService @Inject constructor(
             }
         }
 
-        logger.d("GoogleDrive", "Download completed successfully, file size: ${tempFile.length()} bytes")
+        logger.d(
+            "GoogleDrive",
+            "Download completed successfully, file size: ${tempFile.length()} bytes"
+        )
         tempFile
     }.onFailure { e ->
         logger.d("GoogleDrive", "Download failed with error: ${e.message}")
     }
+
+    
+    override suspend fun deleteBackup() = runCatching {
+        logger.d("GoogleDrive", "Starting cloud backup delete...")
+        val authHeader = getAuthHeader()
+
+        val searchQuery = "name = '$fileName' and trashed = false"
+        logger.d("GoogleDrive", "Searching file to delete with query: $searchQuery")
+
+        val searchResult =
+            driveApiService.listFiles(authHeader = authHeader, searchQuery = searchQuery)
+        logger.d("GoogleDrive", "Search result files count: ${searchResult.files?.size ?: 0}")
+
+        val fileId = searchResult.files?.firstOrNull()?.id
+            ?: throw IllegalStateException("Cloud backup file not found").also {
+                logger.d("GoogleDrive", "Error: Cloud backup file not found!")
+            }
+
+        logger.d("GoogleDrive", "Found file ID to delete: $fileId")
+        driveApiService.deleteBackupFile(authHeader, fileId)
+        logger.d("GoogleDrive", "Cloud backup successfully deleted")
+    }.onFailure { e ->
+        logger.d("GoogleDrive", "Delete failed with error: ${e.message}")
+        
+    }
+    
 
     private suspend fun getAuthHeader(): String {
         val tokenResult = tokenManager.obtainAccessToken()
         val accessToken = tokenResult.getOrThrow()
         return "Bearer $accessToken"
     }
+
+
 }
 
 interface GoogleDriveApiService {
@@ -172,4 +208,11 @@ interface GoogleDriveApiService {
         @Path("fileId") fileId: String,
         @Query("alt") alt: String = "media"
     ): ResponseBody
+
+    @DELETE("drive/v3/files/{fileId}")
+    suspend fun deleteBackupFile(
+        @Header("Authorization") authHeader: String,
+        @Path("fileId") fileId: String
+    )
 }
+/* <<<<<<<<<<  4dd11545-9e88-41c0-a20e-f0530db9030d  >>>>>>>>>>> */

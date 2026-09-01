@@ -6,7 +6,8 @@ import androidx.core.net.toUri
 import androidx.lifecycle.viewModelScope
 import com.san1ch.vocabanana.core.essentials.Logger
 import com.san1ch.vocabanana.core.essentials.model.AppThemeMode
-import com.san1ch.vocabanana.core.essentials.network.GoogleAuthManager
+import com.san1ch.vocabanana.core.essentials.model.GoogleAuthState
+import com.san1ch.vocabanana.core.essentials.network.GoogleAccountManager
 import com.san1ch.vocabanana.core.essentials.repositories.BackupSettingsRepository
 import com.san1ch.vocabanana.core.essentials.repositories.SettingsRepository
 import com.san1ch.vocabanana.core.essentials.resources.network.GoogleApiStringProvider
@@ -32,7 +33,7 @@ class MainSettingsScreenViewModel @Inject constructor(
     private val settingsRepository: SettingsRepository,
     private val backupSettingsRepository: BackupSettingsRepository,
     private val settingsRouter: SettingsRouter,
-    private val googleAuthManager: GoogleAuthManager,
+    private val googleAccountManager: GoogleAccountManager,
     private val googleApiStringProvider: GoogleApiStringProvider,
     private val logger: Logger,
 ) : BaseViewModel() {
@@ -77,18 +78,13 @@ class MainSettingsScreenViewModel @Inject constructor(
             }
         }.launchIn(viewModelScope)
 
-        backupSettingsRepository.isCloudBackupEnabledFlow.onEach { enabled ->
+        googleAccountManager.activeAccountStateFlow.onEach { state ->
             _uiState.update {
                 it.copy(
-                    isCloudBackupEnabled = enabled,
-                    isCloudToggleEnabled = enabled,
+                    googleAuthState = state,
+                    isCloudToggleEnabled = state is GoogleAuthState.SignedIn,
                 )
             }
-        }.launchIn(viewModelScope)
-
-        // Додаємо наглядання за email
-        backupSettingsRepository.currentUserEmailFlow.onEach { email ->
-            _uiState.update { it.copy(currentUserEmail = email) }
         }.launchIn(viewModelScope)
     }
 
@@ -147,10 +143,11 @@ class MainSettingsScreenViewModel @Inject constructor(
             }
             is SettingsIntent.DisconnectGoogleDriveClicked -> {
                 viewModelScope.launch(Dispatchers.IO) {
-                    googleAuthManager.revokeAccess().onSuccess {
-                        backupSettingsRepository.setCloudBackupEnabled(false)
-                        backupSettingsRepository.clearCurrentUserEmail()
+                    googleAccountManager.signOut().onSuccess {
+                        sendEvent(UiEvent.ShowToast(googleApiStringProvider.signOutSuccessMessage))
                     }.onFailure { error ->
+                        logger.e("MainSettingsScreenViewModel", "Error disconnecting from Google Drive", error)
+                        sendEvent(UiEvent.ShowToast(error.message ?: "unknown error"))
                     }
                 }
             }
@@ -158,12 +155,11 @@ class MainSettingsScreenViewModel @Inject constructor(
     }
     private fun requestGoogleDriveAuth() {
         viewModelScope.launch {
-            val result = googleAuthManager.requestAccount()
+            val result = googleAccountManager.getGoogleDrivePermissions()
 
             result.onSuccess {
-                backupSettingsRepository.setCloudBackupEnabled(true)
-                backupSettingsRepository.setCurrentUserEmail(googleAuthManager.getUserEmail().getOrNull() ?: "")
                 sendEvent(UiEvent.ShowToast(googleApiStringProvider.authSuccessMessage))
+                println("Google Drive auth success")
             }.onFailure { error ->
                 when (error) {
                     is DriveConsentRequiredException -> {
@@ -208,10 +204,8 @@ data class SettingsUiState(
     val isLocalBackupEnabled: Boolean = false,
     val isLocalToggleEnabled: Boolean = false,
 
-    val isCloudBackupEnabled: Boolean = false,
+    val googleAuthState: GoogleAuthState = GoogleAuthState.SignedOut,
     val isCloudToggleEnabled: Boolean = false,
-
-    val currentUserEmail: String? = null,
 ) {
     val hasUnsavedChanges: Boolean
         get() = (currentLocalPath != selectedLocalPath) ||

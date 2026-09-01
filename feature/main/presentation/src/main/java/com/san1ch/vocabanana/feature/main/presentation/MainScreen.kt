@@ -54,7 +54,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.san1ch.vocabanana.core.ui.compose.AppConfirmDialog
+import com.san1ch.vocabanana.core.ui.compose.AppConfirmDialogWithResult
 import com.san1ch.vocabanana.core.ui.compose.CollectUiEvents
 import com.san1ch.vocabanana.core.ui.theme.BackupColor
 
@@ -144,28 +144,34 @@ private fun MainBackupDialogs(
     state: MainUiState,
     onIntent: (MainUiIntent) -> Unit,
 ) {
-    AppConfirmDialog(
-        show = state.isConfirmLocalBackupWindowOpen,
+    AppConfirmDialogWithResult(
+        show = state.confirmLocalBackupWindowState,
         title = "Save backup",
-        text = "Do you want to save backup?",
+        startText = "Do you want to save backup?",
         onConfirm = { onIntent(MainUiIntent.LocalBackup) },
         onDismiss = { onIntent(MainUiIntent.CloseConfirmLocalBackupWindow) },
+        result = state.localBackupResult,
+        loadingTest = "Saving backup...",
     )
 
-    AppConfirmDialog(
-        show = state.isConfirmCloudBackupWindowOpen,
+    AppConfirmDialogWithResult(
+        show = state.confirmCloudBackupWindowState,
         title = "Save Cloud Backup",
-        text = "Do you want to save backup to the cloud?",
+        startText = "Do you want to save backup to the cloud?",
         onConfirm = { onIntent(MainUiIntent.BackupCloud) },
         onDismiss = { onIntent(MainUiIntent.CloseConfirmCloudBackupWindow) },
+        result = state.cloudBackupResult,
+        loadingTest = "Saving backup to the cloud...",
     )
 
-    AppConfirmDialog(
-        show = state.isConfirmLoadCloudBackupWindowOpen,
+    AppConfirmDialogWithResult(
+        show = state.confirmLoadCloudBackupWindowState,
         title = "Load Cloud Backup",
-        text = "Do you want to restore backup from the cloud? Current local data may be overwritten.",
+        startText = "Do you want to restore backup from the cloud? Current local data may be overwritten.",
         onConfirm = { onIntent(MainUiIntent.LoadCloudBackup) },
         onDismiss = { onIntent(MainUiIntent.CloseConfirmLoadCloudBackupWindow) },
+        result = state.loadCloudBackupResult,
+        loadingTest = "Loading backup from the cloud...",
     )
 }
 

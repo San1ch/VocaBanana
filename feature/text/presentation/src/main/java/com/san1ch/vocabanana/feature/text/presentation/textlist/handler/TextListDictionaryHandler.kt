@@ -43,8 +43,13 @@ class TextListDictionaryHandler @Inject constructor(
                     scope = scope,
                     updateState = updateState,
                     textId = state.selectedText.getOrNull { it.id } ?: run {
-                        val exception = IllegalStateException("Critical: WordClicked received, but selectedText is null or not loaded. State: ${state.selectedText}")
-                        logger.e(exception, "State invariant broken in TextListDictionaryHandler")
+                        val exception =
+                            IllegalStateException("Critical: WordClicked received, but selectedText is null or not loaded. State: ${state.selectedText}")
+                        logger.e(
+                            "TextListDictionaryHandler",
+                            "State invariant broken in TextListDictionaryHandler",
+                            exception,
+                        )
 
                         updateState { it.copy(showWordInfoState = WordInfoState.Hidden) }
                         return
@@ -81,6 +86,7 @@ class TextListDictionaryHandler @Inject constructor(
             }
         }
     }
+
     private fun selectPopExtraInfo(
         word: String,
         textId: Int,
@@ -109,8 +115,9 @@ class TextListDictionaryHandler @Inject constructor(
 
                     val textWordCount = textRepository.getWordCountInText(wordId, textId) ?: run {
                         logger.e(
-                            IllegalStateException("Data missing"),
+                            "TextListDictionaryHandler",
                             "Failed to find word count for wordId=$wordId and textId=$textId",
+                            Throwable("Failed to find word count for wordId=$wordId and textId=$textId"),
                         )
 
                         updateState { it.copy(showWordInfoState = WordInfoState.NotFound(word)) }

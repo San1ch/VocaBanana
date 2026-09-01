@@ -10,5 +10,14 @@ class GoogleApiStringProviderImpl @Inject constructor(
     @param:ApplicationContext private val context: Context
 ) : GoogleApiStringProvider {
     override val authSuccessMessage: String = context.getString(R.string.auth_success_message)
+    override val signOutSuccessMessage: String
+        get() = context.getString(R.string.sign_out_success_message)
     override val authErrorMessage: String = context.getString(R.string.auth_error_message)
+
+    override fun getGoogleClientIdByBuildType(isDebug: Boolean): String {
+        return when(isDebug){
+            true -> context.getString(R.string.google_client_id_debug)
+            false -> context.getString(R.string.google_client_id_release)
+        }
+    }
 }

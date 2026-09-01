@@ -120,7 +120,11 @@ class TextListReaderHandler @Inject constructor(
         scope.launch(Dispatchers.IO) {
             val previousWord = getWordsUseCase(WordQuery(wordIds = FilterType.Include(listOf(id))))
                 .firstOrNull()?.first() ?: run {
-                logger.e(IllegalStateException("Invariant broken"), "Failed to find word for update with id=$id")
+                logger.e(
+                    "TextListReaderHandler",
+                    "Failed to find word for update with id=$id",
+                    Throwable("Failed to find word for update with id=$id"),
+                )
                 return@launch
             }
 

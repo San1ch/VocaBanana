@@ -3,8 +3,8 @@ import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
-import org.jetbrains.kotlin.gradle.dsl.KotlinAndroidProjectExtension
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.dsl.KotlinAndroidProjectExtension
 
 class CustomAndroidLibraryPlugin : Plugin<Project> {
     override fun apply(target: Project) {
@@ -28,9 +28,6 @@ class CustomAndroidLibraryPlugin : Plugin<Project> {
                             getDefaultProguardFile("proguard-android-optimize.txt"),
                             "proguard-rules.pro"
                         )
-                    }
-                    create("fastRelease") {
-                        initWith(getByName("release"))
                     }
                 }
 

@@ -10,9 +10,6 @@ interface BackupSettingsRepository {
     val isLocalBackupEnabledFlow: Flow<Boolean>
     suspend fun setLocalBackupEnabled(enabled: Boolean)
 
-    val isCloudBackupEnabledFlow: Flow<Boolean>
-    suspend fun setCloudBackupEnabled(enabled: Boolean)
-
     val lastLocalBackupTimeFlow: Flow<Long>
     suspend fun setLastLocalBackupTime(time: Long)
 
@@ -21,8 +18,4 @@ interface BackupSettingsRepository {
 
     val isLocalBackupNeedUpdateFlow: Flow<Boolean>
     val isCloudBackupNeedUpdateFlow: Flow<Boolean>
-
-    val currentUserEmailFlow: Flow<String?>
-    suspend fun setCurrentUserEmail(email: String)
-    suspend fun clearCurrentUserEmail()
 }

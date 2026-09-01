@@ -3,6 +3,7 @@ package com.san1ch.vocabanana.feature.backup.presentation
 import android.content.Context
 import com.san1ch.vocabanana.core.essentials.DataChangeTracker
 import com.san1ch.vocabanana.core.essentials.backup.CloudBackupManager
+import com.san1ch.vocabanana.core.essentials.model.ResultWithState
 import com.san1ch.vocabanana.core.essentials.network.CloudStorageClient
 import com.san1ch.vocabanana.core.essentials.repositories.BackupSettingsRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -17,15 +18,18 @@ class CloudBackupManagerImpl @Inject constructor(
     private val cloudStorageClient: CloudStorageClient,
 ) : CloudBackupManager {
 
-    override suspend fun backup(): Result<Unit> = runCatching {
+    override suspend fun backup(): ResultWithState<Unit, Unit> {
         val backupFile = File(context.cacheDir, "vocabanana_backup.zip")
 
-        try {
+        return try {
             backupFile.outputStream().use { outputStream ->
                 archiver.createBackupZip(outputStream)
             }
             cloudStorageClient.uploadOrUpdateBackup(backupFile).getOrThrow()
             backupSettingsRepository.setLastCloudBackupTime(System.currentTimeMillis())
+            ResultWithState.Success(Unit)
+        } catch (e: Throwable) {
+            ResultWithState.Error(e)
         } finally {
             if (backupFile.exists()) {
                 backupFile.delete()
@@ -33,7 +37,7 @@ class CloudBackupManagerImpl @Inject constructor(
         }
     }
 
-    override suspend fun restore(): Result<Unit> = runCatching {
+    override suspend fun restore(): ResultWithState<Unit, Unit> = try {
         val downloadedFile = cloudStorageClient.downloadBackup().getOrThrow()
 
         try {
@@ -43,10 +47,20 @@ class CloudBackupManagerImpl @Inject constructor(
 
             dataChangeTracker.notifyDataChanged()
             backupSettingsRepository.setLastCloudBackupTime(System.currentTimeMillis())
+            ResultWithState.Success(Unit)
         } finally {
             if (downloadedFile.exists()) {
                 downloadedFile.delete()
             }
         }
+    } catch (e: Throwable) {
+        ResultWithState.Error(e)
+    }
+
+    override suspend fun deleteCloudBackup(): ResultWithState<Unit, Unit> = try {
+        cloudStorageClient.deleteBackup()
+        ResultWithState.Success(Unit)
+    } catch (e: Throwable) {
+        ResultWithState.Error(e)
     }
 }

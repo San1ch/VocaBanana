@@ -19,16 +19,13 @@ class DataStoreBackupSettingsRepository @Inject constructor(
     private object Keys {
         val IS_LOCAL_ENABLED = booleanPreferencesKey("is_local_enabled")
         val LOCAL_BACKUP_PATH = stringPreferencesKey("local_backup_path")
-        val IS_CLOUD_ENABLED = booleanPreferencesKey("is_cloud_enabled")
-
-        // Separate backup timestamps for local and cloud
         val LAST_LOCAL_BACKUP_TIME = longPreferencesKey("last_local_backup_time")
         val LAST_CLOUD_BACKUP_TIME = longPreferencesKey("last_cloud_backup_time")
 
         val LAST_DB_UPDATE_TIME = longPreferencesKey("last_db_update_time")
-        val CURRENT_USER_EMAIL = stringPreferencesKey("email")
     }
 
+    // Local Backup
     override val localBackupPathFlow: Flow<String> =
         dataStore.data.map { it[Keys.LOCAL_BACKUP_PATH] ?: "" }
 
@@ -47,13 +44,7 @@ class DataStoreBackupSettingsRepository @Inject constructor(
         dataStore.edit { it[Keys.IS_LOCAL_ENABLED] = enabled }
     }
 
-    override val isCloudBackupEnabledFlow: Flow<Boolean> =
-        dataStore.data.map { it[Keys.IS_CLOUD_ENABLED] ?: false }
-
-    override suspend fun setCloudBackupEnabled(enabled: Boolean) {
-        dataStore.edit { it[Keys.IS_CLOUD_ENABLED] = enabled }
-    }
-
+    // Timestamps
     override val lastLocalBackupTimeFlow: Flow<Long> =
         dataStore.data.map { it[Keys.LAST_LOCAL_BACKUP_TIME] ?: 0L }
 
@@ -68,6 +59,7 @@ class DataStoreBackupSettingsRepository @Inject constructor(
         dataStore.edit { it[Keys.LAST_CLOUD_BACKUP_TIME] = time }
     }
 
+    // Update flags
     private val lastDatabaseUpdateTime: Flow<Long> =
         dataStore.data.map { it[Keys.LAST_DB_UPDATE_TIME] ?: 0L }
 
@@ -83,16 +75,5 @@ class DataStoreBackupSettingsRepository @Inject constructor(
         lastDatabaseUpdateTime,
     ) { lastCloudBackupTime, lastDatabaseUpdateTime ->
         lastDatabaseUpdateTime > lastCloudBackupTime
-    }
-
-    override val currentUserEmailFlow: Flow<String?> =
-        dataStore.data.map { it[Keys.CURRENT_USER_EMAIL] }
-
-    override suspend fun setCurrentUserEmail(email: String) {
-        dataStore.edit { it[Keys.CURRENT_USER_EMAIL] = email }
-    }
-
-    override suspend fun clearCurrentUserEmail() {
-        dataStore.edit { it.remove(Keys.CURRENT_USER_EMAIL) }
     }
 }

@@ -6,6 +6,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
+import com.san1ch.vocabanana.core.essentials.model.ResultWithState
+import com.san1ch.vocabanana.core.essentials.model.fold
 import com.san1ch.vocabanana.core.ui.R
 
 @Composable
@@ -54,4 +56,41 @@ fun <T> DeleteConfirmDialog(
             show = true,
         )
     }
+}
+
+@Composable
+fun <T, L> AppConfirmDialogWithResult(
+    title: String,
+    startText: String,
+    loadingTest: String,
+    confirmText: String = "Yes",
+    dismissText: String = "No",
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit,
+    show: Boolean,
+    result: ResultWithState<T, L>?,
+) {
+    if (!show) return
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(text = title, style = MaterialTheme.typography.headlineSmall) },
+        text = {
+            result?.fold(
+                onSuccess = { },
+                onLoading = { Text(text = loadingTest) },
+                onError = { },
+            ) ?: Text(text = startText)
+        },
+        confirmButton = {
+            TextButton(onClick = onConfirm) {
+                Text(confirmText)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(dismissText)
+            }
+        },
+    )
 }
