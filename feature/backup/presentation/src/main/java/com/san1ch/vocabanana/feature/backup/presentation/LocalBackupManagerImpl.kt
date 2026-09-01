@@ -5,6 +5,7 @@ import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
 import com.san1ch.vocabanana.core.essentials.DataChangeTracker
 import com.san1ch.vocabanana.core.essentials.backup.LocalBackupManager
+import com.san1ch.vocabanana.core.essentials.model.ResultWithState
 import com.san1ch.vocabanana.core.essentials.repositories.BackupSettingsRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -19,36 +20,48 @@ class LocalBackupManagerImpl @Inject constructor(
     private val backupArchiver: BackupArchiver,
 ) : LocalBackupManager {
 
-    override suspend fun backup() = withContext(Dispatchers.IO) {
-        val folderUriString = backupSettingsRepository.localBackupPathFlow.first()
+    override suspend fun backup(): ResultWithState<Unit, Unit> = withContext(Dispatchers.IO) {
+        try {
+            val folderUriString = backupSettingsRepository.localBackupPathFlow.first()
 
-        if (folderUriString.isBlank() || !folderUriString.startsWith("content://")) {
-            throw IllegalStateException("Invalid backup URI: '$folderUriString'")
+            if (folderUriString.isBlank() || !folderUriString.startsWith("content://")) {
+                throw IllegalStateException("Invalid backup URI: '$folderUriString'")
+            }
+
+            val treeUri = folderUriString.toUri()
+
+            val documentFile = DocumentFile.fromTreeUri(context, treeUri)
+                ?: throw IllegalStateException("Could not access document tree from URI: $treeUri")
+
+            documentFile.findFile("vocabanana_backup.zip")?.delete()
+
+            val fileUri = documentFile.createFile("application/zip", "vocabanana_backup.zip")?.uri
+                ?: throw IllegalStateException("Could not create backup file in the selected folder")
+
+            context.contentResolver.openOutputStream(fileUri, "w")?.use { outputStream ->
+                backupArchiver.createBackupZip(outputStream)
+            } ?: throw IllegalStateException("Could not open output stream for file URI: $fileUri")
+
+            backupSettingsRepository.setLastLocalBackupTime(System.currentTimeMillis())
+            ResultWithState.Success(Unit)
+        } catch (e: Throwable) {
+            ResultWithState.Error(e)
         }
-
-        val treeUri = folderUriString.toUri()
-
-        val documentFile = DocumentFile.fromTreeUri(context, treeUri)
-            ?: throw IllegalStateException("Could not access document tree from URI: $treeUri")
-
-        val existingFile = documentFile.findFile("vocabanana_backup.zip")
-        val fileUri = existingFile?.uri ?: documentFile.createFile("application/zip", "vocabanana_backup.zip")?.uri
-            ?: throw IllegalStateException("Could not create backup file in the selected folder")
-
-        context.contentResolver.openOutputStream(fileUri, "wt")?.use { outputStream ->
-            backupArchiver.createBackupZip(outputStream)
-        } ?: throw IllegalStateException("Could not open output stream for file URI: $fileUri")
-
-        backupSettingsRepository.setLastLocalBackupTime(System.currentTimeMillis())
     }
 
-    override suspend fun restore(fileUriString: String) = withContext(Dispatchers.IO) {
-        val uri = fileUriString.toUri()
+    override suspend fun restore(fileUriString: String): ResultWithState<Unit, Unit> = withContext(Dispatchers.IO) {
+        try {
+            val uri = fileUriString.toUri()
 
-        context.contentResolver.openInputStream(uri)?.use { inputStream ->
-            backupArchiver.restoreFromBackupZip(inputStream)
-            dataChangeTracker.notifyDataChanged()
-            backupSettingsRepository.setLastLocalBackupTime(System.currentTimeMillis())
-        } ?: throw IllegalStateException("Could not open input stream for URI: $fileUriString")
+            context.contentResolver.openInputStream(uri)?.use { inputStream ->
+                backupArchiver.restoreFromBackupZip(inputStream)
+                dataChangeTracker.notifyDataChanged()
+                backupSettingsRepository.setLastLocalBackupTime(System.currentTimeMillis())
+            } ?: throw IllegalStateException("Could not open input stream for URI: $fileUriString")
+
+            ResultWithState.Success(Unit)
+        } catch (e: Throwable) {
+            ResultWithState.Error(e)
+        }
     }
 }

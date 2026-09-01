@@ -1,8 +1,11 @@
 package com.san1ch.vocabanana.feature.main.presentation
 
 import androidx.lifecycle.viewModelScope
+import com.san1ch.vocabanana.core.essentials.IsCloudBackupEnabledUseCase
 import com.san1ch.vocabanana.core.essentials.backup.CloudBackupManager
 import com.san1ch.vocabanana.core.essentials.backup.LocalBackupManager
+import com.san1ch.vocabanana.core.essentials.model.ResultWithState
+import com.san1ch.vocabanana.core.essentials.model.fold
 import com.san1ch.vocabanana.core.essentials.repositories.BackupSettingsRepository
 import com.san1ch.vocabanana.core.essentials.resources.AppStringProvider
 import com.san1ch.vocabanana.core.essentials.resources.featureproviders.BackupStringProvider
@@ -22,6 +25,7 @@ import javax.inject.Inject
 @HiltViewModel
 class MainScreenViewModel @Inject constructor(
     private val backupSettingsRepository: BackupSettingsRepository,
+    private val isCloudBackupEnabled: IsCloudBackupEnabledUseCase,
     private val localBackupManager: LocalBackupManager,
     private val cloudBackupManager: CloudBackupManager,
     private val router: MainRouter,
@@ -55,7 +59,7 @@ class MainScreenViewModel @Inject constructor(
             .launchIn(viewModelScope)
 
         // Observe cloud backup status
-        backupSettingsRepository.isCloudBackupEnabledFlow
+        isCloudBackupEnabled()
             .onEach { enabled ->
                 _uiState.update { it.copy(isCloudBackupEnabled = enabled) }
             }
@@ -76,60 +80,79 @@ class MainScreenViewModel @Inject constructor(
             MainUiIntent.NavigateToDebug -> router.navigateToDebug()
 
             MainUiIntent.OpenConfirmLocalBackupWindow -> {
-                _uiState.update { it.copy(isConfirmLocalBackupWindowOpen = true) }
+                _uiState.update { it.copy(confirmLocalBackupWindowState = true) }
             }
 
             MainUiIntent.CloseConfirmLocalBackupWindow -> {
-                _uiState.update { it.copy(isConfirmLocalBackupWindowOpen = false) }
+                _uiState.update { it.copy(confirmLocalBackupWindowState = false) }
             }
 
             MainUiIntent.OpenConfirmCloudBackupWindow -> {
-                _uiState.update { it.copy(isConfirmCloudBackupWindowOpen = true) }
+                _uiState.update { it.copy(confirmCloudBackupWindowState = true) }
             }
 
             MainUiIntent.CloseConfirmCloudBackupWindow -> {
-                _uiState.update { it.copy(isConfirmCloudBackupWindowOpen = false) }
+                _uiState.update { it.copy(confirmCloudBackupWindowState = false) }
             }
 
             MainUiIntent.OpenConfirmLoadCloudBackupWindow -> {
-                _uiState.update { it.copy(isConfirmLoadCloudBackupWindowOpen = true) }
+                _uiState.update { it.copy(confirmLoadCloudBackupWindowState = true) }
             }
 
             MainUiIntent.CloseConfirmLoadCloudBackupWindow -> {
-                _uiState.update { it.copy(isConfirmLoadCloudBackupWindowOpen = false) }
+                _uiState.update { it.copy(confirmLoadCloudBackupWindowState = false) }
             }
 
             MainUiIntent.LocalBackup -> {
-                viewModelScope.launch(Dispatchers.IO) {
-                    localBackupManager.backup()
-                    backupSettingsRepository.setLastLocalBackupTime(System.currentTimeMillis())
-                    onIntent(MainUiIntent.CloseConfirmLocalBackupWindow)
-                    sendEvent(ShowToast(backupStringProvider.backupSuccessMessage()))
-                }
-            }
-
-            is MainUiIntent.LoadLocalBackup -> {
-                viewModelScope.launch(Dispatchers.IO) {
-                    localBackupManager.restore(intent.fileUriString)
-                    sendEvent(ShowToast(backupStringProvider.loadSuccessMessage()))
-                }
+                executeBackupAction(
+                    closeIntent = MainUiIntent.CloseConfirmLocalBackupWindow,
+                    updateState = { state, res -> state.copy(localBackupResult = res) },
+                    action = { localBackupManager.backup() },
+                    onSuccess = {
+                        viewModelScope.launch(Dispatchers.IO) {
+                            backupSettingsRepository.setLastLocalBackupTime(System.currentTimeMillis())
+                            sendEvent(ShowToast(backupStringProvider.backupSuccessMessage()))
+                            _uiState.update { it.copy(localBackupResult = null) }
+                        }
+                    },
+                )
             }
 
             MainUiIntent.BackupCloud -> {
-                viewModelScope.launch(Dispatchers.IO) {
-                    cloudBackupManager.backup()
-                    backupSettingsRepository.setLastCloudBackupTime(System.currentTimeMillis())
-                    onIntent(MainUiIntent.CloseConfirmCloudBackupWindow)
-                    sendEvent(ShowToast(backupStringProvider.backupSuccessMessage()))
-                }
+                executeBackupAction(
+                    closeIntent = MainUiIntent.CloseConfirmCloudBackupWindow,
+                    updateState = { state, res -> state.copy(cloudBackupResult = res) },
+                    action = { cloudBackupManager.backup() },
+                    onSuccess = {
+                        viewModelScope.launch(Dispatchers.IO) {
+                            backupSettingsRepository.setLastCloudBackupTime(System.currentTimeMillis())
+                            sendEvent(ShowToast(backupStringProvider.backupSuccessMessage()))
+                            _uiState.update { it.copy(cloudBackupResult = null) }
+                        }
+                    },
+                )
+            }
+
+            is MainUiIntent.LoadLocalBackup -> {
+                executeBackupAction(
+                    updateState = { state, _ -> state },
+                    action = { localBackupManager.restore(intent.fileUriString) },
+                    onSuccess = {
+                        sendEvent(ShowToast(backupStringProvider.loadSuccessMessage()))
+                    },
+                )
             }
 
             MainUiIntent.LoadCloudBackup -> {
-                viewModelScope.launch(Dispatchers.IO) {
-                    cloudBackupManager.restore()
-                    onIntent(MainUiIntent.CloseConfirmLoadCloudBackupWindow)
-                    sendEvent(ShowToast(backupStringProvider.loadSuccessMessage()))
-                }
+                executeBackupAction(
+                    closeIntent = MainUiIntent.CloseConfirmLoadCloudBackupWindow,
+                    updateState = { state, res -> state.copy(loadCloudBackupResult = res) },
+                    action = { cloudBackupManager.restore() },
+                    onSuccess = {
+                        sendEvent(ShowToast(backupStringProvider.loadSuccessMessage()))
+                        _uiState.update { it.copy(loadCloudBackupResult = null) }
+                    },
+                )
             }
 
             MainUiIntent.ShowLastBackupTime -> {
@@ -151,6 +174,39 @@ class MainScreenViewModel @Inject constructor(
                             backupStringProvider.lastBackupTimeMessage(lastBackupTime),
                         ),
                     )
+                }
+            }
+        }
+    }
+
+    private fun executeBackupAction(
+        closeIntent: MainUiIntent? = null,
+        updateState: (MainUiState, ResultWithState<Unit, Unit>) -> MainUiState,
+        action: suspend () -> ResultWithState<Unit, Unit>,
+        onSuccess: () -> Unit,
+    ) {
+        viewModelScope.launch(Dispatchers.IO) {
+            _uiState.update { updateState(it, ResultWithState.Loading(Unit)) }
+
+            try {
+                val result = action()
+
+                _uiState.update { updateState(it, result) }
+
+                result.fold(
+                    onSuccess = {
+                        onSuccess()
+                    },
+                    onError = { exception ->
+                        sendEvent(ShowToast(exception.message ?: "Unknown error"))
+                    },
+                )
+            } catch (e: Throwable) {
+                _uiState.update { updateState(it, ResultWithState.Error(e)) }
+                sendEvent(ShowToast(e.message ?: "Unknown error"))
+            } finally {
+                closeIntent?.let { intent ->
+                    onIntent(intent)
                 }
             }
         }

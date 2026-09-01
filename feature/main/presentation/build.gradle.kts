@@ -8,6 +8,7 @@ android {
 }
 
 dependencies {
+    implementation(projects.feature.main.domain)
     implementation(projects.core.ui)
     implementation(projects.core.essentials)
 

@@ -4,4 +4,7 @@ plugins {
 }
 
 dependencies {
+    implementation(projects.core.essentials)
+    implementation(libs.javax.inject)
+    implementation(libs.kotlinx.coroutines.core)
 }

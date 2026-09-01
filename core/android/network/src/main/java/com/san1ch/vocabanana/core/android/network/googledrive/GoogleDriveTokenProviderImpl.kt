@@ -1,55 +1,44 @@
 package com.san1ch.vocabanana.core.android.network.googledrive
 
 import android.content.Context
-import com.google.android.gms.auth.api.identity.AuthorizationRequest
-import com.google.android.gms.auth.api.identity.Identity
-import com.google.android.gms.common.api.Scope
+import com.google.android.gms.auth.GoogleAuthUtil
+import com.google.android.gms.auth.UserRecoverableAuthException
 import com.san1ch.vocabanana.core.essentials.backup.GoogleDriveTokenProvider
-import com.san1ch.vocabanana.core.ui.exception.DriveConsentRequiredException
+import com.san1ch.vocabanana.core.essentials.model.GoogleAuthState
+import com.san1ch.vocabanana.core.essentials.repositories.GoogleRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.coroutines.resume
 
 @Singleton
 class GoogleDriveTokenProviderImpl @Inject constructor(
-    @param:ApplicationContext private val context: Context
+    @param:ApplicationContext private val context: Context,
+    private val googleRepository: GoogleRepository
 ) : GoogleDriveTokenProvider {
-    private val authorizationClient = Identity.getAuthorizationClient(context)
 
-    override suspend fun obtainAccessToken(): Result<String> = suspendCancellableCoroutine { continuation ->
-        val requestedScopes = listOf(Scope("https://www.googleapis.com/auth/drive.appfolder"))
-
-        val requestBuilder = AuthorizationRequest.builder()
-            .setRequestedScopes(requestedScopes)
-
-        val request = requestBuilder.build()
-
-        authorizationClient.authorize(request)
-            .addOnSuccessListener { result ->
-                if (result.hasResolution()) {
-                    val pendingIntent = result.pendingIntent
-                    if (pendingIntent != null) {
-                        continuation.resume(
-                            Result.failure(
-                                DriveConsentRequiredException(pendingIntent)
-                            )
-                        )
-                    } else {
-                        continuation.resume(Result.failure(IllegalStateException("Resolution required but pendingIntent is null")))
-                    }
-                } else {
-                    val token = result.accessToken
-                    if (token != null) {
-                        continuation.resume(Result.success(token))
-                    } else {
-                        continuation.resume(Result.failure(IllegalStateException("Access token is null")))
-                    }
+    override suspend fun obtainAccessToken(): Result<String> {
+        return try {
+            val email = when (val authState = googleRepository.getActiveAccountState().first()) {
+                is GoogleAuthState.SignedIn -> authState.email
+                is GoogleAuthState.SignedOut -> {
+                    return Result.failure(IllegalStateException("User is signed out"))
                 }
             }
-            .addOnFailureListener { exception ->
-                continuation.resume(Result.failure(exception))
+
+            val scope = "oauth2:https://www.googleapis.com/auth/drive.appfolder"
+
+            val token = withContext(kotlinx.coroutines.Dispatchers.IO) {
+                GoogleAuthUtil.getToken(context, email, scope)
             }
+
+            Result.success(token)
+
+        } catch (e: UserRecoverableAuthException) {
+            Result.failure(e)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
 }

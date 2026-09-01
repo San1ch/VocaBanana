@@ -31,6 +31,11 @@ class BackupArchiver @Inject constructor(
             val filesDir = context.filesDir
             if (filesDir.exists()) {
                 filesDir.listFiles()?.forEach { file ->
+                    // Exclude datastore files
+                    if (file.name == "datastore" || file.name.contains("datastore")) {
+                        return@forEach
+                    }
+
                     zipFileRecursive(file, "files/${file.name}", zipOut)
                 }
             }

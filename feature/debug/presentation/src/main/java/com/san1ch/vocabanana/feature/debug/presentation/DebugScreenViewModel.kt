@@ -2,6 +2,8 @@ package com.san1ch.vocabanana.feature.debug.presentation
 
 import android.util.Log
 import androidx.lifecycle.viewModelScope
+import com.san1ch.vocabanana.core.essentials.IsCloudBackupEnabledUseCase
+import com.san1ch.vocabanana.core.essentials.backup.CloudBackupManager
 import com.san1ch.vocabanana.core.essentials.model.text.toBasicPreview
 import com.san1ch.vocabanana.core.essentials.model.word.FilterType
 import com.san1ch.vocabanana.core.essentials.model.word.WordQuery
@@ -28,6 +30,8 @@ constructor(
     textRepository: TextRepository,
     private val wordRepository: WordRepository,
     private val debugAssistant: DebugAssistant,
+    private val isCloudBackupEnabledUseCase: IsCloudBackupEnabledUseCase,
+    private val cloudBackupManager: CloudBackupManager,
 ) : BaseViewModel() {
     val textsState =
         textRepository
@@ -38,6 +42,14 @@ constructor(
 
     private val _selectedTextId = MutableStateFlow<Int?>(null)
     val selectedTextId = _selectedTextId.asStateFlow()
+
+    // State for cloud backup availability
+    val isCloudBackupEnabled = isCloudBackupEnabledUseCase()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(),
+            initialValue = null,
+        )
 
     fun onIntent(action: DebugIntent) {
         when (action) {
@@ -50,6 +62,7 @@ constructor(
                     wordRepository.deleteAllWords()
                 }
             }
+
             DebugIntent.PrintWords -> {
                 viewModelScope.launch {
                     debugAssistant.printAllWords()
@@ -63,6 +76,12 @@ constructor(
                     debugQueries.forEach { (name, query) ->
                         debugAssistant.printWordCounts(name, query)
                     }
+                }
+            }
+
+            DebugIntent.DeleteCloudBackup -> {
+                viewModelScope.launch(Dispatchers.IO) {
+                    cloudBackupManager.deleteCloudBackup()
                 }
             }
         }

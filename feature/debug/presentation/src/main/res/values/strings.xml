@@ -3,4 +3,5 @@
     <string name="delete_all_words">Delete All Words</string>
     <string name="print_words">Print words</string>
     <string name="print_counts">Print counts</string>
+    <string name="delete_cloud_backup">Delete Cloud Backup</string>
 </resources>
