@@ -143,6 +143,7 @@ androidx-compose-animation = { group = "androidx.compose.animation", name = "ani
 androidx-foundation-layout = { group = "androidx.compose.foundation", name = "foundation-layout", version.ref = "foundation" }
 androidx-foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "foundation" }
 androidx-compose-runtime = { group = "androidx.compose.runtime", name = "runtime" }
+
 # Testing
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 junit-bom = { group = "org.junit", name = "junit-bom", version.ref = "junit-jupiter" }

@@ -37,7 +37,6 @@ class CloudBackupManagerImpl @Inject constructor(
         }
     }
 
-    override suspend fun restore(): ResultWithState<Unit, Unit> = try {
         val downloadedFile = cloudStorageClient.downloadBackup().getOrThrow()
 
         try {
@@ -47,20 +46,10 @@ class CloudBackupManagerImpl @Inject constructor(
 
             dataChangeTracker.notifyDataChanged()
             backupSettingsRepository.setLastCloudBackupTime(System.currentTimeMillis())
-            ResultWithState.Success(Unit)
         } finally {
             if (downloadedFile.exists()) {
                 downloadedFile.delete()
             }
         }
-    } catch (e: Throwable) {
-        ResultWithState.Error(e)
-    }
-
-    override suspend fun deleteCloudBackup(): ResultWithState<Unit, Unit> = try {
-        cloudStorageClient.deleteBackup()
-        ResultWithState.Success(Unit)
-    } catch (e: Throwable) {
-        ResultWithState.Error(e)
     }
 }
