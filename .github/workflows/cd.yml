@@ -19,20 +19,24 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
       - name: Decode Keystore
         run: |
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > ${{ github.workspace }}/app/release-key.jks
 
-      - name: Build Signed Release Bundle
+      - name: Build Signed Release APK
         env:
           KEYSTORE_PATH: ${{ github.workspace }}/app/release-key.jks
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-        run: ./gradlew bundleRelease
+        run: ./gradlew assembleRelease
 
-      - name: Upload AAB Artifact
-        uses: actions/upload-artifact@v4
+      - name: Upload Release Asset (APK)
+        uses: softprops/action-gh-release@v2
         with:
-          name: release-bundle
-          path: app/build/outputs/bundle/release/app-release.aab
+          files: app/build/outputs/apk/release/app-release.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
