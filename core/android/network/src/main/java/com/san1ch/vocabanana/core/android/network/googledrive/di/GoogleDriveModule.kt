@@ -5,7 +5,7 @@ import com.san1ch.vocabanana.core.android.network.googledrive.GoogleApiStringPro
 import com.san1ch.vocabanana.core.android.network.googledrive.GoogleAuthManagerImpl
 import com.san1ch.vocabanana.core.android.network.googledrive.GoogleDriveApiService
 import com.san1ch.vocabanana.core.android.network.googledrive.GoogleDriveConfig
-import com.san1ch.vocabanana.core.android.network.googledrive.GoogleDriveService
+import com.san1ch.vocabanana.core.android.network.googledrive.GoogleDriveStorageClient
 import com.san1ch.vocabanana.core.android.network.googledrive.GoogleDriveTokenProviderImpl
 import com.san1ch.vocabanana.core.android.network.googledrive.GooglePermissionsManagerImpl
 import com.san1ch.vocabanana.core.android.network.googledrive.clients.createGoogleDriveOkHttpClient
@@ -68,7 +68,7 @@ internal object GoogleDriveModule {
 @InstallIn(SingletonComponent::class)
 interface GoogleAccountBindModule {
     @Binds
-    fun bindGoogleDriveService(service: GoogleDriveService): CloudStorageClient
+    fun bindGoogleDriveService(service: GoogleDriveStorageClient): CloudStorageClient
 
     @Binds
     @Singleton
