@@ -37,34 +37,30 @@ class CloudBackupManagerImpl @Inject constructor(
         }
     }
 
-    override suspend fun restore(): ResultWithState<Unit, Unit> {
-        return try {
-            val downloadedFile = cloudStorageClient.downloadBackup().getOrThrow()
+    override suspend fun restore(): ResultWithState<Unit, Unit> = try {
+        val downloadedFile = cloudStorageClient.downloadBackup().getOrThrow()
 
-            try {
-                downloadedFile.inputStream().use { inputStream ->
-                    archiver.restoreFromBackupZip(inputStream)
-                }
-
-                dataChangeTracker.notifyDataChanged()
-                backupSettingsRepository.setLastCloudBackupTime(System.currentTimeMillis())
-                ResultWithState.Success(Unit)
-            } finally {
-                if (downloadedFile.exists()) {
-                    downloadedFile.delete()
-                }
+        try {
+            downloadedFile.inputStream().use { inputStream ->
+                archiver.restoreFromBackupZip(inputStream)
             }
-        } catch (e: Throwable) {
-            ResultWithState.Error(e)
+
+            dataChangeTracker.notifyDataChanged()
+            backupSettingsRepository.setLastCloudBackupTime(System.currentTimeMillis())
+            ResultWithState.Success(Unit)
+        } finally {
+            if (downloadedFile.exists()) {
+                downloadedFile.delete()
+            }
         }
+    } catch (e: Throwable) {
+        ResultWithState.Error(e)
     }
 
-    override suspend fun deleteCloudBackup(): ResultWithState<Unit, Unit> {
-        return try {
-            cloudStorageClient.deleteBackup().getOrThrow()
-            ResultWithState.Success(Unit)
-        } catch (e: Throwable) {
-            ResultWithState.Error(e)
-        }
+    override suspend fun deleteCloudBackup(): ResultWithState<Unit, Unit> = try {
+        cloudStorageClient.deleteBackup().getOrThrow()
+        ResultWithState.Success(Unit)
+    } catch (e: Throwable) {
+        ResultWithState.Error(e)
     }
 }

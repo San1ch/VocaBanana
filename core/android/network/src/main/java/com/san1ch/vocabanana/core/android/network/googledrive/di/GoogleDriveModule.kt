@@ -5,7 +5,7 @@ import com.san1ch.vocabanana.core.android.network.googledrive.GoogleApiStringPro
 import com.san1ch.vocabanana.core.android.network.googledrive.GoogleAuthManagerImpl
 import com.san1ch.vocabanana.core.android.network.googledrive.GoogleDriveApiService
 import com.san1ch.vocabanana.core.android.network.googledrive.GoogleDriveConfig
-import com.san1ch.vocabanana.core.android.network.googledrive.GoogleDriveStorageClient
+import com.san1ch.vocabanana.core.android.network.googledrive.GoogleDriveService
 import com.san1ch.vocabanana.core.android.network.googledrive.GoogleDriveTokenProviderImpl
 import com.san1ch.vocabanana.core.android.network.googledrive.GooglePermissionsManagerImpl
 import com.san1ch.vocabanana.core.android.network.googledrive.clients.createGoogleDriveOkHttpClient
@@ -16,7 +16,6 @@ import com.san1ch.vocabanana.core.essentials.network.CloudStorageClient
 import com.san1ch.vocabanana.core.essentials.network.GoogleAccountManager
 import com.san1ch.vocabanana.core.essentials.network.GoogleAuthManager
 import com.san1ch.vocabanana.core.essentials.network.GooglePermissionsManager
-import com.san1ch.vocabanana.core.essentials.repositories.GoogleRepository
 import com.san1ch.vocabanana.core.essentials.resources.network.GoogleApiStringProvider
 import dagger.Binds
 import dagger.Module
@@ -68,7 +67,7 @@ internal object GoogleDriveModule {
 @InstallIn(SingletonComponent::class)
 interface GoogleAccountBindModule {
     @Binds
-    fun bindGoogleDriveService(service: GoogleDriveStorageClient): CloudStorageClient
+    fun bindGoogleDriveService(service: GoogleDriveService): CloudStorageClient
 
     @Binds
     @Singleton
