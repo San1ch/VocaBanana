@@ -8,6 +8,10 @@ plugins {
 
 android {
     namespace = "com.san1ch.vocabanana.core.android.network"
+
+    buildFeatures {
+        buildConfig = true
+    }
 }
 
 dependencies {
@@ -17,7 +21,12 @@ dependencies {
     implementation(libs.google.hilt)
     ksp(libs.google.hilt.compiler)
 
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.services.auth)
+    implementation(libs.identity.googleid)
+
     implementation(libs.play.services.auth)
+
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.okhttp)
     implementation(libs.retrofit)

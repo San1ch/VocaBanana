@@ -43,9 +43,9 @@ class CustomAndroidApplicationPlugin : Plugin<Project> {
                             keyAlias = ciKeyAlias
                             keyPassword = ciKeyPassword
                         } else {
-                            val localStorePath = localProperties.getProperty("signing.storeFile")
-                            if (!localStorePath.isNullOrEmpty()) {
-                                storeFile = file(localStorePath)
+                            val localStoreStorePath = localProperties.getProperty("signing.storeFile")
+                            if (!localStoreStorePath.isNullOrEmpty()) {
+                                storeFile = file(localStoreStorePath)
                                 storePassword = localProperties.getProperty("signing.storePassword")
                                 keyAlias = localProperties.getProperty("signing.keyAlias")
                                 keyPassword = localProperties.getProperty("signing.keyPassword")
@@ -66,13 +66,6 @@ class CustomAndroidApplicationPlugin : Plugin<Project> {
                     getByName("debug") {
                         applicationIdSuffix = ".debug"
                         resValue("string", "app_name", "Vocab (Debug)")
-                    }
-                    create("fastRelease") {
-                        initWith(getByName("release"))
-                        matchingFallbacks.add("release")
-                        signingConfig = signingConfigs.getByName("debug")
-                        applicationIdSuffix = ".fastrelease"
-                        resValue("string", "app_name", "Vocab (Fast Release)")
                     }
                 }
 

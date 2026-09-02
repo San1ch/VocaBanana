@@ -1,113 +1,164 @@
 package com.san1ch.vocabanana.core.android.network.googledrive
 
-import android.accounts.AccountManager
-import android.accounts.Account
 import android.content.Context
-import com.google.android.gms.auth.api.identity.AuthorizationRequest
-import com.google.android.gms.auth.api.identity.Identity
-import com.google.android.gms.auth.api.identity.RevokeAccessRequest
-import com.google.android.gms.common.api.ApiException
+import android.os.Build
+import com.san1ch.vocabanana.core.android.network.BuildConfig
+import androidx.annotation.RequiresApi
+import androidx.credentials.ClearCredentialStateRequest
+import androidx.credentials.CredentialManager
+import androidx.credentials.CustomCredential
+import androidx.credentials.GetCredentialRequest
+import com.google.android.libraries.identity.googleid.GetGoogleIdOption
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.san1ch.vocabanana.core.essentials.Logger
+import com.san1ch.vocabanana.core.essentials.backup.GoogleDriveTokenProvider
+import com.san1ch.vocabanana.core.essentials.model.GoogleAuthState
+import com.san1ch.vocabanana.core.essentials.network.GoogleAccountManager
 import com.san1ch.vocabanana.core.essentials.network.GoogleAuthManager
-import com.san1ch.vocabanana.core.ui.exception.DriveConsentRequiredException
+import com.san1ch.vocabanana.core.essentials.network.GooglePermissionsManager
+import com.san1ch.vocabanana.core.essentials.repositories.GoogleRepository
+import com.san1ch.vocabanana.core.essentials.resources.network.GoogleApiStringProvider
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.suspendCancellableCoroutine
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.coroutines.resume
-import com.google.android.gms.common.api.Scope as GmsScope
 
 @Singleton
 class GoogleAuthManagerImpl @Inject constructor(
     @param:ApplicationContext private val context: Context,
+    private val googleApiStringProvider: GoogleApiStringProvider,
     private val logger: Logger
 ) : GoogleAuthManager {
-    private val authorizationClient = Identity.getAuthorizationClient(context)
 
-    override suspend fun requestAccount(): Result<Unit> =
-        suspendCancellableCoroutine { continuation ->
-            val requestedScopes =
-                listOf(GmsScope("https://www.googleapis.com/auth/drive.appfolder"))
+    @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+    private val credentialManager = CredentialManager.create(context)
 
-            val requestBuilder = AuthorizationRequest.builder()
-                .setRequestedScopes(requestedScopes)
+    @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+    override suspend fun requestAccount(): Result<String> {
+        return try {
+            val clientId = googleApiStringProvider.getGoogleClientIdByBuildType(BuildConfig.DEBUG)
 
-            val request = requestBuilder.build()
-
-            authorizationClient.authorize(request)
-                .addOnSuccessListener { result ->
-                    if (result.hasResolution()) {
-                        val pendingIntent = result.pendingIntent
-                        if (pendingIntent != null) {
-                            continuation.resume(
-                                Result.failure(DriveConsentRequiredException(pendingIntent))
-                            )
-                        } else {
-                            continuation.resume(Result.failure(IllegalStateException("PendingIntent is null")))
-                        }
-                    } else {
-                        val token = result.accessToken
-                        if (token != null) {
-                            continuation.resume(Result.success(Unit))
-                        } else {
-                            continuation.resume(Result.failure(IllegalStateException("Access token is null")))
-                        }
-                    }
-                }
-                .addOnFailureListener { exception ->
-                    continuation.resume(Result.failure(exception))
-                }
-        }
-
-    override suspend fun revokeAccess(): Result<Unit> =
-        suspendCancellableCoroutine { continuation ->
-            val signInClient = Identity.getSignInClient(context)
-            signInClient.signOut()
-
-            val accountManager = AccountManager.get(context)
-            val googleAccounts = accountManager.getAccountsByType("com.google")
-            val targetAccount = googleAccounts.firstOrNull()
-
-            if (targetAccount == null) {
-                continuation.resume(Result.failure(IllegalStateException("No Google account found")))
-                return@suspendCancellableCoroutine
-            }
-
-
-            val request = RevokeAccessRequest.builder()
-                .setAccount(targetAccount)
-                .setScopes(listOf(GmsScope("https://www.googleapis.com/auth/drive.appfolder")))
+            val googleIdOption = GetGoogleIdOption.Builder()
+                .setFilterByAuthorizedAccounts(false)
+                .setServerClientId(clientId)
                 .build()
 
-            authorizationClient.revokeAccess(request)
-                .addOnSuccessListener {
-                    logger.d("GoogleAuthManagerImpl", "Revoke SUCCESS for ${targetAccount.name}")
-                    continuation.resume(Result.success(Unit))
-                }
-                .addOnFailureListener { exception ->
-                    val statusCode = (exception as? ApiException)?.statusCode
+            val request = GetCredentialRequest.Builder()
+                .addCredentialOption(googleIdOption)
+                .build()
 
-                    // 10("NO_ACCESS_TOKEN") and 16("CANCELED") are success codes, because  and  are not errors in this context
-                    if (statusCode == 10 || statusCode == 16) {
-                        logger.d(
-                            tag = "GoogleAuthManagerImpl",
-                            message = "Current status code: $statusCode"
-                        )
-                        continuation.resume(Result.success(Unit))
+            val result = credentialManager.getCredential(
+                context = context,
+                request = request
+            )
+
+            when (val credential = result.credential) {
+                is CustomCredential -> {
+                    if (credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
+                        val googleIdTokenCredential =
+                            GoogleIdTokenCredential.createFrom(credential.data)
+
+                        return Result.success(googleIdTokenCredential.id)
                     } else {
-                        logger.e(message = "GoogleAuthManagerImpl revoke failed", error = exception)
-                        continuation.resume(Result.failure(exception))
+                        return Result.failure(IllegalStateException("Unexpected credential type"))
                     }
                 }
-        }
 
-    override suspend fun getUserEmail(): Result<String> =
-        suspendCancellableCoroutine { continuation ->
-            val accountManager = AccountManager.get(context)
-            val googleAccounts = accountManager.getAccountsByType("com.google")
-            when (val email = googleAccounts.firstOrNull()?.name) {
-                null -> continuation.resume(Result.failure(IllegalStateException("No Google account found")))
-                else -> continuation.resume(Result.success(email))
+                else -> Result.failure(IllegalStateException("Unsupported credential type"))
             }
+        } catch (e: Exception) {
+            logger.e("GoogleAuthManagerImpl", "Failed to get credential", e)
+            Result.failure(e)
         }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+    override suspend fun revokeAccountAccess(): Result<Unit> {
+        return try {
+            val clearRequest = ClearCredentialStateRequest()
+            credentialManager.clearCredentialState(clearRequest)
+
+            Result.success(Unit)
+        } catch (e: Exception) {
+            logger.e("GoogleAuthManagerImpl", "Failed to revoke access", e)
+            Result.failure(e)
+        }
+    }
+}
+
+
+@Singleton
+class GooglePermissionsManagerImpl @Inject constructor(
+    private val googleAuthManager: GoogleAuthManager,
+    private val googleTokenProvider: GoogleDriveTokenProvider
+) : GooglePermissionsManager {
+
+    override suspend fun getGoogleDrivePermissions(onSuccessAccountAccess: suspend (email: String) -> Unit): Result<Unit> {
+        return try {
+            googleAuthManager.requestAccount().fold(
+                onSuccess = { email ->
+                    onSuccessAccountAccess(email)
+                    googleTokenProvider.obtainAccessToken().fold(
+                        onSuccess = {
+                            Result.success(Unit)
+                        },
+                        onFailure = { error ->
+                            Result.failure(error)
+                        }
+                    )
+                }, onFailure = {
+                    Result.failure(it)
+                }
+            )
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+}
+
+@Singleton
+class GoogleAccountManagerImpl @Inject constructor(
+    private val googleAuthManager: GoogleAuthManager,
+    private val googlePermissionsManager: GooglePermissionsManager,
+    private val googleRepository: GoogleRepository
+) : GoogleAccountManager {
+
+    override val activeAccountStateFlow = googleRepository.getActiveAccountState()
+
+    override suspend fun signIn(): Result<Unit> {
+        return googleAuthManager.requestAccount().fold(
+            onSuccess = { email ->
+                googleRepository.setActiveAccountState(GoogleAuthState.SignedIn(email))
+                Result.success(Unit)
+            },
+            onFailure = { error ->
+                Result.failure(error)
+            }
+        )
+    }
+
+    override suspend fun signOut(): Result<Unit> {
+        return googleAuthManager.revokeAccountAccess().fold(
+            onSuccess = {
+                googleRepository.setActiveAccountState(GoogleAuthState.SignedOut)
+                println(activeAccountStateFlow.collect { println(it) })
+                Result.success(Unit)
+            },
+            onFailure = { error ->
+                Result.failure(error)
+            }
+        )
+    }
+
+    override suspend fun getGoogleDrivePermissions(): Result<Unit> {
+        return googlePermissionsManager.getGoogleDrivePermissions(onSuccessAccountAccess = {
+            googleRepository.setActiveAccountState(GoogleAuthState.SignedIn(it))
+        }).fold(
+            onSuccess = {
+                Result.success(Unit)
+            },
+            onFailure = { error ->
+                Result.failure(error)
+            }
+        )
+    }
 }

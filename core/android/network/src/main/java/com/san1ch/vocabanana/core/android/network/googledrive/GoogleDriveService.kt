@@ -12,6 +12,7 @@ import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.ResponseBody
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.Multipart
@@ -130,6 +131,25 @@ class GoogleDriveService @Inject constructor(
         logger.d("GoogleDrive", "Download failed with error: ${e.message}")
     }
 
+    override suspend fun deleteBackup(): Result<Unit> = runCatching {
+        logger.d("GoogleDrive", "Starting cloud backup deletion...")
+        val authHeader = getAuthHeader()
+
+        val searchQuery = "name = '$fileName' and trashed = false"
+        val searchResult = driveApiService.listFiles(authHeader = authHeader, searchQuery = searchQuery)
+        val fileId = searchResult.files?.firstOrNull()?.id
+
+        if (fileId != null) {
+            logger.d("GoogleDrive", "Deleting file with ID: $fileId")
+            driveApiService.deleteBackupFile(authHeader = authHeader, fileId = fileId)
+            logger.d("GoogleDrive", "Cloud backup successfully deleted")
+        } else {
+            logger.d("GoogleDrive", "No cloud backup found to delete")
+        }
+    }.onFailure { e ->
+        logger.d("GoogleDrive", "Deletion failed with error: ${e.message}")
+    }
+
     private suspend fun getAuthHeader(): String {
         val tokenResult = tokenManager.obtainAccessToken()
         val accessToken = tokenResult.getOrThrow()
@@ -172,4 +192,10 @@ interface GoogleDriveApiService {
         @Path("fileId") fileId: String,
         @Query("alt") alt: String = "media"
     ): ResponseBody
+
+    @DELETE("drive/v3/files/{fileId}")
+    suspend fun deleteBackupFile(
+        @Header("Authorization") authHeader: String,
+        @Path("fileId") fileId: String
+    )
 }

@@ -1,7 +1,8 @@
 package com.san1ch.vocabanana.core.essentials.network
 
 interface GoogleAuthManager {
-    suspend fun requestAccount(): Result<Unit>
-    suspend fun revokeAccess(): Result<Unit>
-    suspend fun getUserEmail(): Result<String>
+
+    // Return email
+    suspend fun requestAccount(): Result<String>
+    suspend fun revokeAccountAccess(): Result<Unit>
 }

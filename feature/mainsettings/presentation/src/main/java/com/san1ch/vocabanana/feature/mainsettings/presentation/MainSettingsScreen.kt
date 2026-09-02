@@ -54,6 +54,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.san1ch.vocabanana.core.essentials.model.AppThemeMode
+import com.san1ch.vocabanana.core.essentials.model.GoogleAuthState
 import com.san1ch.vocabanana.core.ui.compose.CollectUiEvents
 
 @Composable
@@ -249,36 +250,43 @@ private fun BackupSections(
         exit = fadeOut() + shrinkVertically(),
     ) {
         Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+            when (val googleAuthState = state.googleAuthState) {
+                is GoogleAuthState.SignedIn -> {
+                    Text(
+                        text = buildAnnotatedString {
+                            append("Connected to: ")
+                            withStyle(
+                                style = SpanStyle(
+                                    color = MaterialTheme.colorScheme.primary,
+                                    fontWeight = FontWeight.Bold,
+                                ),
+                            ) {
+                                append(googleAuthState.email)
+                            }
+                        },
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                    Spacer(modifier = Modifier.padding(vertical = 4.dp))
+                }
 
-            if(state.isCloudBackupEnabled && state.currentUserEmail != null){
-                Text(
-                    text = buildAnnotatedString {
-                        append("Connected to: ")
-                        withStyle(
-                            style = SpanStyle(
-                                color = MaterialTheme.colorScheme.primary,
-                                fontWeight = FontWeight.Bold
-                            )
-                        ) {
-                            append(state.currentUserEmail)
-                        }
-                    },
-                    style = MaterialTheme.typography.bodyMedium
-                )
-                Spacer(modifier = Modifier.padding(vertical = 4.dp))
-            } else{
-                Text(
-                    text = "Connect your Google account to securely store and sync your vocabulary data in your private Google Drive app folder.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.outline,
-                    modifier = Modifier.padding(bottom = 8.dp),
-                )
+                GoogleAuthState.SignedOut -> {
+                    Text(
+                        text = "Connect your Google account to securely store and sync your vocabulary data in your private Google Drive app folder.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.outline,
+                        modifier = Modifier.padding(bottom = 8.dp),
+                    )
+                }
             }
-            // First is "text", second is "onClick"
-            val button: Pair<String, () -> Unit> = when {
-                state.isCloudBackupEnabled -> Pair("Disconnect") { onIntent(SettingsIntent.DisconnectGoogleDriveClicked) }
-
-                else -> Pair("Sign in with Google") { onIntent(SettingsIntent.ConnectGoogleDriveClicked) }
+            val button: Pair<String, () -> Unit> = when (state.googleAuthState) {
+                is GoogleAuthState.SignedIn ->
+                    Pair("Disconnect") {
+                        onIntent(SettingsIntent.DisconnectGoogleDriveClicked)
+                    }
+                is GoogleAuthState.SignedOut ->
+                    Pair("Sign in with Google") {
+                        onIntent(SettingsIntent.ConnectGoogleDriveClicked)
+                    }
             }
             Button(
                 onClick = button.second,

@@ -3,6 +3,7 @@ import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
+import org.jetbrains.kotlin.compose.compiler.gradle.ComposeCompilerGradlePluginExtension
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinAndroidProjectExtension
 
@@ -34,6 +35,7 @@ class CustomAndroidComposeLibraryPlugin : Plugin<Project> {
                     targetCompatibility = JavaVersion.VERSION_17
                 }
 
+
                 buildTypes {
                     getByName("release") {
                         isMinifyEnabled = false
@@ -42,10 +44,11 @@ class CustomAndroidComposeLibraryPlugin : Plugin<Project> {
                             "proguard-rules.pro"
                         )
                     }
-                    create("fastRelease") {
-                        initWith(getByName("release"))
-                    }
                 }
+            }
+
+            extensions.configure<ComposeCompilerGradlePluginExtension> {
+                reportsDestination.set(layout.buildDirectory.dir("reports"))
             }
 
             extensions.configure<KotlinAndroidProjectExtension> {
