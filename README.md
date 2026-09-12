@@ -58,7 +58,9 @@ Give it a title and add your content. You can either:
 
 Then open the text to start reading.
 
-![Create a text](screenshots/create-text.png)
+<p>
+  <img src="screenshots/create-text.png" width="300">
+</p>
 
 ---
 
@@ -103,8 +105,9 @@ For example, a person's name, surname, unusual proper noun, or simply an irrelev
 
 You can also leave a word unchanged if you do not want to classify it yet.
 
-![New vocabulary](screenshots/new-vocabulary.png)
-
+<p>
+  <img src="screenshots/new-vocabulary.png" width="300">
+</p>
 ---
 
 ### 4. Read with Vocabulary Filters
@@ -122,8 +125,10 @@ For example, you can display only:
 
 This allows you to read the same text in different ways depending on what you want to focus on.
 
-![Vocabulary filters](screenshots/vocabulary-filters-1.png)
-![Vocabulary filters](screenshots/vocabulary-filters-2.png)
+<p>
+  <img src="screenshots/vocabulary-filters-1.png" width="300">
+  <img src="screenshots/vocabulary-filters-2.png" width="300">
+</p>
 
 ---
 
@@ -137,10 +142,10 @@ You can change:
 * **Line spacing**
 * **Paragraph spacing**
 * **Side margins**
-
-![Text appearance](screenshots/text-appearance-dark.png)
-![Text appearance](screenshots/text-appearance-light.png)
-
+<p>
+  <img src="screenshots/text-appearance-dark.png" width="300">
+  <img src="screenshots/text-appearance-light.png" width="300">
+</p>
 ---
 
 ### 6. Explore Words While Reading
